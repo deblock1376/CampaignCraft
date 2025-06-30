@@ -26,6 +26,7 @@ const formSchema = insertBrandStylesheetSchema.extend({
 
 export default function BrandStylesheets() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [editingStylesheet, setEditingStylesheet] = useState<any>(null);
   const { toast } = useToast();
 
   const { data: stylesheets, isLoading } = useQuery({
@@ -34,13 +35,10 @@ export default function BrandStylesheets() {
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
-      console.log("Making API request with data:", data);
       const response = await apiRequest("POST", "/api/newsrooms/1/stylesheets", data);
-      console.log("API response:", response);
       return response.json();
     },
     onSuccess: (result) => {
-      console.log("Success! Created stylesheet:", result);
       queryClient.invalidateQueries({ queryKey: ["/api/newsrooms/1/stylesheets"] });
       setIsCreateOpen(false);
       form.reset();
@@ -50,10 +48,32 @@ export default function BrandStylesheets() {
       });
     },
     onError: (error: any) => {
-      console.error("Error creating stylesheet:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to create brand stylesheet",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const response = await apiRequest("PUT", `/api/stylesheets/${id}`, data);
+      return response.json();
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/newsrooms/1/stylesheets"] });
+      setEditingStylesheet(null);
+      form.reset();
+      toast({
+        title: "Success",
+        description: "Brand stylesheet updated successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update brand stylesheet",
         variant: "destructive",
       });
     },
@@ -73,10 +93,6 @@ export default function BrandStylesheets() {
   });
 
   const onSubmit = (data: any) => {
-    alert("Form submitted! Check console for details.");
-    console.log("Form data received:", data);
-    console.log("Form errors:", form.formState.errors);
-    
     const keyMessages = data.keyMessagesText
       ? data.keyMessagesText.split('\n').filter((msg: string) => msg.trim())
       : [];
@@ -97,8 +113,31 @@ export default function BrandStylesheets() {
     };
     
     delete submitData.keyMessagesText;
-    console.log("Submitting data:", submitData);
-    createMutation.mutate(submitData);
+    
+    if (editingStylesheet) {
+      updateMutation.mutate({ id: editingStylesheet.id, data: submitData });
+    } else {
+      createMutation.mutate(submitData);
+    }
+  };
+
+  const handleEdit = (stylesheet: any) => {
+    setEditingStylesheet(stylesheet);
+    form.reset({
+      name: stylesheet.name,
+      description: stylesheet.description || "",
+      tone: stylesheet.tone,
+      voice: stylesheet.voice,
+      keyMessagesText: stylesheet.keyMessages ? stylesheet.keyMessages.join('\n') : "",
+      guidelines: stylesheet.guidelines || "",
+      isDefault: stylesheet.isDefault,
+    });
+  };
+
+  const handleCloseDialog = () => {
+    setIsCreateOpen(false);
+    setEditingStylesheet(null);
+    form.reset();
   };
 
   return (
@@ -109,7 +148,7 @@ export default function BrandStylesheets() {
           title="Brand Stylesheets" 
           subtitle="Manage your newsroom's brand voice and messaging guidelines"
           action={
-            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+            <Dialog open={isCreateOpen || !!editingStylesheet} onOpenChange={handleCloseDialog}>
               <DialogTrigger asChild>
                 <Button>
                   <i className="fas fa-plus mr-2"></i>
@@ -118,7 +157,9 @@ export default function BrandStylesheets() {
               </DialogTrigger>
               <DialogContent className="max-w-2xl">
                 <DialogHeader>
-                  <DialogTitle>Create Brand Stylesheet</DialogTitle>
+                  <DialogTitle>
+                    {editingStylesheet ? "Edit Brand Stylesheet" : "Create Brand Stylesheet"}
+                  </DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -238,11 +279,15 @@ export default function BrandStylesheets() {
                     />
                     
                     <div className="flex justify-end space-x-2">
-                      <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
+                      <Button type="button" variant="outline" onClick={handleCloseDialog}>
                         Cancel
                       </Button>
-                      <Button type="submit" disabled={createMutation.isPending}>
-                        {createMutation.isPending ? "Creating..." : "Create Stylesheet"}
+                      <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+                        {editingStylesheet ? (
+                          updateMutation.isPending ? "Updating..." : "Update Stylesheet"
+                        ) : (
+                          createMutation.isPending ? "Creating..." : "Create Stylesheet"
+                        )}
                       </Button>
                     </div>
                   </form>
@@ -310,7 +355,7 @@ export default function BrandStylesheets() {
                           </div>
                         )}
                         <div className="flex justify-end space-x-2 pt-4">
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" onClick={() => handleEdit(stylesheet)}>
                             <i className="fas fa-edit mr-1"></i>
                             Edit
                           </Button>
