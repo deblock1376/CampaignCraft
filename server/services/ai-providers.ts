@@ -62,6 +62,7 @@ class AIProviderService {
       case 'gpt-4o':
         return this.generateWithOpenAI(prompt, request);
       case 'claude-sonnet-4':
+      case 'claude-sonnet-4-20250514':
         return this.generateWithAnthropic(prompt, request);
       case 'gemini-pro':
         return this.generateWithGemini(prompt, request);
