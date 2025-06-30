@@ -48,9 +48,35 @@ export default function Sidebar() {
             <i className="fas fa-user text-primary text-sm"></i>
           </div>
           <div className="flex-1">
-            <p className="text-sm font-medium text-slate-900">Newsroom Admin</p>
-            <p className="text-xs text-slate-500">Campaign Manager</p>
+            {(() => {
+              const userStr = localStorage.getItem("user");
+              if (userStr) {
+                const user = JSON.parse(userStr);
+                return (
+                  <>
+                    <p className="text-sm font-medium text-slate-900">{user.name}</p>
+                    <p className="text-xs text-slate-500">{user.newsroom?.name || "Admin"}</p>
+                  </>
+                );
+              }
+              return (
+                <>
+                  <p className="text-sm font-medium text-slate-900">Newsroom Admin</p>
+                  <p className="text-xs text-slate-500">Campaign Manager</p>
+                </>
+              );
+            })()}
           </div>
+          <button 
+            onClick={() => {
+              localStorage.removeItem("user");
+              window.location.reload();
+            }}
+            className="text-slate-400 hover:text-slate-600"
+            title="Logout"
+          >
+            <i className="fas fa-sign-out-alt text-sm"></i>
+          </button>
         </div>
       </div>
     </aside>

@@ -1,12 +1,15 @@
 import { 
+  users,
   newsrooms, 
   brandStylesheets, 
   campaigns, 
   campaignTemplates,
+  type User,
   type Newsroom,
   type BrandStylesheet,
   type Campaign,
   type CampaignTemplate,
+  type InsertUser,
   type InsertNewsroom,
   type InsertBrandStylesheet,
   type InsertCampaign,
@@ -16,6 +19,11 @@ import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
+  // Users
+  getUser(id: number): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+  
   // Newsrooms
   getNewsroom(id: number): Promise<Newsroom | undefined>;
   getNewsroomBySlug(slug: string): Promise<Newsroom | undefined>;
@@ -294,6 +302,24 @@ export class MemStorage implements IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
   async getNewsroom(id: number): Promise<Newsroom | undefined> {
     const [newsroom] = await db.select().from(newsrooms).where(eq(newsrooms.id, id));
     return newsroom || undefined;

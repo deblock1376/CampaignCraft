@@ -7,8 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
 
 export default function Dashboard() {
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const newsroomId = user.newsroomId || 1;
+
   const { data: campaigns, isLoading } = useQuery({
-    queryKey: ["/api/newsrooms/1/campaigns"],
+    queryKey: ["/api/newsrooms", newsroomId, "campaigns"],
   });
 
   const { data: templates } = useQuery({

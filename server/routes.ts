@@ -1,11 +1,55 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import { storage } from "./storage";
 import { aiProviderService } from "./services/ai-providers";
-import { insertBrandStylesheetSchema, insertCampaignSchema, insertCampaignTemplateSchema } from "@shared/schema";
+import { insertBrandStylesheetSchema, insertCampaignSchema, insertCampaignTemplateSchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Authentication Routes
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password required" });
+      }
+
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      const isValid = await bcrypt.compare(password, user.passwordHash);
+      if (!isValid) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      const token = jwt.sign({ userId: user.id, newsroomId: user.newsroomId }, JWT_SECRET, { expiresIn: "7d" });
+      
+      // Get user's newsroom info
+      const newsroom = user.newsroomId ? await storage.getNewsroom(user.newsroomId) : null;
+      
+      res.json({ 
+        user: { 
+          id: user.id, 
+          name: user.name, 
+          email: user.email, 
+          role: user.role,
+          newsroomId: user.newsroomId,
+          newsroom: newsroom 
+        }, 
+        token 
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
   // Newsrooms
   app.get("/api/newsrooms/:id", async (req, res) => {
     try {

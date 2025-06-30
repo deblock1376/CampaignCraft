@@ -2,6 +2,17 @@ import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizz
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  name: text("name").notNull(),
+  role: text("role").notNull().default("user"), // "admin", "user"
+  newsroomId: integer("newsroom_id"), // null for super admins
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const newsrooms = pgTable("newsrooms", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -78,11 +89,19 @@ export const insertCampaignTemplateSchema = createInsertSchema(campaignTemplates
   createdAt: true,
 });
 
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertNewsroom = z.infer<typeof insertNewsroomSchema>;
 export type InsertBrandStylesheet = z.infer<typeof insertBrandStylesheetSchema>;
 export type InsertCampaign = z.infer<typeof insertCampaignSchema>;
 export type InsertCampaignTemplate = z.infer<typeof insertCampaignTemplateSchema>;
 
+export type User = typeof users.$inferSelect;
 export type Newsroom = typeof newsrooms.$inferSelect;
 export type BrandStylesheet = typeof brandStylesheets.$inferSelect;
 export type Campaign = typeof campaigns.$inferSelect;

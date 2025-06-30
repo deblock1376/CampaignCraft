@@ -8,9 +8,17 @@ import NewCampaign from "@/pages/new-campaign";
 import CampaignHistory from "@/pages/campaign-history";
 import BrandStylesheets from "@/pages/brand-stylesheets";
 import Settings from "@/pages/settings";
+import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 
 function Router() {
+  const user = localStorage.getItem("user");
+  const isAuthenticated = !!user;
+
+  if (!isAuthenticated) {
+    return <Login />;
+  }
+
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
@@ -19,6 +27,7 @@ function Router() {
       <Route path="/campaigns/history" component={CampaignHistory} />
       <Route path="/stylesheets" component={BrandStylesheets} />
       <Route path="/settings" component={Settings} />
+      <Route path="/login" component={Login} />
       <Route component={NotFound} />
     </Switch>
   );
