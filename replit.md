@@ -110,6 +110,8 @@ Changelog:
   - Implemented custom brand stylesheet creation and editing
   - Fixed brand stylesheet application in campaign generation
   - Brand stylesheets now properly customize organization name and messaging
+  - Resolved Claude API integration issue - model name mismatch fixed
+  - Both OpenAI GPT-4o and Anthropic Claude Sonnet 4 fully functional
 ```
 
 ## User Preferences
