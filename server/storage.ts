@@ -42,6 +42,7 @@ export interface IStorage {
   // Campaigns
   getCampaign(id: number): Promise<Campaign | undefined>;
   getCampaignsByNewsroom(newsroomId: number): Promise<Campaign[]>;
+  getAllCampaigns(): Promise<(Campaign & { newsroomName: string })[]>;
   createCampaign(campaign: InsertCampaign): Promise<Campaign>;
   updateCampaign(id: number, campaign: Partial<InsertCampaign>): Promise<Campaign>;
   deleteCampaign(id: number): Promise<void>;
@@ -398,6 +399,28 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(campaigns)
       .where(eq(campaigns.newsroomId, newsroomId))
       .orderBy(desc(campaigns.createdAt));
+  }
+
+  async getAllCampaigns(): Promise<(Campaign & { newsroomName: string })[]> {
+    return await db.select({
+      id: campaigns.id,
+      newsroomId: campaigns.newsroomId,
+      title: campaigns.title,
+      type: campaigns.type,
+      objective: campaigns.objective,
+      context: campaigns.context,
+      aiModel: campaigns.aiModel,
+      brandStylesheetId: campaigns.brandStylesheetId,
+      status: campaigns.status,
+      content: campaigns.content,
+      metrics: campaigns.metrics,
+      createdAt: campaigns.createdAt,
+      updatedAt: campaigns.updatedAt,
+      newsroomName: newsrooms.name,
+    })
+    .from(campaigns)
+    .innerJoin(newsrooms, eq(campaigns.newsroomId, newsrooms.id))
+    .orderBy(desc(campaigns.createdAt));
   }
 
   async createCampaign(insertCampaign: InsertCampaign): Promise<Campaign> {

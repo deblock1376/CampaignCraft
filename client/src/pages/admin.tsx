@@ -8,8 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Shield, Users, Building, Plus } from "lucide-react";
+import { Settings, Shield, Users, Building, Plus, Eye, Calendar, Target, Zap } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/layout/header";
 
 interface Newsroom {
@@ -20,6 +21,23 @@ interface Newsroom {
   website?: string;
   isActive: boolean;
   createdAt: string;
+}
+
+interface Campaign {
+  id: number;
+  newsroomId: number;
+  title: string;
+  type: string;
+  objective: string;
+  context?: string;
+  aiModel: string;
+  brandStylesheetId?: number;
+  status: string;
+  content?: any;
+  metrics?: any;
+  createdAt: string;
+  updatedAt: string;
+  newsroomName: string;
 }
 
 export default function Admin() {
@@ -38,6 +56,11 @@ export default function Admin() {
 
   const { data: newsrooms, isLoading, refetch } = useQuery<Newsroom[]>({
     queryKey: ['/api/admin/newsrooms'],
+    staleTime: 0,
+  });
+
+  const { data: allCampaigns, isLoading: campaignsLoading } = useQuery<Campaign[]>({
+    queryKey: ['/api/admin/campaigns'],
     staleTime: 0,
   });
 
@@ -256,10 +279,24 @@ export default function Admin() {
         }
       />
 
-      <div className="mt-6 grid gap-6">
-        {/* Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
+      <div className="mt-6">
+        <Tabs defaultValue="accounts" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="accounts" className="flex items-center space-x-2">
+              <Building className="w-4 h-4" />
+              <span>Newsroom Accounts</span>
+            </TabsTrigger>
+            <TabsTrigger value="campaigns" className="flex items-center space-x-2">
+              <Eye className="w-4 h-4" />
+              <span>All Campaigns</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="accounts">
+            <div className="grid gap-6">
+              {/* Overview Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card>
             <CardContent className="p-4">
               <div className="flex items-center space-x-2">
                 <Building className="w-5 h-5 text-blue-600" />
@@ -346,8 +383,151 @@ export default function Admin() {
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="campaigns">
+          <div className="space-y-6">
+            {/* Campaign Statistics */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-2">
+                    <Zap className="w-5 h-5 text-purple-600" />
+                    <div>
+                      <p className="text-sm text-gray-600">Total Campaigns</p>
+                      <p className="text-2xl font-bold">{Array.isArray(allCampaigns) ? allCampaigns.length : 0}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-2">
+                    <Target className="w-5 h-5 text-blue-600" />
+                    <div>
+                      <p className="text-sm text-gray-600">Email Campaigns</p>
+                      <p className="text-2xl font-bold text-blue-600">
+                        {Array.isArray(allCampaigns) ? allCampaigns.filter(c => c.type === 'email').length : 0}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-2">
+                    <Users className="w-5 h-5 text-pink-600" />
+                    <div>
+                      <p className="text-sm text-gray-600">Social Campaigns</p>
+                      <p className="text-2xl font-bold text-pink-600">
+                        {Array.isArray(allCampaigns) ? allCampaigns.filter(c => c.type === 'social').length : 0}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="w-5 h-5 text-green-600" />
+                    <div>
+                      <p className="text-sm text-gray-600">This Month</p>
+                      <p className="text-2xl font-bold text-green-600">
+                        {Array.isArray(allCampaigns) ? allCampaigns.filter(c => {
+                          const campaignDate = new Date(c.createdAt);
+                          const now = new Date();
+                          return campaignDate.getMonth() === now.getMonth() && 
+                                 campaignDate.getFullYear() === now.getFullYear();
+                        }).length : 0}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* All Campaigns List */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Eye className="w-5 h-5" />
+                  <span>All Campaigns - God View</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {campaignsLoading ? (
+                  <div className="space-y-4">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="animate-pulse">
+                        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : !Array.isArray(allCampaigns) || allCampaigns.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Zap className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500">No campaigns created yet</p>
+                    <p className="text-sm text-gray-400">Campaigns will appear here as newsrooms create them</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {allCampaigns.map((campaign: Campaign) => (
+                      <div key={campaign.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <div className="font-semibold text-lg">{campaign.title}</div>
+                              <Badge variant="outline" className="text-xs">
+                                {campaign.newsroomName}
+                              </Badge>
+                              <Badge 
+                                variant={campaign.type === 'email' ? 'default' : 
+                                        campaign.type === 'social' ? 'secondary' : 'outline'}
+                                className="text-xs"
+                              >
+                                {campaign.type}
+                              </Badge>
+                              <Badge variant="outline" className="text-xs">
+                                {campaign.objective}
+                              </Badge>
+                            </div>
+                            
+                            <div className="text-sm text-gray-600 mb-2">
+                              <span className="font-medium">Context:</span> {campaign.context || 'No context provided'}
+                            </div>
+                            
+                            <div className="flex items-center space-x-4 text-xs text-gray-500">
+                              <span>AI Model: {campaign.aiModel}</span>
+                              <span>Status: {campaign.status}</span>
+                              <span>Created: {new Date(campaign.createdAt).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <Badge 
+                              variant={campaign.status === 'active' ? 'default' : 
+                                      campaign.status === 'completed' ? 'secondary' : 'outline'}
+                            >
+                              {campaign.status}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

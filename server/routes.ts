@@ -312,6 +312,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/admin/campaigns", authenticateToken, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.userId);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+      
+      const campaigns = await storage.getAllCampaigns();
+      res.json(campaigns);
+    } catch (error) {
+      console.error("Error fetching all campaigns:", error);
+      res.status(500).json({ error: "Failed to fetch campaigns" });
+    }
+  });
+
   app.patch("/api/admin/newsrooms/:id", authenticateToken, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.user.userId);
