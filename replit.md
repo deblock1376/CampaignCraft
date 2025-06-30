@@ -123,6 +123,10 @@ Changelog:
 - Super admin account created: admin@campaigncraft.com / admin123
 - Real-time newsroom status control (enable/disable accounts)
 - Role-based access protection for admin features
+- Admin "God View" implemented showing all campaigns across all publishers
+- Campaign History page enhanced with scrollable interface and comprehensive filter system
+- Real-time search functionality across campaign titles, context, and AI models
+- Multi-criteria filtering: status, type, objective filters with clear filter states
 ```
 
 ## User Preferences

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Sidebar from "@/components/layout/sidebar";
 import Header from "@/components/layout/header";
@@ -8,10 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Eye, Calendar, Target, Zap, TrendingUp } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Eye, Calendar, Target, Zap, TrendingUp, Search, Filter, X } from "lucide-react";
 
 export default function CampaignHistory() {
   const [selectedCampaign, setSelectedCampaign] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [objectiveFilter, setObjectiveFilter] = useState("all");
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const newsroomId = user.newsroomId || 1;
   
@@ -26,6 +32,39 @@ export default function CampaignHistory() {
 
   const campaignList = Array.isArray(campaigns) ? campaigns : [];
 
+  // Filter campaigns based on search and filter criteria
+  const filteredCampaigns = useMemo(() => {
+    return campaignList.filter((campaign: any) => {
+      // Search filter - search in title, context, and AI model
+      const matchesSearch = searchQuery === "" || 
+        campaign.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (campaign.context && campaign.context.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        campaign.aiModel.toLowerCase().includes(searchQuery.toLowerCase());
+
+      // Status filter
+      const matchesStatus = statusFilter === "all" || campaign.status === statusFilter;
+
+      // Type filter
+      const matchesType = typeFilter === "all" || campaign.type === typeFilter;
+
+      // Objective filter
+      const matchesObjective = objectiveFilter === "all" || campaign.objective === objectiveFilter;
+
+      return matchesSearch && matchesStatus && matchesType && matchesObjective;
+    });
+  }, [campaignList, searchQuery, statusFilter, typeFilter, objectiveFilter]);
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("all");
+    setTypeFilter("all");
+    setObjectiveFilter("all");
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters = searchQuery !== "" || statusFilter !== "all" || typeFilter !== "all" || objectiveFilter !== "all";
+
   return (
     <>
       <Sidebar />
@@ -39,9 +78,87 @@ export default function CampaignHistory() {
           <div className="max-w-7xl mx-auto">
             <Card>
               <CardHeader>
-                <CardTitle>All Campaigns</CardTitle>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>All Campaigns</CardTitle>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {filteredCampaigns.length} of {campaignList.length} campaigns
+                      {hasActiveFilters && " (filtered)"}
+                    </p>
+                  </div>
+                  {hasActiveFilters && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={clearFilters}
+                      className="flex items-center space-x-2"
+                    >
+                      <X className="w-4 h-4" />
+                      <span>Clear Filters</span>
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
+                {/* Search and Filter Controls */}
+                <div className="mb-6 space-y-4">
+                  <div className="flex items-center space-x-4">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        placeholder="Search campaigns by title, context, or AI model..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <Filter className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm font-medium text-gray-700">Filters:</span>
+                    </div>
+                    
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="w-32">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Status</SelectItem>
+                        <SelectItem value="draft">Draft</SelectItem>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="archived">Archived</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <Select value={typeFilter} onValueChange={setTypeFilter}>
+                      <SelectTrigger className="w-32">
+                        <SelectValue placeholder="Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Types</SelectItem>
+                        <SelectItem value="email">Email</SelectItem>
+                        <SelectItem value="social">Social</SelectItem>
+                        <SelectItem value="web">Web</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <Select value={objectiveFilter} onValueChange={setObjectiveFilter}>
+                      <SelectTrigger className="w-40">
+                        <SelectValue placeholder="Objective" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Objectives</SelectItem>
+                        <SelectItem value="subscription">Subscription</SelectItem>
+                        <SelectItem value="donation">Donation</SelectItem>
+                        <SelectItem value="membership">Membership</SelectItem>
+                        <SelectItem value="engagement">Engagement</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
                 <div className="max-h-[70vh] overflow-y-auto pr-2">
                   {isLoading ? (
                     <div className="space-y-4">
@@ -58,9 +175,9 @@ export default function CampaignHistory() {
                         </div>
                       ))}
                     </div>
-                  ) : campaignList.length > 0 ? (
+                  ) : filteredCampaigns.length > 0 ? (
                     <div className="space-y-4">
-                      {campaignList.map((campaign: any) => (
+                      {filteredCampaigns.map((campaign: any) => (
                         <div key={campaign.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-slate-50 transition-colors">
                         <div className="flex-1">
                           <h3 className="font-medium text-slate-900">{campaign.title}</h3>
@@ -212,9 +329,29 @@ export default function CampaignHistory() {
                     </div>
                   ) : (
                     <div className="text-center py-12">
-                      <i className="fas fa-history text-4xl text-slate-300 mb-4"></i>
-                      <h3 className="text-lg font-medium text-slate-900 mb-2">No campaigns found</h3>
-                      <p className="text-sm text-slate-600">Your campaign history will appear here once you create your first campaign.</p>
+                      {campaignList.length === 0 ? (
+                        <>
+                          <i className="fas fa-history text-4xl text-slate-300 mb-4"></i>
+                          <h3 className="text-lg font-medium text-slate-900 mb-2">No campaigns found</h3>
+                          <p className="text-sm text-slate-600">Your campaign history will appear here once you create your first campaign.</p>
+                        </>
+                      ) : (
+                        <>
+                          <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                          <h3 className="text-lg font-medium text-slate-900 mb-2">No campaigns match your filters</h3>
+                          <p className="text-sm text-slate-600 mb-4">
+                            Try adjusting your search terms or clearing some filters to see more results.
+                          </p>
+                          <Button 
+                            variant="outline" 
+                            onClick={clearFilters}
+                            className="flex items-center space-x-2"
+                          >
+                            <X className="w-4 h-4" />
+                            <span>Clear All Filters</span>
+                          </Button>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
