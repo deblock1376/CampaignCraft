@@ -18,7 +18,7 @@ export default function Dashboard() {
   return (
     <>
       <Sidebar />
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1 flex flex-col overflow-hidden">
         <Header 
           title="Dashboard" 
           subtitle="Overview of your newsroom's marketing campaigns"
