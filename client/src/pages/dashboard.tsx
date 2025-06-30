@@ -65,7 +65,7 @@ export default function Dashboard() {
                       </div>
                     ))}
                   </div>
-                ) : campaigns && campaigns.length > 0 ? (
+                ) : Array.isArray(campaigns) && campaigns.length > 0 ? (
                   <div className="space-y-3">
                     {campaigns.slice(0, 5).map((campaign: any) => (
                       <div key={campaign.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
@@ -104,7 +104,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {templates?.slice(0, 3).map((template: any) => (
+                  {Array.isArray(templates) ? templates.slice(0, 3).map((template: any) => (
                     <div key={template.id} className="border border-slate-200 rounded-lg p-4 hover:border-primary transition-colors cursor-pointer group">
                       <div className="flex items-center justify-between mb-3">
                         <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -119,7 +119,7 @@ export default function Dashboard() {
                         <span>{template.setupTime}</span>
                       </div>
                     </div>
-                  ))}
+                  )) : null}
                 </div>
               </CardContent>
             </Card>

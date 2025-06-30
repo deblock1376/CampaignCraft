@@ -80,7 +80,7 @@ export default function CampaignForm() {
     setTimeout(() => setIsGenerating(false), 1000);
   };
 
-  const recentCampaigns = campaigns?.slice(0, 2) || [];
+  const recentCampaigns = Array.isArray(campaigns) ? campaigns.slice(0, 2) : [];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -156,11 +156,11 @@ export default function CampaignForm() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {stylesheets?.map((stylesheet: any) => (
+                            {Array.isArray(stylesheets) ? stylesheets.map((stylesheet: any) => (
                               <SelectItem key={stylesheet.id} value={stylesheet.id.toString()}>
                                 {stylesheet.name}
                               </SelectItem>
-                            ))}
+                            )) : null}
                           </SelectContent>
                         </Select>
                         <Button type="button" variant="outline" size="sm">
