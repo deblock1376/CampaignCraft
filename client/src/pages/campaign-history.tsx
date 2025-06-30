@@ -17,11 +17,6 @@ export default function CampaignHistory() {
     queryKey: ["/api/newsrooms/1/campaigns"],
   });
 
-  // Debug logging
-  console.log("Campaigns data:", campaigns);
-  console.log("Is loading:", isLoading);
-  console.log("Error:", error);
-
   const campaignList = Array.isArray(campaigns) ? campaigns : [];
 
   return (
