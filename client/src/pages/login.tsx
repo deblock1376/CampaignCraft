@@ -32,7 +32,8 @@ export default function Login() {
           title: "Login successful",
           description: `Welcome back, ${data.user.name}!`,
         });
-        setLocation("/dashboard");
+        // Force a page refresh to update authentication state
+        window.location.href = "/dashboard";
       } else {
         const error = await response.json();
         toast({
