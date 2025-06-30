@@ -70,12 +70,12 @@ export default function Sidebar() {
           <button 
             onClick={() => {
               localStorage.removeItem("user");
-              window.location.reload();
+              window.location.href = "/";
             }}
-            className="text-slate-400 hover:text-slate-600"
+            className="px-2 py-1 text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 rounded transition-colors"
             title="Logout"
           >
-            <i className="fas fa-sign-out-alt text-sm"></i>
+            Logout
           </button>
         </div>
       </div>
