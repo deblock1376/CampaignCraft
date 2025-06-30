@@ -119,6 +119,10 @@ Changelog:
 - Each newsroom has isolated data access and custom brand stylesheets
 - Campaign builder working with proper data validation and error handling
 - Login/logout functionality with proper state management implemented
+- Admin control panel implemented with account access management
+- Super admin account created: admin@campaigncraft.com / admin123
+- Real-time newsroom status control (enable/disable accounts)
+- Role-based access protection for admin features
 ```
 
 ## User Preferences
