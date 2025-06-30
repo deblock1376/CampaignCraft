@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import { Copy } from "lucide-react";
 
 interface CampaignPreviewProps {
   campaign: any;
@@ -12,6 +14,23 @@ interface CampaignPreviewProps {
 }
 
 export default function CampaignPreview({ campaign, isGenerating, activeTab, onTabChange }: CampaignPreviewProps) {
+  const { toast } = useToast();
+
+  const copyToClipboard = async (text: string, type: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: "Copied!",
+        description: `${type} copied to clipboard`,
+      });
+    } catch (err) {
+      toast({
+        title: "Copy failed",
+        description: "Unable to copy to clipboard",
+        variant: "destructive",
+      });
+    }
+  };
   if (isGenerating) {
     return (
       <Card>
@@ -75,9 +94,19 @@ export default function CampaignPreview({ campaign, isGenerating, activeTab, onT
             <div className="bg-slate-50 rounded-lg p-6">
               {campaign.content?.subject && (
                 <div className="mb-4">
-                  <h4 className="text-lg font-semibold text-slate-900 mb-2">
-                    Subject: {campaign.content.subject}
-                  </h4>
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-lg font-semibold text-slate-900">
+                      Subject: {campaign.content.subject}
+                    </h4>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => copyToClipboard(campaign.content.subject, "Subject line")}
+                    >
+                      <Copy className="w-4 h-4 mr-1" />
+                      Copy
+                    </Button>
+                  </div>
                   <div className="flex items-center space-x-4 text-sm text-slate-600">
                     <span><i className="fas fa-eye mr-1"></i>Est. Open Rate: {campaign.metrics?.estimatedOpenRate}%</span>
                     <span><i className="fas fa-mouse-pointer mr-1"></i>Est. Click Rate: {campaign.metrics?.estimatedClickRate}%</span>
@@ -87,13 +116,37 @@ export default function CampaignPreview({ campaign, isGenerating, activeTab, onT
               )}
               
               <div className="prose max-w-none">
-                <div 
-                  className="text-slate-700 leading-relaxed whitespace-pre-wrap"
-                  dangerouslySetInnerHTML={{ __html: campaign.content?.content || '' }}
-                />
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-2">
+                    <h5 className="text-sm font-medium text-slate-900">Email Content</h5>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => copyToClipboard(campaign.content?.content?.replace(/<[^>]*>/g, '') || '', "Email content")}
+                    >
+                      <Copy className="w-4 h-4 mr-1" />
+                      Copy
+                    </Button>
+                  </div>
+                  <div 
+                    className="text-slate-700 leading-relaxed whitespace-pre-wrap"
+                    dangerouslySetInnerHTML={{ __html: campaign.content?.content || '' }}
+                  />
+                </div>
                 
                 {campaign.content?.cta && (
                   <div className="bg-white border-l-4 border-primary p-4 my-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <h5 className="text-sm font-medium text-slate-900">Call to Action</h5>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => copyToClipboard(campaign.content.cta, "Call to action")}
+                      >
+                        <Copy className="w-4 h-4 mr-1" />
+                        Copy
+                      </Button>
+                    </div>
                     <Button className="bg-primary text-white hover:bg-blue-700">
                       {campaign.content.cta}
                     </Button>
@@ -104,6 +157,17 @@ export default function CampaignPreview({ campaign, isGenerating, activeTab, onT
 
             <div className="mt-4 flex items-center justify-between">
               <div className="flex items-center space-x-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    const fullCampaign = `Subject: ${campaign.content?.subject || ''}\n\n${campaign.content?.content?.replace(/<[^>]*>/g, '') || ''}\n\nCall to Action: ${campaign.content?.cta || ''}`;
+                    copyToClipboard(fullCampaign, "Full campaign");
+                  }}
+                >
+                  <Copy className="w-4 h-4 mr-1" />
+                  Copy All
+                </Button>
                 <Button variant="outline" size="sm">
                   <i className="fas fa-edit mr-2"></i>
                   Edit Content
