@@ -112,6 +112,9 @@ Changelog:
   - Brand stylesheets now properly customize organization name and messaging
   - Resolved Claude API integration issue - model name mismatch fixed
   - Both OpenAI GPT-4o and Anthropic Claude Sonnet 4 fully functional
+  - Added Google Gemini 2.5 Flash integration with proper SDK implementation
+  - Multi-LLM support now includes three AI providers for campaign generation
+  - Claude API experiencing timeout issues with complex requests - OpenAI and Gemini working perfectly
 ```
 
 ## User Preferences
