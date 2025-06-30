@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenAI } from '@google/genai';
 
 /*
 <important_code_snippet_instructions>
@@ -44,6 +45,7 @@ export interface CampaignResponse {
 class AIProviderService {
   private openai: OpenAI;
   private anthropic: Anthropic;
+  private gemini: GoogleGenAI;
 
   constructor() {
     this.openai = new OpenAI({ 
@@ -52,6 +54,10 @@ class AIProviderService {
     
     this.anthropic = new Anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY_ENV_VAR || "default_key",
+    });
+
+    this.gemini = new GoogleGenAI({ 
+      apiKey: process.env.GEMINI_API_KEY || "default_key"
     });
   }
 
@@ -65,6 +71,7 @@ class AIProviderService {
       case 'claude-sonnet-4-20250514':
         return this.generateWithAnthropic(prompt, request);
       case 'gemini-pro':
+      case 'gemini-2.5-flash':
         return this.generateWithGemini(prompt, request);
       default:
         throw new Error(`Unsupported AI model: ${model}`);
@@ -139,45 +146,53 @@ Response must be in JSON format with these fields:
   }
 
   private async generateWithGemini(prompt: string, request: CampaignRequest): Promise<CampaignResponse> {
-    // Google Gemini integration using REST API
-    const apiKey = process.env.GOOGLE_API_KEY || process.env.GOOGLE_API_KEY_ENV_VAR || "default_key";
-    
     try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: prompt + "\n\nIMPORTANT: Respond only with valid JSON."
-            }]
-          }],
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 2000,
+      const response = await this.gemini.models.generateContent({
+        model: "gemini-2.5-flash",
+        config: {
+          systemInstruction: `You are an expert marketing campaign writer for nonprofit newsrooms. 
+          Respond with JSON in this exact format: 
+          {
+            "subject": "string",
+            "content": "string", 
+            "cta": "string",
+            "insights": ["string1", "string2", "string3"],
+            "metrics": {
+              "estimatedOpenRate": number,
+              "estimatedClickRate": number, 
+              "estimatedConversion": number
+            }
+          }`,
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "object",
+            properties: {
+              subject: { type: "string" },
+              content: { type: "string" },
+              cta: { type: "string" },
+              insights: {
+                type: "array",
+                items: { type: "string" }
+              },
+              metrics: {
+                type: "object",
+                properties: {
+                  estimatedOpenRate: { type: "number" },
+                  estimatedClickRate: { type: "number" },
+                  estimatedConversion: { type: "number" }
+                }
+              }
+            },
+            required: ["subject", "content", "cta", "insights", "metrics"]
           }
-        })
+        },
+        contents: prompt
       });
 
-      if (!response.ok) {
-        throw new Error(`Gemini API error: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      const text = data.candidates[0].content.parts[0].text;
-      
-      // Extract JSON from the response
-      const jsonMatch = text.match(/\{.*\}/s);
-      if (!jsonMatch) {
-        throw new Error('Invalid JSON response from Gemini');
-      }
-      
-      const result = JSON.parse(jsonMatch[0]);
+      const result = JSON.parse(response.text || '{}');
       return this.formatCampaignResponse(result);
     } catch (error) {
-      throw new Error(`Gemini API error: ${error.message}`);
+      throw new Error(`Gemini API error: ${(error as any).message}`);
     }
   }
 
