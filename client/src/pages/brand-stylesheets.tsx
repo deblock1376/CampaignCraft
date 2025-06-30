@@ -30,9 +30,17 @@ export default function BrandStylesheets() {
   const { toast } = useToast();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const newsroomId = user.newsroomId || 1;
+  console.log("Brand Stylesheets - User:", user, "Newsroom ID:", newsroomId);
 
   const { data: stylesheets, isLoading } = useQuery({
     queryKey: ["/api/newsrooms", newsroomId, "stylesheets"],
+    queryFn: async () => {
+      const response = await fetch(`/api/newsrooms/${newsroomId}/stylesheets`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch stylesheets');
+      }
+      return response.json();
+    },
   });
 
   const createMutation = useMutation({
