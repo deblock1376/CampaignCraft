@@ -9,6 +9,24 @@ import { z } from "zod";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 
+// Authentication middleware
+const authenticateToken = (req: any, res: any, next: any) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Access token required' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
+    if (err) {
+      return res.status(403).json({ error: 'Invalid token' });
+    }
+    req.user = user;
+    next();
+  });
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication Routes
   app.post("/api/auth/login", async (req, res) => {
@@ -33,6 +51,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get user's newsroom info
       const newsroom = user.newsroomId ? await storage.getNewsroom(user.newsroomId) : null;
+      
+      // Check if newsroom is active (unless it's a super admin)
+      if (newsroom && !newsroom.isActive && user.role !== 'admin') {
+        return res.status(403).json({ message: "Account access has been suspended. Please contact support." });
+      }
       
       res.json({ 
         user: { 
@@ -271,6 +294,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(template);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch template" });
+    }
+  });
+
+  // Admin routes (protected)
+  app.get("/api/admin/newsrooms", authenticateToken, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.userId);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+      
+      const newsrooms = await storage.getAllNewsrooms();
+      res.json(newsrooms);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch newsrooms" });
+    }
+  });
+
+  app.patch("/api/admin/newsrooms/:id", authenticateToken, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.userId);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      const newsroom = await storage.updateNewsroom(id, updates);
+      res.json(newsroom);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update newsroom" });
     }
   });
 

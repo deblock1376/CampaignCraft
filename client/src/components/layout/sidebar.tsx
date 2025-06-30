@@ -10,6 +10,7 @@ export default function Sidebar() {
     { href: "/campaigns/history", icon: "fas fa-history", label: "Campaign History" },
     { href: "/stylesheets", icon: "fas fa-palette", label: "Brand Stylesheets" },
     { href: "/settings", icon: "fas fa-cog", label: "Settings" },
+    { href: "/admin", icon: "fas fa-shield-alt", label: "Admin Control" },
   ];
 
   return (

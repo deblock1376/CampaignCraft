@@ -20,6 +20,7 @@ export const newsrooms = pgTable("newsrooms", {
   description: text("description"),
   website: text("website"),
   logo: text("logo"),
+  isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

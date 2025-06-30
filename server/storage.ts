@@ -17,6 +17,7 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
+import * as bcrypt from "bcryptjs";
 
 export interface IStorage {
   // Users
@@ -28,6 +29,8 @@ export interface IStorage {
   getNewsroom(id: number): Promise<Newsroom | undefined>;
   getNewsroomBySlug(slug: string): Promise<Newsroom | undefined>;
   createNewsroom(newsroom: InsertNewsroom): Promise<Newsroom>;
+  getAllNewsrooms(): Promise<Newsroom[]>;
+  updateNewsroom(id: number, updates: Partial<InsertNewsroom>): Promise<Newsroom>;
   
   // Brand Stylesheets
   getBrandStylesheet(id: number): Promise<BrandStylesheet | undefined>;
@@ -50,6 +53,7 @@ export interface IStorage {
 }
 
 export class MemStorage implements IStorage {
+  private users: Map<number, User>;
   private newsrooms: Map<number, Newsroom>;
   private brandStylesheets: Map<number, BrandStylesheet>;
   private campaigns: Map<number, Campaign>;
@@ -57,6 +61,7 @@ export class MemStorage implements IStorage {
   private currentId: number;
 
   constructor() {
+    this.users = new Map();
     this.newsrooms = new Map();
     this.brandStylesheets = new Map();
     this.campaigns = new Map();
@@ -76,6 +81,7 @@ export class MemStorage implements IStorage {
       description: "Local news and investigative journalism",
       website: "https://metrodaily.com",
       logo: null,
+      isActive: true,
       createdAt: new Date(),
     };
     this.newsrooms.set(1, sampleNewsroom);
@@ -338,6 +344,19 @@ export class DatabaseStorage implements IStorage {
     return newsroom;
   }
 
+  async getAllNewsrooms(): Promise<Newsroom[]> {
+    return await db.select().from(newsrooms);
+  }
+
+  async updateNewsroom(id: number, updates: Partial<InsertNewsroom>): Promise<Newsroom> {
+    const [newsroom] = await db
+      .update(newsrooms)
+      .set(updates)
+      .where(eq(newsrooms.id, id))
+      .returning();
+    return newsroom;
+  }
+
   // Brand Stylesheets
   async getBrandStylesheet(id: number): Promise<BrandStylesheet | undefined> {
     const [stylesheet] = await db.select().from(brandStylesheets).where(eq(brandStylesheets.id, id));
@@ -429,6 +448,16 @@ async function initializeSampleData() {
     if (existingNewsrooms.length > 0) {
       return; // Data already exists
     }
+
+    // Create admin user first
+    const adminPasswordHash = await bcrypt.hash("admin123", 10);
+    await db.insert(users).values({
+      email: "admin@campaigncraft.com",
+      passwordHash: adminPasswordHash,
+      name: "System Administrator",
+      role: "admin",
+      newsroomId: null, // Super admin has no specific newsroom
+    });
 
     // Create sample newsroom
     const [sampleNewsroom] = await db.insert(newsrooms).values({
