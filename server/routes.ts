@@ -330,8 +330,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/accounts", authenticateToken, async (req: any, res) => {
     try {
+      console.log("Account creation request received:", req.body);
+      
       const user = await storage.getUser(req.user.userId);
       if (!user || user.role !== 'admin') {
+        console.log("Admin access denied for user:", req.user.userId);
         return res.status(403).json({ error: "Admin access required" });
       }
 
@@ -344,6 +347,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         adminEmail,
         password
       } = req.body;
+
+      console.log("Creating account for:", { newsroomName, newsroomSlug, adminEmail });
 
       // Check if email or slug already exists
       const existingUser = await storage.getUserByEmail(adminEmail);

@@ -63,6 +63,7 @@ export default function Admin() {
 
   const createAccountMutation = useMutation({
     mutationFn: async (accountData: typeof newAccount) => {
+      console.log('Sending account data:', accountData);
       return await apiRequest('POST', '/api/admin/accounts', accountData);
     },
     onSuccess: () => {
