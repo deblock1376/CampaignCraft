@@ -306,7 +306,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const newsrooms = await storage.getAllNewsrooms();
-      res.json(newsrooms);
+      const newsroomsWithUsers = await Promise.all(
+        newsrooms.map(async (newsroom) => {
+          const user = await storage.getUserByNewsroomId(newsroom.id);
+          return { ...newsroom, user };
+        })
+      );
+      res.json(newsroomsWithUsers);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch newsrooms" });
     }
@@ -340,6 +346,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(newsroom);
     } catch (error) {
       res.status(500).json({ error: "Failed to update newsroom" });
+    }
+  });
+
+  app.patch("/api/admin/users/:id", authenticateToken, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.userId);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const id = parseInt(req.params.id);
+      const { name, email } = req.body;
+      
+      // Check if email already exists for another user
+      if (email) {
+        const existingUser = await storage.getUserByEmail(email);
+        if (existingUser && existingUser.id !== id) {
+          return res.status(400).json({ error: "Email already exists" });
+        }
+      }
+
+      const updatedUser = await storage.updateUser(id, { name, email });
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ error: "Failed to update user" });
     }
   });
 

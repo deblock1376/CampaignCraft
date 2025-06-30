@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Shield, Users, Building, Plus, Eye, Calendar, Target, Zap } from "lucide-react";
+import { Settings, Shield, Users, Building, Plus, Eye, Calendar, Target, Zap, Edit, Mail, User } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/layout/header";
@@ -21,6 +21,19 @@ interface Newsroom {
   website?: string;
   isActive: boolean;
   createdAt: string;
+}
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  newsroomId: number;
+  createdAt: string;
+}
+
+interface NewsroomWithUser extends Newsroom {
+  user?: User;
 }
 
 interface Campaign {
@@ -44,6 +57,8 @@ export default function Admin() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
   const [newAccount, setNewAccount] = useState({
     newsroomName: "",
     newsroomSlug: "",
@@ -54,7 +69,7 @@ export default function Admin() {
     password: "",
   });
 
-  const { data: newsrooms, isLoading, refetch } = useQuery<Newsroom[]>({
+  const { data: newsrooms, isLoading, refetch } = useQuery<NewsroomWithUser[]>({
     queryKey: ['/api/admin/newsrooms'],
     staleTime: 0,
   });
@@ -79,6 +94,28 @@ export default function Admin() {
       toast({
         title: "Error",
         description: "Failed to update newsroom status",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateUserMutation = useMutation({
+    mutationFn: async ({ id, name, email }: { id: number; name: string; email: string }) => {
+      return await apiRequest('PATCH', `/api/admin/users/${id}`, { name, email });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/newsrooms'] });
+      setIsEditUserDialogOpen(false);
+      setEditingUser(null);
+      toast({
+        title: "Success",
+        description: "User account updated successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update user account",
         variant: "destructive",
       });
     },
@@ -128,6 +165,21 @@ export default function Admin() {
 
   const generateSlug = (name: string) => {
     return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  };
+
+  const handleEditUser = (user: User) => {
+    setEditingUser(user);
+    setIsEditUserDialogOpen(true);
+  };
+
+  const handleUpdateUser = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    updateUserMutation.mutate({
+      id: editingUser.id,
+      name: editingUser.name,
+      email: editingUser.email,
+    });
   };
 
   if (isLoading) {
@@ -366,6 +418,41 @@ export default function Admin() {
                       )}
                       <span>Created: {new Date(newsroom.createdAt).toLocaleDateString()}</span>
                     </div>
+                    
+                    {/* User Account Information */}
+                    {newsroom.user && (
+                      <div className="mt-3 p-3 bg-blue-50 rounded border-l-3 border-blue-300">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="flex items-center space-x-2">
+                              <User className="w-4 h-4 text-blue-600" />
+                              <span className="text-sm font-medium text-blue-900">Account Admin</span>
+                            </div>
+                            <div className="mt-1 space-y-1">
+                              <div className="flex items-center space-x-2">
+                                <span className="text-sm font-medium text-gray-900">{newsroom.user.name}</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Mail className="w-3 h-3 text-gray-500" />
+                                <span className="text-sm text-gray-700">{newsroom.user.email}</span>
+                              </div>
+                              <p className="text-xs text-gray-500">
+                                Account created: {new Date(newsroom.user.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditUser(newsroom.user!)}
+                            className="text-blue-600 border-blue-300 hover:bg-blue-100"
+                          >
+                            <Edit className="w-3 h-3 mr-1" />
+                            Edit
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="flex items-center space-x-4">
@@ -529,6 +616,60 @@ export default function Admin() {
         </TabsContent>
         </Tabs>
       </div>
+
+      {/* Edit User Dialog */}
+      <Dialog open={isEditUserDialogOpen} onOpenChange={setIsEditUserDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit User Account</DialogTitle>
+          </DialogHeader>
+          {editingUser && (
+            <form onSubmit={handleUpdateUser} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="editUserName">Name</Label>
+                <Input
+                  id="editUserName"
+                  value={editingUser.name}
+                  onChange={(e) => setEditingUser(prev => prev ? { ...prev, name: e.target.value } : null)}
+                  placeholder="Full name"
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="editUserEmail">Email</Label>
+                <Input
+                  id="editUserEmail"
+                  type="email"
+                  value={editingUser.email}
+                  onChange={(e) => setEditingUser(prev => prev ? { ...prev, email: e.target.value } : null)}
+                  placeholder="email@example.com"
+                  required
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditUserDialogOpen(false);
+                    setEditingUser(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={updateUserMutation.isPending}
+                >
+                  {updateUserMutation.isPending ? "Updating..." : "Update Account"}
+                </Button>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

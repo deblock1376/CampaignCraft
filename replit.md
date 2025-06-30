@@ -127,6 +127,9 @@ Changelog:
 - Campaign History page enhanced with scrollable interface and comprehensive filter system
 - Real-time search functionality across campaign titles, context, and AI models
 - Multi-criteria filtering: status, type, objective filters with clear filter states
+- Admin user account management system: view user details, edit names and emails
+- Account information display for each publisher including email and creation date
+- Enhanced admin controls with user profile editing and validation
 ```
 
 ## User Preferences
