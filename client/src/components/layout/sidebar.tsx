@@ -44,10 +44,12 @@ export default function Sidebar() {
       
       <div className="p-4 border-t border-slate-200">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-slate-300 rounded-full"></div>
+          <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
+            <i className="fas fa-user text-primary text-sm"></i>
+          </div>
           <div className="flex-1">
-            <p className="text-sm font-medium text-slate-900">Sarah Chen</p>
-            <p className="text-xs text-slate-500">Metro Daily News</p>
+            <p className="text-sm font-medium text-slate-900">Newsroom Admin</p>
+            <p className="text-xs text-slate-500">Campaign Manager</p>
           </div>
         </div>
       </div>
