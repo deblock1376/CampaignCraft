@@ -12,9 +12,11 @@ import { Eye, Calendar, Target, Zap, TrendingUp } from "lucide-react";
 
 export default function CampaignHistory() {
   const [selectedCampaign, setSelectedCampaign] = useState(null);
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const newsroomId = user.newsroomId || 1;
   
   const { data: campaigns, isLoading, error } = useQuery({
-    queryKey: ["/api/newsrooms/1/campaigns"],
+    queryKey: ["/api/newsrooms", newsroomId, "campaigns"],
   });
 
   const campaignList = Array.isArray(campaigns) ? campaigns : [];

@@ -26,13 +26,15 @@ export default function CampaignForm() {
   const [generatedCampaign, setGeneratedCampaign] = useState(null);
   const [activeTab, setActiveTab] = useState('content');
   const { toast } = useToast();
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const newsroomId = user.newsroomId || 1;
 
   const { data: stylesheets } = useQuery({
-    queryKey: ["/api/newsrooms/1/stylesheets"],
+    queryKey: ["/api/newsrooms", newsroomId, "stylesheets"],
   });
 
   const { data: campaigns } = useQuery({
-    queryKey: ["/api/newsrooms/1/campaigns"],
+    queryKey: ["/api/newsrooms", newsroomId, "campaigns"],
   });
 
   const form = useForm({
@@ -51,13 +53,13 @@ export default function CampaignForm() {
       const response = await apiRequest("POST", "/api/campaigns/generate", {
         ...data,
         brandStylesheetId: parseInt(data.brandStylesheetId),
-        newsroomId: 1,
+        newsroomId: newsroomId,
       });
       return response.json();
     },
     onSuccess: (data) => {
       setGeneratedCampaign(data);
-      queryClient.invalidateQueries({ queryKey: ["/api/newsrooms/1/campaigns"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/newsrooms", newsroomId, "campaigns"] });
       toast({
         title: "Campaign Generated!",
         description: "Your AI-powered campaign has been created successfully.",

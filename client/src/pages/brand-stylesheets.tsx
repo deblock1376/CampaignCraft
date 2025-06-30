@@ -28,18 +28,20 @@ export default function BrandStylesheets() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingStylesheet, setEditingStylesheet] = useState<any>(null);
   const { toast } = useToast();
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const newsroomId = user.newsroomId || 1;
 
   const { data: stylesheets, isLoading } = useQuery({
-    queryKey: ["/api/newsrooms/1/stylesheets"],
+    queryKey: ["/api/newsrooms", newsroomId, "stylesheets"],
   });
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await apiRequest("POST", "/api/newsrooms/1/stylesheets", data);
+      const response = await apiRequest("POST", `/api/newsrooms/${newsroomId}/stylesheets`, data);
       return response.json();
     },
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/newsrooms/1/stylesheets"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/newsrooms", newsroomId, "stylesheets"] });
       setIsCreateOpen(false);
       form.reset();
       toast({
@@ -62,7 +64,7 @@ export default function BrandStylesheets() {
       return response.json();
     },
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/newsrooms/1/stylesheets"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/newsrooms", newsroomId, "stylesheets"] });
       setEditingStylesheet(null);
       form.reset();
       toast({
