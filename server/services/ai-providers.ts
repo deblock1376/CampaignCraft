@@ -138,10 +138,14 @@ Response must be in JSON format with these fields:
         messages: [{ role: 'user', content: prompt }],
       });
 
-      const result = JSON.parse(response.content[0].text);
+      const content = response.content[0];
+      if (content.type !== 'text') {
+        throw new Error('Unexpected response type from Claude');
+      }
+      const result = JSON.parse(content.text);
       return this.formatCampaignResponse(result);
     } catch (error) {
-      throw new Error(`Anthropic API error: ${error.message}`);
+      throw new Error(`Anthropic API error: ${(error as any).message}`);
     }
   }
 
