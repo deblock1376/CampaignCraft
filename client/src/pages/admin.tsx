@@ -36,8 +36,9 @@ export default function Admin() {
     password: "",
   });
 
-  const { data: newsrooms, isLoading } = useQuery<Newsroom[]>({
+  const { data: newsrooms, isLoading, refetch } = useQuery<Newsroom[]>({
     queryKey: ['/api/admin/newsrooms'],
+    staleTime: 0,
   });
 
   const toggleStatusMutation = useMutation({
@@ -65,7 +66,9 @@ export default function Admin() {
       return await apiRequest('POST', '/api/admin/accounts', accountData);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/newsrooms'] });
+      // Force manual refetch and clear cache
+      refetch();
+      setTimeout(() => refetch(), 500); // Also refetch after a delay
       setIsCreateDialogOpen(false);
       setNewAccount({
         newsroomName: "",
