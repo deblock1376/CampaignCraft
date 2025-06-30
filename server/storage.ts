@@ -12,6 +12,8 @@ import {
   type InsertCampaign,
   type InsertCampaignTemplate
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   // Newsrooms
@@ -291,4 +293,203 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  async getNewsroom(id: number): Promise<Newsroom | undefined> {
+    const [newsroom] = await db.select().from(newsrooms).where(eq(newsrooms.id, id));
+    return newsroom || undefined;
+  }
+
+  async getNewsroomBySlug(slug: string): Promise<Newsroom | undefined> {
+    const [newsroom] = await db.select().from(newsrooms).where(eq(newsrooms.slug, slug));
+    return newsroom || undefined;
+  }
+
+  async createNewsroom(insertNewsroom: InsertNewsroom): Promise<Newsroom> {
+    const [newsroom] = await db
+      .insert(newsrooms)
+      .values(insertNewsroom)
+      .returning();
+    return newsroom;
+  }
+
+  // Brand Stylesheets
+  async getBrandStylesheet(id: number): Promise<BrandStylesheet | undefined> {
+    const [stylesheet] = await db.select().from(brandStylesheets).where(eq(brandStylesheets.id, id));
+    return stylesheet || undefined;
+  }
+
+  async getBrandStylesheetsByNewsroom(newsroomId: number): Promise<BrandStylesheet[]> {
+    return await db.select().from(brandStylesheets).where(eq(brandStylesheets.newsroomId, newsroomId));
+  }
+
+  async createBrandStylesheet(insertStylesheet: InsertBrandStylesheet): Promise<BrandStylesheet> {
+    const [stylesheet] = await db
+      .insert(brandStylesheets)
+      .values(insertStylesheet)
+      .returning();
+    return stylesheet;
+  }
+
+  async updateBrandStylesheet(id: number, updates: Partial<InsertBrandStylesheet>): Promise<BrandStylesheet> {
+    const [stylesheet] = await db
+      .update(brandStylesheets)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(brandStylesheets.id, id))
+      .returning();
+    return stylesheet;
+  }
+
+  async deleteBrandStylesheet(id: number): Promise<void> {
+    await db.delete(brandStylesheets).where(eq(brandStylesheets.id, id));
+  }
+
+  // Campaigns
+  async getCampaign(id: number): Promise<Campaign | undefined> {
+    const [campaign] = await db.select().from(campaigns).where(eq(campaigns.id, id));
+    return campaign || undefined;
+  }
+
+  async getCampaignsByNewsroom(newsroomId: number): Promise<Campaign[]> {
+    return await db.select().from(campaigns)
+      .where(eq(campaigns.newsroomId, newsroomId))
+      .orderBy(desc(campaigns.createdAt));
+  }
+
+  async createCampaign(insertCampaign: InsertCampaign): Promise<Campaign> {
+    const [campaign] = await db
+      .insert(campaigns)
+      .values(insertCampaign)
+      .returning();
+    return campaign;
+  }
+
+  async updateCampaign(id: number, updates: Partial<InsertCampaign>): Promise<Campaign> {
+    const [campaign] = await db
+      .update(campaigns)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(campaigns.id, id))
+      .returning();
+    return campaign;
+  }
+
+  async deleteCampaign(id: number): Promise<void> {
+    await db.delete(campaigns).where(eq(campaigns.id, id));
+  }
+
+  // Campaign Templates
+  async getCampaignTemplate(id: number): Promise<CampaignTemplate | undefined> {
+    const [template] = await db.select().from(campaignTemplates).where(eq(campaignTemplates.id, id));
+    return template || undefined;
+  }
+
+  async getCampaignTemplates(): Promise<CampaignTemplate[]> {
+    return await db.select().from(campaignTemplates);
+  }
+
+  async createCampaignTemplate(insertTemplate: InsertCampaignTemplate): Promise<CampaignTemplate> {
+    const [template] = await db
+      .insert(campaignTemplates)
+      .values(insertTemplate)
+      .returning();
+    return template;
+  }
+}
+
+// Create a function to initialize sample data in the database
+async function initializeSampleData() {
+  try {
+    // Check if data already exists
+    const existingNewsrooms = await db.select().from(newsrooms).limit(1);
+    if (existingNewsrooms.length > 0) {
+      return; // Data already exists
+    }
+
+    // Create sample newsroom
+    const [sampleNewsroom] = await db.insert(newsrooms).values({
+      name: "Metro Daily News",
+      slug: "metro-daily",
+      description: "Local news and investigative journalism",
+      website: "https://metrodaily.com",
+      logo: null,
+    }).returning();
+
+    // Create sample brand stylesheet
+    await db.insert(brandStylesheets).values({
+      newsroomId: sampleNewsroom.id,
+      name: "Metro Daily - Default Style",
+      description: "Standard brand voice and messaging",
+      tone: "Professional yet approachable",
+      voice: "Informative, trustworthy, community-focused",
+      keyMessages: [
+        "Independent local journalism matters",
+        "Community-driven news coverage",
+        "Transparency in reporting"
+      ],
+      colorPalette: {
+        primary: "#2563EB",
+        secondary: "#64748B",
+        accent: "#10B981"
+      },
+      typography: {
+        headlines: "Inter",
+        body: "Inter"
+      },
+      guidelines: "Focus on local impact, use active voice, include community perspectives",
+      isDefault: true,
+    });
+
+    // Create sample campaign templates
+    const templates = [
+      {
+        name: "Breaking News Alert",
+        description: "Rapid-response template for urgent news coverage with donation CTA",
+        type: "email",
+        icon: "fas fa-bolt",
+        setupTime: "2-3 min setup",
+        template: {
+          subject: "Breaking: {{headline}}",
+          structure: "urgent_news",
+          cta: "donation"
+        },
+        isPublic: true,
+      },
+      {
+        name: "Monthly Supporter Drive",
+        description: "Convert one-time donors to recurring supporters with impact stories",
+        type: "email",
+        icon: "fas fa-heart",
+        setupTime: "5-7 min setup",
+        template: {
+          subject: "Your support makes a difference",
+          structure: "impact_story",
+          cta: "monthly_subscription"
+        },
+        isPublic: true,
+      },
+      {
+        name: "Social Engagement",
+        description: "Multi-platform social campaign to drive website traffic and subscriptions",
+        type: "social",
+        icon: "fas fa-share-alt",
+        setupTime: "3-4 min setup",
+        template: {
+          platforms: ["twitter", "facebook", "instagram"],
+          structure: "engagement_focused",
+          cta: "website_visit"
+        },
+        isPublic: true,
+      }
+    ];
+
+    await db.insert(campaignTemplates).values(templates);
+    
+    console.log("Sample data initialized successfully");
+  } catch (error) {
+    console.error("Error initializing sample data:", error);
+  }
+}
+
+export const storage = new DatabaseStorage();
+
+// Initialize sample data when the module loads
+initializeSampleData();

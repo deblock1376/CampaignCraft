@@ -22,10 +22,10 @@ CampaignCraft is a full-stack web application that helps newsrooms generate AI-p
 - **Development**: Hot reload with Vite integration in development mode
 
 ### Data Storage
-- **Database**: PostgreSQL with Drizzle ORM
+- **Database**: PostgreSQL with Drizzle ORM (Active)
 - **Schema Management**: Drizzle Kit for migrations and schema management
 - **Connection**: Neon Database serverless PostgreSQL
-- **Fallback**: In-memory storage implementation for development/testing
+- **Implementation**: DatabaseStorage class with full CRUD operations
 
 ## Key Components
 
@@ -104,6 +104,9 @@ Changelog:
   - Added template library with pre-built campaign types
   - Successfully tested campaign generation with real API keys
   - Generated sample email and social media campaigns for budget investigation story
+  - Added PostgreSQL database with full persistence
+  - Migrated from in-memory storage to DatabaseStorage with Drizzle ORM
+  - All campaigns, stylesheets, and templates now permanently stored
 ```
 
 ## User Preferences
