@@ -328,6 +328,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/admin/accounts", authenticateToken, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.userId);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const {
+        newsroomName,
+        newsroomSlug,
+        description,
+        website,
+        adminName,
+        adminEmail,
+        password
+      } = req.body;
+
+      // Check if email or slug already exists
+      const existingUser = await storage.getUserByEmail(adminEmail);
+      if (existingUser) {
+        return res.status(400).json({ error: "Email already exists" });
+      }
+
+      const existingNewsroom = await storage.getNewsroomBySlug(newsroomSlug);
+      if (existingNewsroom) {
+        return res.status(400).json({ error: "Newsroom slug already exists" });
+      }
+
+      // Create newsroom
+      const newsroom = await storage.createNewsroom({
+        name: newsroomName,
+        slug: newsroomSlug,
+        description: description || null,
+        website: website || null,
+        logo: null,
+        isActive: true,
+      });
+
+      // Hash password and create admin user
+      const passwordHash = await bcrypt.hash(password, 10);
+      const adminUser = await storage.createUser({
+        email: adminEmail,
+        passwordHash,
+        name: adminName,
+        role: "user",
+        newsroomId: newsroom.id,
+      });
+
+      // Create default brand stylesheet for the newsroom
+      await storage.createBrandStylesheet({
+        newsroomId: newsroom.id,
+        name: "Default Style",
+        description: "Default brand guidelines",
+        tone: "Professional and approachable",
+        voice: "Clear, informative, and engaging",
+        keyMessages: [
+          "Quality journalism matters",
+          "Community-focused reporting",
+          "Transparency and accountability"
+        ],
+        colorPalette: {
+          primary: "#2563EB",
+          secondary: "#64748B",
+          accent: "#10B981"
+        },
+        typography: {
+          headlines: "Inter",
+          body: "Inter"
+        },
+        guidelines: "Maintain a professional tone while being accessible to the community."
+      });
+
+      res.json({ 
+        newsroom, 
+        admin: { 
+          id: adminUser.id, 
+          name: adminUser.name, 
+          email: adminUser.email 
+        }
+      });
+    } catch (error) {
+      console.error("Account creation error:", error);
+      res.status(500).json({ error: "Failed to create account" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

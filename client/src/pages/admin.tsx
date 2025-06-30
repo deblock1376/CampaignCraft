@@ -4,8 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Shield, Users, Building } from "lucide-react";
+import { Settings, Shield, Users, Building, Plus } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import Header from "@/components/layout/header";
 
@@ -22,6 +25,16 @@ interface Newsroom {
 export default function Admin() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [newAccount, setNewAccount] = useState({
+    newsroomName: "",
+    newsroomSlug: "",
+    description: "",
+    website: "",
+    adminName: "",
+    adminEmail: "",
+    password: "",
+  });
 
   const { data: newsrooms, isLoading } = useQuery<Newsroom[]>({
     queryKey: ['/api/admin/newsrooms'],
@@ -29,7 +42,7 @@ export default function Admin() {
 
   const toggleStatusMutation = useMutation({
     mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => {
-      return await apiRequest(`/api/admin/newsrooms/${id}`, 'PATCH', { isActive });
+      return await apiRequest('PATCH', `/api/admin/newsrooms/${id}`, { isActive });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/newsrooms'] });
@@ -47,8 +60,47 @@ export default function Admin() {
     },
   });
 
+  const createAccountMutation = useMutation({
+    mutationFn: async (accountData: typeof newAccount) => {
+      return await apiRequest('POST', '/api/admin/accounts', accountData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/newsrooms'] });
+      setIsCreateDialogOpen(false);
+      setNewAccount({
+        newsroomName: "",
+        newsroomSlug: "",
+        description: "",
+        website: "",
+        adminName: "",
+        adminEmail: "",
+        password: "",
+      });
+      toast({
+        title: "Success",
+        description: "Newsroom account created successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to create newsroom account",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleToggleStatus = (id: number, currentStatus: boolean) => {
     toggleStatusMutation.mutate({ id, isActive: !currentStatus });
+  };
+
+  const handleCreateAccount = (e: React.FormEvent) => {
+    e.preventDefault();
+    createAccountMutation.mutate(newAccount);
+  };
+
+  const generateSlug = (name: string) => {
+    return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   };
 
   if (isLoading) {
@@ -76,9 +128,126 @@ export default function Admin() {
         title="Admin Control Panel" 
         subtitle="Manage newsroom accounts and access"
         action={
-          <div className="flex items-center space-x-2">
-            <Shield className="w-5 h-5 text-primary" />
-            <span className="text-sm font-medium text-primary">Administrator</span>
+          <div className="flex items-center space-x-3">
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Newsroom
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Create New Newsroom Account</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleCreateAccount} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="newsroomName">Newsroom Name</Label>
+                    <Input
+                      id="newsroomName"
+                      value={newAccount.newsroomName}
+                      onChange={(e) => {
+                        const name = e.target.value;
+                        setNewAccount(prev => ({
+                          ...prev,
+                          newsroomName: name,
+                          newsroomSlug: generateSlug(name)
+                        }));
+                      }}
+                      placeholder="e.g., City Tribune"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="newsroomSlug">URL Slug</Label>
+                    <Input
+                      id="newsroomSlug"
+                      value={newAccount.newsroomSlug}
+                      onChange={(e) => setNewAccount(prev => ({ ...prev, newsroomSlug: e.target.value }))}
+                      placeholder="city-tribune"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Input
+                      id="description"
+                      value={newAccount.description}
+                      onChange={(e) => setNewAccount(prev => ({ ...prev, description: e.target.value }))}
+                      placeholder="Local news and community coverage"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="website">Website</Label>
+                    <Input
+                      id="website"
+                      value={newAccount.website}
+                      onChange={(e) => setNewAccount(prev => ({ ...prev, website: e.target.value }))}
+                      placeholder="https://citytribune.com"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="adminName">Admin Name</Label>
+                    <Input
+                      id="adminName"
+                      value={newAccount.adminName}
+                      onChange={(e) => setNewAccount(prev => ({ ...prev, adminName: e.target.value }))}
+                      placeholder="John Smith"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="adminEmail">Admin Email</Label>
+                    <Input
+                      id="adminEmail"
+                      type="email"
+                      value={newAccount.adminEmail}
+                      onChange={(e) => setNewAccount(prev => ({ ...prev, adminEmail: e.target.value }))}
+                      placeholder="admin@citytribune.com"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={newAccount.password}
+                      onChange={(e) => setNewAccount(prev => ({ ...prev, password: e.target.value }))}
+                      placeholder="Choose a strong password"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="flex justify-end space-x-2 pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsCreateDialogOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      disabled={createAccountMutation.isPending}
+                    >
+                      {createAccountMutation.isPending ? "Creating..." : "Create Account"}
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+            
+            <div className="flex items-center space-x-2">
+              <Shield className="w-5 h-5 text-primary" />
+              <span className="text-sm font-medium text-primary">Administrator</span>
+            </div>
           </div>
         }
       />
