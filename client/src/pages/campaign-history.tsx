@@ -42,25 +42,26 @@ export default function CampaignHistory() {
                 <CardTitle>All Campaigns</CardTitle>
               </CardHeader>
               <CardContent>
-                {isLoading ? (
-                  <div className="space-y-4">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="space-y-2">
-                          <Skeleton className="h-4 w-48" />
-                          <Skeleton className="h-3 w-32" />
+                <div className="max-h-[70vh] overflow-y-auto pr-2">
+                  {isLoading ? (
+                    <div className="space-y-4">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div className="space-y-2">
+                            <Skeleton className="h-4 w-48" />
+                            <Skeleton className="h-3 w-32" />
+                          </div>
+                          <div className="flex items-center space-x-4">
+                            <Skeleton className="h-6 w-16" />
+                            <Skeleton className="h-8 w-20" />
+                          </div>
                         </div>
-                        <div className="flex items-center space-x-4">
-                          <Skeleton className="h-6 w-16" />
-                          <Skeleton className="h-8 w-20" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : campaignList.length > 0 ? (
-                  <div className="space-y-4">
-                    {campaignList.map((campaign: any) => (
-                      <div key={campaign.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-slate-50 transition-colors">
+                      ))}
+                    </div>
+                  ) : campaignList.length > 0 ? (
+                    <div className="space-y-4">
+                      {campaignList.map((campaign: any) => (
+                        <div key={campaign.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-slate-50 transition-colors">
                         <div className="flex-1">
                           <h3 className="font-medium text-slate-900">{campaign.title}</h3>
                           <div className="flex items-center space-x-4 mt-1 text-sm text-slate-600">
@@ -206,16 +207,17 @@ export default function CampaignHistory() {
                             </DialogContent>
                           </Dialog>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <i className="fas fa-history text-4xl text-slate-300 mb-4"></i>
-                    <h3 className="text-lg font-medium text-slate-900 mb-2">No campaigns found</h3>
-                    <p className="text-sm text-slate-600">Your campaign history will appear here once you create your first campaign.</p>
-                  </div>
-                )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <i className="fas fa-history text-4xl text-slate-300 mb-4"></i>
+                      <h3 className="text-lg font-medium text-slate-900 mb-2">No campaigns found</h3>
+                      <p className="text-sm text-slate-600">Your campaign history will appear here once you create your first campaign.</p>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </div>
