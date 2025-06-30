@@ -107,6 +107,9 @@ Changelog:
   - Added PostgreSQL database with full persistence
   - Migrated from in-memory storage to DatabaseStorage with Drizzle ORM
   - All campaigns, stylesheets, and templates now permanently stored
+  - Implemented custom brand stylesheet creation and editing
+  - Fixed brand stylesheet application in campaign generation
+  - Brand stylesheets now properly customize organization name and messaging
 ```
 
 ## User Preferences
