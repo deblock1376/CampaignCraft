@@ -176,7 +176,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           keyMessages: brandStylesheet.keyMessages || [],
           guidelines: brandStylesheet.guidelines || '',
         },
-        newsroomName: newsroom.name,
+        newsroomName: brandStylesheet.name.includes("Style") ? newsroom.name : brandStylesheet.name,
       };
 
       const generatedCampaign = await aiProviderService.generateCampaign(

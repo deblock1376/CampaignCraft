@@ -77,7 +77,9 @@ You are an expert marketing campaign writer for nonprofit newsrooms. Generate a 
 Campaign Type: ${request.type}
 Primary Objective: ${request.objective}
 Context: ${request.context}
-Newsroom: ${request.newsroomName}
+Organization Name: ${request.newsroomName}
+
+IMPORTANT: Use "${request.newsroomName}" as the organization name throughout the campaign content. Do not use any other organization names.
 
 Brand Voice & Tone:
 - Tone: ${request.brandStylesheet.tone}
