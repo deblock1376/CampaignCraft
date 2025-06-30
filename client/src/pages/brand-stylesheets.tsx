@@ -20,6 +20,8 @@ import { z } from "zod";
 
 const formSchema = insertBrandStylesheetSchema.extend({
   keyMessagesText: z.string().optional(),
+}).omit({
+  newsroomId: true,
 });
 
 export default function BrandStylesheets() {
@@ -71,6 +73,7 @@ export default function BrandStylesheets() {
   });
 
   const onSubmit = (data: any) => {
+    alert("Form submitted! Check console for details.");
     console.log("Form data received:", data);
     console.log("Form errors:", form.formState.errors);
     
