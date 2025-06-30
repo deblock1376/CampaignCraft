@@ -12,6 +12,11 @@ export default function Dashboard() {
 
   const { data: campaigns, isLoading } = useQuery({
     queryKey: ["/api/newsrooms", newsroomId, "campaigns"],
+    queryFn: async () => {
+      const response = await fetch(`/api/newsrooms/${newsroomId}/campaigns`);
+      if (!response.ok) throw new Error('Failed to fetch campaigns');
+      return response.json();
+    },
   });
 
   const { data: templates } = useQuery({

@@ -17,6 +17,11 @@ export default function CampaignHistory() {
   
   const { data: campaigns, isLoading, error } = useQuery({
     queryKey: ["/api/newsrooms", newsroomId, "campaigns"],
+    queryFn: async () => {
+      const response = await fetch(`/api/newsrooms/${newsroomId}/campaigns`);
+      if (!response.ok) throw new Error('Failed to fetch campaigns');
+      return response.json();
+    },
   });
 
   const campaignList = Array.isArray(campaigns) ? campaigns : [];

@@ -30,7 +30,6 @@ export default function BrandStylesheets() {
   const { toast } = useToast();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const newsroomId = user.newsroomId || 1;
-  console.log("Brand Stylesheets - User:", user, "Newsroom ID:", newsroomId);
 
   const { data: stylesheets, isLoading } = useQuery({
     queryKey: ["/api/newsrooms", newsroomId, "stylesheets"],

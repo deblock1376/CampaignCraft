@@ -31,10 +31,20 @@ export default function CampaignForm() {
 
   const { data: stylesheets } = useQuery({
     queryKey: ["/api/newsrooms", newsroomId, "stylesheets"],
+    queryFn: async () => {
+      const response = await fetch(`/api/newsrooms/${newsroomId}/stylesheets`);
+      if (!response.ok) throw new Error('Failed to fetch stylesheets');
+      return response.json();
+    },
   });
 
   const { data: campaigns } = useQuery({
     queryKey: ["/api/newsrooms", newsroomId, "campaigns"],
+    queryFn: async () => {
+      const response = await fetch(`/api/newsrooms/${newsroomId}/campaigns`);
+      if (!response.ok) throw new Error('Failed to fetch campaigns');
+      return response.json();
+    },
   });
 
   const form = useForm({
