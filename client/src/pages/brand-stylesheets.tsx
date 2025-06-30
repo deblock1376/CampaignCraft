@@ -32,18 +32,23 @@ export default function BrandStylesheets() {
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
+      console.log("Making API request with data:", data);
       const response = await apiRequest("POST", "/api/newsrooms/1/stylesheets", data);
+      console.log("API response:", response);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      console.log("Success! Created stylesheet:", result);
       queryClient.invalidateQueries({ queryKey: ["/api/newsrooms/1/stylesheets"] });
       setIsCreateOpen(false);
+      form.reset();
       toast({
         title: "Success",
         description: "Brand stylesheet created successfully",
       });
     },
     onError: (error: any) => {
+      console.error("Error creating stylesheet:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to create brand stylesheet",
@@ -66,6 +71,9 @@ export default function BrandStylesheets() {
   });
 
   const onSubmit = (data: any) => {
+    console.log("Form data received:", data);
+    console.log("Form errors:", form.formState.errors);
+    
     const keyMessages = data.keyMessagesText
       ? data.keyMessagesText.split('\n').filter((msg: string) => msg.trim())
       : [];
@@ -86,6 +94,7 @@ export default function BrandStylesheets() {
     };
     
     delete submitData.keyMessagesText;
+    console.log("Submitting data:", submitData);
     createMutation.mutate(submitData);
   };
 
@@ -259,7 +268,7 @@ export default function BrandStylesheets() {
                   </Card>
                 ))}
               </div>
-            ) : stylesheets && stylesheets.length > 0 ? (
+            ) : stylesheets && Array.isArray(stylesheets) && stylesheets.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {stylesheets.map((stylesheet: any) => (
                   <Card key={stylesheet.id} className="hover:shadow-md transition-shadow">
