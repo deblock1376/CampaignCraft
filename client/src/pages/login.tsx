@@ -26,8 +26,9 @@ export default function Login() {
 
       if (response.ok) {
         const data = await response.json();
-        // Store user session in localStorage
+        // Store user session and token in localStorage
         localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.setItem("token", data.token);
         toast({
           title: "Login successful",
           description: `Welcome back, ${data.user.name}!`,

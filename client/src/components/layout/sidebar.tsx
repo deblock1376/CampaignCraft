@@ -71,6 +71,7 @@ export default function Sidebar() {
           <button 
             onClick={() => {
               localStorage.removeItem("user");
+              localStorage.removeItem("token");
               window.location.href = "/";
             }}
             className="px-2 py-1 text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 rounded transition-colors"
