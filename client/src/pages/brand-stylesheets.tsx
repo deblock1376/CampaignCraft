@@ -157,154 +157,153 @@ export default function BrandStylesheets() {
           title="Brand Stylesheets" 
           subtitle="Manage your newsroom's brand voice and messaging guidelines"
           action={
-            <Dialog open={isCreateOpen || !!editingStylesheet} onOpenChange={handleCloseDialog}>
-              <DialogTrigger asChild>
-                <Button>
-                  <i className="fas fa-plus mr-2"></i>
-                  New Stylesheet
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>
-                    {editingStylesheet ? "Edit Brand Stylesheet" : "Create Brand Stylesheet"}
-                  </DialogTitle>
-                </DialogHeader>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., Metro Daily - Default Style" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Description</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Brief description of this stylesheet" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="tone"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Tone</FormLabel>
-                            <FormControl>
-                              <Input placeholder="e.g., Professional yet approachable" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="voice"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Voice</FormLabel>
-                            <FormControl>
-                              <Input placeholder="e.g., Informative, trustworthy" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    
-                    <FormField
-                      control={form.control}
-                      name="keyMessagesText"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Key Messages (one per line)</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Independent local journalism matters&#10;Community-driven news coverage&#10;Transparency in reporting"
-                              rows={4}
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="guidelines"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Writing Guidelines</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Additional writing guidelines and instructions..."
-                              rows={3}
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="isDefault"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-base">Default Stylesheet</FormLabel>
-                            <div className="text-sm text-muted-foreground">
-                              Use this as the default stylesheet for new campaigns
-                            </div>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="flex justify-end space-x-2">
-                      <Button type="button" variant="outline" onClick={handleCloseDialog}>
-                        Cancel
-                      </Button>
-                      <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-                        {editingStylesheet ? (
-                          updateMutation.isPending ? "Updating..." : "Update Stylesheet"
-                        ) : (
-                          createMutation.isPending ? "Creating..." : "Create Stylesheet"
-                        )}
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </DialogContent>
-            </Dialog>
+            <Button onClick={() => setIsCreateOpen(true)}>
+              <i className="fas fa-plus mr-2"></i>
+              New Stylesheet
+            </Button>
           }
         />
+        
+        <Dialog open={isCreateOpen || !!editingStylesheet} onOpenChange={handleCloseDialog}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>
+                {editingStylesheet ? "Edit Brand Stylesheet" : "Create Brand Stylesheet"}
+              </DialogTitle>
+            </DialogHeader>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Metro Daily - Default Style" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Brief description of this stylesheet" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="tone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tone</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Professional yet approachable" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="voice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Voice</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Informative, trustworthy" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <FormField
+                  control={form.control}
+                  name="keyMessagesText"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Key Messages (one per line)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Independent local journalism matters&#10;Community-driven news coverage&#10;Transparency in reporting"
+                          rows={4}
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="guidelines"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Writing Guidelines</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Additional writing guidelines and instructions..."
+                          rows={3}
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="isDefault"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">Default Stylesheet</FormLabel>
+                        <div className="text-sm text-muted-foreground">
+                          Use this as the default stylesheet for new campaigns
+                        </div>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="flex justify-end space-x-2">
+                  <Button type="button" variant="outline" onClick={handleCloseDialog}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+                    {editingStylesheet ? (
+                      updateMutation.isPending ? "Updating..." : "Update Stylesheet"
+                    ) : (
+                      createMutation.isPending ? "Creating..." : "Create Stylesheet"
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
         
         <div className="flex-1 overflow-y-auto p-8 max-h-screen">
           <div className="max-w-7xl mx-auto">
