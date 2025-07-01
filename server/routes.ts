@@ -357,7 +357,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const id = parseInt(req.params.id);
-      const { name, email } = req.body;
+      const { name, email, password } = req.body;
       
       // Check if email already exists for another user
       if (email) {
@@ -367,7 +367,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      const updatedUser = await storage.updateUser(id, { name, email });
+      // Prepare update data
+      const updateData: any = {};
+      if (name) updateData.name = name;
+      if (email) updateData.email = email;
+      
+      // Hash password if provided
+      if (password && password.trim()) {
+        if (password.length < 6) {
+          return res.status(400).json({ error: "Password must be at least 6 characters long" });
+        }
+        updateData.password = await bcrypt.hash(password, 10);
+      }
+
+      const updatedUser = await storage.updateUser(id, updateData);
       res.json(updatedUser);
     } catch (error) {
       console.error("Error updating user:", error);

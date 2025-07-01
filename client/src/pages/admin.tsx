@@ -30,6 +30,7 @@ interface User {
   role: string;
   newsroomId: number;
   createdAt: string;
+  password?: string; // Optional field for password updates
 }
 
 interface NewsroomWithUser extends Newsroom {
@@ -100,8 +101,12 @@ export default function Admin() {
   });
 
   const updateUserMutation = useMutation({
-    mutationFn: async ({ id, name, email }: { id: number; name: string; email: string }) => {
-      return await apiRequest('PATCH', `/api/admin/users/${id}`, { name, email });
+    mutationFn: async ({ id, name, email, password }: { id: number; name: string; email: string; password?: string }) => {
+      const payload: any = { name, email };
+      if (password && password.trim()) {
+        payload.password = password;
+      }
+      return await apiRequest('PATCH', `/api/admin/users/${id}`, payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/newsrooms'] });
@@ -179,6 +184,7 @@ export default function Admin() {
       id: editingUser.id,
       name: editingUser.name,
       email: editingUser.email,
+      password: editingUser.password,
     });
   };
 
@@ -621,7 +627,7 @@ export default function Admin() {
       <Dialog open={isEditUserDialogOpen} onOpenChange={setIsEditUserDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit User Account</DialogTitle>
+            <DialogTitle>Edit User Account & Password</DialogTitle>
           </DialogHeader>
           {editingUser && (
             <form onSubmit={handleUpdateUser} className="space-y-4">
@@ -646,6 +652,21 @@ export default function Admin() {
                   placeholder="email@example.com"
                   required
                 />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="editUserPassword">New Password</Label>
+                <Input
+                  id="editUserPassword"
+                  type="password"
+                  value={editingUser.password || ''}
+                  onChange={(e) => setEditingUser(prev => prev ? { ...prev, password: e.target.value } : null)}
+                  placeholder="Leave blank to keep current password"
+                  minLength={6}
+                />
+                <p className="text-sm text-muted-foreground">
+                  Leave blank to keep current password. Minimum 6 characters.
+                </p>
               </div>
               
               <div className="flex justify-end space-x-2">
