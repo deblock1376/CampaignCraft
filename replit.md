@@ -132,6 +132,7 @@ Changelog:
 - Enhanced admin controls with user profile editing and validation
 - Password change functionality for admin to reset user passwords (admin-only access)
 - Secure password hashing with bcrypt for all password updates
+- Removed Performance Metrics tab from campaign preview (pending actual performance data implementation)
 ```
 
 ## User Preferences

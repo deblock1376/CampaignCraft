@@ -84,9 +84,8 @@ export default function CampaignPreview({ campaign, isGenerating, activeTab, onT
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={onTabChange}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="content">Content Preview</TabsTrigger>
-            <TabsTrigger value="analytics">Performance Metrics</TabsTrigger>
             <TabsTrigger value="export">Export Options</TabsTrigger>
           </TabsList>
           
@@ -187,71 +186,6 @@ export default function CampaignPreview({ campaign, isGenerating, activeTab, onT
                   Export Campaign
                 </Button>
               </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="analytics" className="mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <i className="fas fa-lightbulb text-yellow-500 mr-2"></i>
-                    AI Insights
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {campaign.content?.insights?.map((insight: string, index: number) => (
-                      <div key={index} className="flex items-start space-x-3">
-                        <div className="w-2 h-2 bg-accent rounded-full mt-2"></div>
-                        <p className="text-sm text-slate-700">{insight}</p>
-                      </div>
-                    )) || (
-                      <p className="text-sm text-slate-500">No insights available</p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <i className="fas fa-chart-line text-primary mr-2"></i>
-                    Predicted Performance
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-600">Open Rate</span>
-                      <div className="flex items-center space-x-2">
-                        <Progress value={campaign.metrics?.estimatedOpenRate || 0} className="w-20" />
-                        <span className="text-sm font-medium text-slate-900">
-                          {campaign.metrics?.estimatedOpenRate || 0}%
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-600">Click Rate</span>
-                      <div className="flex items-center space-x-2">
-                        <Progress value={campaign.metrics?.estimatedClickRate || 0} className="w-20" />
-                        <span className="text-sm font-medium text-slate-900">
-                          {campaign.metrics?.estimatedClickRate || 0}%
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-600">Conversion</span>
-                      <div className="flex items-center space-x-2">
-                        <Progress value={campaign.metrics?.estimatedConversion || 0} className="w-20" />
-                        <span className="text-sm font-medium text-slate-900">
-                          {campaign.metrics?.estimatedConversion || 0}%
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           </TabsContent>
           
