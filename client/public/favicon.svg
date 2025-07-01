@@ -1,0 +1,14 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="16" cy="16" r="16" fill="#3B82F6"/>
+  
+  <!-- Campaign/Megaphone icon -->
+  <path d="M8 12L20 8V24L8 20V12Z" fill="white" stroke="white" stroke-width="1" stroke-linejoin="round"/>
+  
+  <!-- Sound waves representing AI/automation -->
+  <path d="M22 12C23.1046 12 24 12.8954 24 14V18C24 19.1046 23.1046 20 22 20" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M25 10C26.6569 10 28 11.3431 28 13V19C28 20.6569 26.6569 22 25 22" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  
+  <!-- Small AI indicator dot -->
+  <circle cx="14" cy="16" r="2" fill="#3B82F6" stroke="white" stroke-width="1"/>
+</svg>
