@@ -61,6 +61,34 @@ export default function Admin() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+
+  // Check admin access
+  const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+  
+  // Only allow admin@campaigncraft.com access
+  if (!currentUser.email || currentUser.email !== 'admin@campaigncraft.com') {
+    return (
+      <div className="p-6">
+        <div className="max-w-md mx-auto mt-20">
+          <Card>
+            <CardContent className="p-6 text-center">
+              <Shield className="w-12 h-12 text-red-500 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
+              <p className="text-gray-600 mb-4">
+                This area is restricted to system administrators only.
+              </p>
+              <Link href="/dashboard">
+                <Button>
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Return to Dashboard
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
   const [newAccount, setNewAccount] = useState({
     newsroomName: "",
     newsroomSlug: "",

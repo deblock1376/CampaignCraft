@@ -3,15 +3,23 @@ import { cn } from "@/lib/utils";
 
 export default function Sidebar() {
   const [location] = useLocation();
+  
+  // Check if current user is admin
+  const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const isAdmin = currentUser.email === 'admin@campaigncraft.com';
 
-  const navItems = [
+  const baseNavItems = [
     { href: "/", icon: "fas fa-home", label: "Dashboard" },
     { href: "/campaigns/new", icon: "fas fa-plus-circle", label: "New Campaign" },
     { href: "/campaigns/history", icon: "fas fa-history", label: "Campaign History" },
     { href: "/stylesheets", icon: "fas fa-palette", label: "Brand Stylesheets" },
     { href: "/settings", icon: "fas fa-cog", label: "Settings" },
-    { href: "/admin", icon: "fas fa-shield-alt", label: "Admin Control" },
   ];
+
+  // Only add admin control for admin@campaigncraft.com
+  const navItems = isAdmin 
+    ? [...baseNavItems, { href: "/admin", icon: "fas fa-shield-alt", label: "Admin Control" }]
+    : baseNavItems;
 
   return (
     <aside className="w-64 bg-white border-r border-slate-200 flex flex-col">

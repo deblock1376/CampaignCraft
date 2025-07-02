@@ -27,6 +27,31 @@ const authenticateToken = (req: any, res: any, next: any) => {
   });
 };
 
+// Admin-only middleware
+const requireAdmin = async (req: any, res: any, next: any) => {
+  try {
+    if (!req.user || !req.user.userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const user = await storage.getUser(req.user.userId);
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    // Only allow admin@campaigncraft.com account
+    if (user.email !== 'admin@campaigncraft.com' || user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    req.adminUser = user;
+    next();
+  } catch (error) {
+    console.error('Admin auth error:', error);
+    return res.status(500).json({ error: 'Authentication error' });
+  }
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication Routes
   app.post("/api/auth/login", async (req, res) => {
@@ -298,13 +323,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes (protected)
-  app.get("/api/admin/newsrooms", authenticateToken, async (req: any, res) => {
+  app.get("/api/admin/newsrooms", authenticateToken, requireAdmin, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.userId);
-      if (!user || user.role !== 'admin') {
-        return res.status(403).json({ error: "Admin access required" });
-      }
-      
       const newsrooms = await storage.getAllNewsrooms();
       const newsroomsWithUsers = await Promise.all(
         newsrooms.map(async (newsroom) => {
@@ -318,13 +338,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/campaigns", authenticateToken, async (req: any, res) => {
+  app.get("/api/admin/campaigns", authenticateToken, requireAdmin, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.userId);
-      if (!user || user.role !== 'admin') {
-        return res.status(403).json({ error: "Admin access required" });
-      }
-      
       const campaigns = await storage.getAllCampaigns();
       res.json(campaigns);
     } catch (error) {
@@ -333,13 +348,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/admin/newsrooms/:id", authenticateToken, async (req: any, res) => {
+  app.patch("/api/admin/newsrooms/:id", authenticateToken, requireAdmin, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.userId);
-      if (!user || user.role !== 'admin') {
-        return res.status(403).json({ error: "Admin access required" });
-      }
-
       const id = parseInt(req.params.id);
       const updates = req.body;
       const newsroom = await storage.updateNewsroom(id, updates);
@@ -349,13 +359,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/admin/users/:id", authenticateToken, async (req: any, res) => {
+  app.patch("/api/admin/users/:id", authenticateToken, requireAdmin, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.userId);
-      if (!user || user.role !== 'admin') {
-        return res.status(403).json({ error: "Admin access required" });
-      }
-
       const id = parseInt(req.params.id);
       const { name, email, password } = req.body;
       
@@ -377,7 +382,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (password.length < 6) {
           return res.status(400).json({ error: "Password must be at least 6 characters long" });
         }
-        updateData.password = await bcrypt.hash(password, 10);
+        updateData.passwordHash = await bcrypt.hash(password, 10);
       }
 
       const updatedUser = await storage.updateUser(id, updateData);
@@ -388,15 +393,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/accounts", authenticateToken, async (req: any, res) => {
+  app.post("/api/admin/accounts", authenticateToken, requireAdmin, async (req: any, res) => {
     try {
       console.log("Account creation request received:", req.body);
-      
-      const user = await storage.getUser(req.user.userId);
-      if (!user || user.role !== 'admin') {
-        console.log("Admin access denied for user:", req.user.userId);
-        return res.status(403).json({ error: "Admin access required" });
-      }
 
       const {
         newsroomName,
