@@ -97,7 +97,7 @@ export default function Login() {
           
           <div className="mt-6 text-center text-sm text-slate-600">
             <p>Demo credentials for testing:</p>
-            <p>Email: admin@thecity.nyc</p>
+            <p>Email: thecity@campaigncraft.com</p>
             <p>Password: demo123</p>
           </div>
         </CardContent>
