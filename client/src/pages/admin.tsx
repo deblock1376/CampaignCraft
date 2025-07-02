@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Shield, Users, Building, Plus, Eye, Calendar, Target, Zap, Edit, Mail, User } from "lucide-react";
+import { Settings, Shield, Users, Building, Plus, Eye, Calendar, Target, Zap, Edit, Mail, User, ArrowLeft } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/layout/header";
@@ -191,7 +192,18 @@ export default function Admin() {
   if (isLoading) {
     return (
       <div className="p-6">
-        <Header title="Admin Control Panel" subtitle="Manage newsroom accounts and access" />
+        <Header 
+          title="Admin Control Panel" 
+          subtitle="Manage newsroom accounts and access"
+          action={
+            <Link href="/dashboard">
+              <Button variant="outline" size="sm">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Dashboard
+              </Button>
+            </Link>
+          }
+        />
         <div className="mt-6">
           <Card>
             <CardContent className="p-6">
@@ -214,6 +226,12 @@ export default function Admin() {
         subtitle="Manage newsroom accounts and access"
         action={
           <div className="flex items-center space-x-3">
+            <Link href="/dashboard">
+              <Button variant="outline" size="sm">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Dashboard
+              </Button>
+            </Link>
             <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
               <DialogTrigger asChild>
                 <Button>
