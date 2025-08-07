@@ -117,12 +117,11 @@ export default function EmailOptimizer() {
   return (
     <>
       <Sidebar />
-      <main className="flex-1 flex flex-col min-h-screen ml-64">
+      <main className="flex-1 flex flex-col">
         <Header title="Email Content Optimizer" subtitle="Generate high-performing email content for nonprofit news" />
         
-        <div className="flex-1 p-6 overflow-y-auto max-h-screen">
-          <div className="max-w-5xl mx-auto">
-            <div className="space-y-8">
+        <div className="flex-1 overflow-y-scroll p-8 scrollbar-thin">
+          <div className="max-w-7xl mx-auto space-y-8">
               {/* Generator Form */}
               <Card>
                 <CardHeader>
@@ -305,8 +304,7 @@ export default function EmailOptimizer() {
                   )}
                 </CardContent>
               </Card>
-            </div>
-
+            
             {/* Tips Section */}
             <Card>
               <CardHeader>
