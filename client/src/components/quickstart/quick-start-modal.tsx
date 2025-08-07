@@ -52,8 +52,18 @@ export default function QuickStartModal({ isOpen, onClose, tool, title, descript
     queryKey: ["/api/brand-stylesheets", newsroomId],
   });
 
-  const { data: campaigns } = useQuery({
+  const { data: campaigns, isLoading: campaignsLoading, error: campaignsError } = useQuery({
     queryKey: ["/api/newsrooms", newsroomId, "campaigns"],
+  });
+
+  // Debug logging
+  console.log("Quick Start Modal Debug:", { 
+    newsroomId, 
+    campaigns, 
+    campaignsLoading, 
+    campaignsError,
+    campaignsArray: Array.isArray(campaigns),
+    campaignsLength: campaigns?.length 
   });
 
   const mutation = useMutation({
@@ -194,16 +204,32 @@ export default function QuickStartModal({ isOpen, onClose, tool, title, descript
               <Label htmlFor="campaign">Source Campaign *</Label>
               <Select value={campaignId} onValueChange={setCampaignId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose campaign to rewrite..." />
+                  <SelectValue placeholder={
+                    campaignsLoading ? "Loading campaigns..." : 
+                    campaignsError ? "Error loading campaigns" :
+                    (!campaigns || campaigns.length === 0) ? "No campaigns found" :
+                    "Choose campaign to rewrite..."
+                  } />
                 </SelectTrigger>
                 <SelectContent>
-                  {Array.isArray(campaigns) ? campaigns.map((campaign: any) => (
-                    <SelectItem key={campaign.id} value={campaign.id.toString()}>
-                      {campaign.title}
-                    </SelectItem>
-                  )) : null}
+                  {campaignsLoading ? (
+                    <SelectItem value="loading" disabled>Loading campaigns...</SelectItem>
+                  ) : Array.isArray(campaigns) && campaigns.length > 0 ? (
+                    campaigns.map((campaign: any) => (
+                      <SelectItem key={campaign.id} value={campaign.id.toString()}>
+                        {campaign.title}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="no-campaigns" disabled>No campaigns available</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
+              {campaignsError && (
+                <div className="text-sm text-red-600 mt-1">
+                  Error loading campaigns: {(campaignsError as any)?.message}
+                </div>
+              )}
             </div>
             <div>
               <div className="flex items-center justify-between mb-2">
