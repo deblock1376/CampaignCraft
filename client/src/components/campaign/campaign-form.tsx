@@ -96,6 +96,10 @@ export default function CampaignForm() {
 
   return (
     <div className="space-y-8">
+      {/* DEBUG: This should show at the top */}
+      <div className="p-4 bg-red-100 text-red-800 rounded">
+        DEBUG: Campaign Configuration should appear here
+      </div>
       {/* Configuration Panel */}
       <div className="space-y-6">
         <Card>
