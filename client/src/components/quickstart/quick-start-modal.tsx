@@ -56,16 +56,6 @@ export default function QuickStartModal({ isOpen, onClose, tool, title, descript
     queryKey: ["/api/newsrooms", newsroomId, "campaigns"],
   });
 
-  // Debug logging
-  console.log("Quick Start Modal Debug:", { 
-    newsroomId, 
-    campaigns, 
-    campaignsLoading, 
-    campaignsError,
-    campaignsArray: Array.isArray(campaigns),
-    campaignsLength: campaigns?.length 
-  });
-
   const mutation = useMutation({
     mutationFn: async (data: any) => {
       const endpoints = {
