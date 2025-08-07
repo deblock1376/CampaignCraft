@@ -391,16 +391,53 @@ export default function QuickStartModal({ isOpen, onClose, tool, title, descript
         );
 
       case 'rewrite-segments':
+        const campaignArray = Array.isArray(results) ? results : [results];
         return (
           <div className="space-y-4">
             <div className="text-sm text-green-600 font-medium">
-              {results.length} Segment Variations Created
+              Campaign Successfully Adapted for Target Segment
             </div>
-            {results.map((campaign: any, index: number) => (
-              <Card key={index} className="p-3">
-                <div className="font-medium">{campaign.title}</div>
-                <div className="text-sm text-slate-600 mt-1">
-                  {campaign.content?.subject}
+            {campaignArray.map((campaign: any, index: number) => (
+              <Card key={index} className="p-4">
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-sm font-medium">Campaign Title</Label>
+                    <div className="p-2 bg-slate-50 rounded border mt-1">
+                      {campaign.title}
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Subject Line</Label>
+                    <div className="p-2 bg-slate-50 rounded border mt-1 flex items-center justify-between">
+                      {campaign.content?.subject}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => copyToClipboard(campaign.content?.subject || '')}
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Email Content</Label>
+                    <div className="p-3 bg-slate-50 rounded border mt-1 text-sm max-h-32 overflow-y-auto">
+                      {campaign.content?.content}
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Call to Action</Label>
+                    <div className="p-2 bg-slate-50 rounded border mt-1 flex items-center justify-between">
+                      {campaign.content?.cta}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => copyToClipboard(campaign.content?.cta || '')}
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </Card>
             ))}
