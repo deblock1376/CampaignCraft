@@ -96,179 +96,21 @@ export default function CampaignForm() {
 
   return (
     <div className="space-y-8">
-      {/* Configuration Panel - Collapsible */}
-      <Collapsible open={isConfigOpen} onOpenChange={setIsConfigOpen}>
-        <Card className="w-full">
-          <CollapsibleTrigger asChild>
-            <CardHeader className="cursor-pointer hover:bg-slate-50 transition-colors">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-semibold">Campaign Configuration</CardTitle>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  {isConfigOpen ? (
-                    <i className="fas fa-chevron-up text-slate-600"></i>
-                  ) : (
-                    <i className="fas fa-chevron-down text-slate-600"></i>
-                  )}
-                </Button>
-              </div>
-            </CardHeader>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <FormField
-                      control={form.control}
-                      name="aiModel"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>AI Model</FormLabel>
-                          <p className="text-xs text-slate-500 mb-2">Choose the AI engine to generate your campaign content</p>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select AI model" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="gpt-4o">OpenAI GPT-4o (Creative)</SelectItem>
-                              <SelectItem value="gemini-2.5-flash">Google Gemini 2.5 Flash (Fast & Balanced)</SelectItem>
-                              <SelectItem value="claude-sonnet-4-20250514" disabled className="text-gray-400">
-                                Anthropic Claude Sonnet 4 (coming soon)
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Campaign Type</FormLabel>
-                      <p className="text-xs text-slate-500 mb-2">Select the format for your marketing campaign</p>
-                      <div className="grid grid-cols-2 gap-2">
-                        {(['email', 'social'] as const).map((type) => (
-                          <Button
-                            key={type}
-                            type="button"
-                            variant={field.value === type ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => field.onChange(type)}
-                            className="flex flex-col h-auto py-3"
-                          >
-                            <i className={`fas fa-${type === 'email' ? 'envelope' : 'share-alt'} mb-1`}></i>
-                            <span className="capitalize">{type}</span>
-                          </Button>
-                        ))}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="brandStylesheetId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Grounding Guide</FormLabel>
-                      <p className="text-xs text-slate-500 mb-2">Apply your organization's brand voice and messaging guidelines</p>
-                      <div className="flex space-x-2">
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="flex-1">
-                              <SelectValue placeholder="Select guide" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {Array.isArray(stylesheets) ? stylesheets.map((stylesheet: any) => (
-                              <SelectItem key={stylesheet.id} value={stylesheet.id.toString()}>
-                                {stylesheet.name}
-                              </SelectItem>
-                            )) : null}
-                          </SelectContent>
-                        </Select>
-                        <Button type="button" variant="outline" size="sm">
-                          <i className="fas fa-cog"></i>
-                        </Button>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="objective"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Primary Objective</FormLabel>
-                      <p className="text-xs text-slate-500 mb-2">What action do you want readers to take after seeing this campaign?</p>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select objective" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="subscription">Drive Subscriptions</SelectItem>
-                          <SelectItem value="donation">Increase Donations</SelectItem>
-                          <SelectItem value="membership">Grow Membership</SelectItem>
-                          <SelectItem value="engagement">Boost Engagement</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="context"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Campaign Notes</FormLabel>
-                      <p className="text-xs text-slate-500 mb-2">Provide context about the story or campaign background to guide AI generation</p>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Brief context about the news story or campaign trigger..."
-                          className="resize-none"
-                          rows={3}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={generateMutation.isPending}
-                >
-                  {generateMutation.isPending ? (
-                    <>
-                      <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <i className="fas fa-magic mr-2"></i>
-                      Generate Campaign
-                    </>
-                  )}
-                </Button>
-                  </form>
-                </Form>
-              </CardContent>
-            </CollapsibleContent>
-        </Card>
-      </Collapsible>
+      {/* Campaign Preview & Generation */}
+      <div>
+        <CampaignPreview 
+          campaign={generatedCampaign} 
+          isGenerating={generateMutation.isPending}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          form={form}
+          onSubmit={onSubmit}
+          generateMutation={generateMutation}
+          stylesheets={stylesheets}
+          isConfigOpen={isConfigOpen}
+          setIsConfigOpen={setIsConfigOpen}
+        />
+      </div>
 
       {/* Recent Campaigns */}
       <Card>
@@ -297,16 +139,6 @@ export default function CampaignForm() {
             )}
           </CardContent>
         </Card>
-
-      {/* Campaign Preview & Generation */}
-      <div>
-        <CampaignPreview 
-          campaign={generatedCampaign} 
-          isGenerating={generateMutation.isPending}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-        />
-      </div>
     </div>
   );
 }
