@@ -9,6 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import CampaignPreview from "./campaign-preview";
@@ -25,6 +26,7 @@ export default function CampaignForm() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedCampaign, setGeneratedCampaign] = useState(null);
   const [activeTab, setActiveTab] = useState('content');
+  const [isConfigOpen, setIsConfigOpen] = useState(true);
   const { toast } = useToast();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const newsroomId = user.newsroomId || 1;
@@ -97,36 +99,50 @@ export default function CampaignForm() {
       {/* Configuration Panel */}
       <div className="space-y-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Campaign Configuration</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="aiModel"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>AI Model</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select AI model" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="gpt-4o">OpenAI GPT-4o (Creative)</SelectItem>
-                          <SelectItem value="gemini-2.5-flash">Google Gemini 2.5 Flash (Fast & Balanced)</SelectItem>
-                          <SelectItem value="claude-sonnet-4-20250514" disabled className="text-gray-400">
-                            Anthropic Claude Sonnet 4 (coming soon)
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          <Collapsible open={isConfigOpen} onOpenChange={setIsConfigOpen}>
+            <CollapsibleTrigger asChild>
+              <CardHeader className="cursor-pointer hover:bg-slate-50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <CardTitle>Campaign Configuration</CardTitle>
+                  <Button variant="ghost" size="sm">
+                    {isConfigOpen ? (
+                      <i className="fas fa-chevron-up text-slate-500"></i>
+                    ) : (
+                      <i className="fas fa-chevron-down text-slate-500"></i>
+                    )}
+                  </Button>
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <FormField
+                      control={form.control}
+                      name="aiModel"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>AI Model</FormLabel>
+                          <p className="text-xs text-slate-500 mb-2">Choose the AI engine to generate your campaign content</p>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select AI model" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="gpt-4o">OpenAI GPT-4o (Creative)</SelectItem>
+                              <SelectItem value="gemini-2.5-flash">Google Gemini 2.5 Flash (Fast & Balanced)</SelectItem>
+                              <SelectItem value="claude-sonnet-4-20250514" disabled className="text-gray-400">
+                                Anthropic Claude Sonnet 4 (coming soon)
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
                 <FormField
                   control={form.control}
@@ -134,6 +150,7 @@ export default function CampaignForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Campaign Type</FormLabel>
+                      <p className="text-xs text-slate-500 mb-2">Select the format for your marketing campaign</p>
                       <div className="grid grid-cols-2 gap-2">
                         {(['email', 'social'] as const).map((type) => (
                           <Button
@@ -160,6 +177,7 @@ export default function CampaignForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Grounding Guide</FormLabel>
+                      <p className="text-xs text-slate-500 mb-2">Apply your organization's brand voice and messaging guidelines</p>
                       <div className="flex space-x-2">
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
@@ -190,6 +208,7 @@ export default function CampaignForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Primary Objective</FormLabel>
+                      <p className="text-xs text-slate-500 mb-2">What action do you want readers to take after seeing this campaign?</p>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -214,6 +233,7 @@ export default function CampaignForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Campaign Notes</FormLabel>
+                      <p className="text-xs text-slate-500 mb-2">Provide context about the story or campaign background to guide AI generation</p>
                       <FormControl>
                         <Textarea
                           placeholder="Brief context about the news story or campaign trigger..."
@@ -244,9 +264,11 @@ export default function CampaignForm() {
                     </>
                   )}
                 </Button>
-              </form>
-            </Form>
-          </CardContent>
+                  </form>
+                </Form>
+              </CardContent>
+            </CollapsibleContent>
+          </Collapsible>
         </Card>
 
         {/* Recent Campaigns */}
