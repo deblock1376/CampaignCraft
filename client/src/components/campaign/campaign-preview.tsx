@@ -215,9 +215,22 @@ export default function CampaignPreview({
                           <FormControl>
                             <Textarea
                               placeholder="Brief context about the news story or campaign trigger..."
-                              className="resize-none"
+                              className="resize-none min-h-[60px] max-h-[300px]"
                               rows={3}
                               {...field}
+                              onChange={(e) => {
+                                field.onChange(e);
+                                // Auto-expand the textarea
+                                const textarea = e.target;
+                                textarea.style.height = 'auto';
+                                textarea.style.height = Math.min(textarea.scrollHeight, 300) + 'px';
+                              }}
+                              onInput={(e) => {
+                                // Auto-expand on input as well
+                                const textarea = e.target as HTMLTextAreaElement;
+                                textarea.style.height = 'auto';
+                                textarea.style.height = Math.min(textarea.scrollHeight, 300) + 'px';
+                              }}
                             />
                           </FormControl>
                           <FormMessage />
