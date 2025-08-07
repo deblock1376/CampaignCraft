@@ -32,7 +32,7 @@ CampaignCraft is a full-stack web application that helps newsrooms generate AI-p
 ### Database Schema
 The application uses four main entities:
 - **Newsrooms**: Organization profiles with name, slug, description, and branding
-- **Brand Stylesheets**: Brand guidelines including tone, voice, key messages, and visual identity
+- **Grounding Library**: Brand guidelines including tone, voice, key messages, and visual identity (formerly Brand Stylesheets)
 - **Campaigns**: Marketing campaigns with type (email/social/web), objectives, and AI-generated content
 - **Campaign Templates**: Reusable campaign templates for quick generation
 
@@ -40,20 +40,20 @@ The application uses four main entities:
 - **Providers**: OpenAI (GPT-4o) and Anthropic (Claude Sonnet 4) integration
 - **Default Model**: Claude Sonnet 4 (claude-sonnet-4-20250514) as the preferred AI model
 - **Content Generation**: Generates campaign content, CTAs, and performance insights
-- **Brand Consistency**: Applies brand stylesheets to maintain consistent messaging
+- **Brand Consistency**: Applies grounding guides to maintain consistent messaging
 
 ### User Interface
 - **Dashboard**: Overview of campaigns and quick actions
 - **Campaign Generator**: Interactive form for creating new campaigns
 - **Template Library**: Browse and select from pre-built campaign templates
-- **Brand Management**: Create and manage brand stylesheets
+- **Grounding Library**: Create and manage brand voice and messaging guidelines
 - **Campaign History**: View and manage past campaigns
 
 ## Data Flow
 
 1. **Campaign Creation**: User selects campaign type, objective, and provides context
-2. **Brand Application**: System applies selected brand stylesheet guidelines
-3. **AI Generation**: Request sent to configured AI provider with context and brand guidelines
+2. **Brand Application**: System applies selected grounding guide guidelines
+3. **AI Generation**: Request sent to configured AI provider with context and grounding guide guidelines
 4. **Content Processing**: AI-generated content is structured and stored
 5. **Preview & Edit**: User can review and modify generated content
 6. **Campaign Storage**: Final campaign is saved to PostgreSQL database
@@ -133,6 +133,9 @@ Changelog:
 - Password change functionality for admin to reset user passwords (admin-only access)
 - Secure password hashing with bcrypt for all password updates
 - Removed Performance Metrics tab from campaign preview (pending actual performance data implementation)
+- Renamed "Brand Stylesheets" to "Grounding Library" for clearer terminology
+- Updated all UI references, form labels, and documentation to use "Grounding Guide" terminology
+- Enhanced Recent Campaigns display to show account/newsroom information for all campaigns
 ```
 
 ## User Preferences

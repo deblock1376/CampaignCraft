@@ -157,12 +157,12 @@ export default function CampaignForm() {
                   name="brandStylesheetId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Brand Stylesheet</FormLabel>
+                      <FormLabel>Grounding Guide</FormLabel>
                       <div className="flex space-x-2">
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="flex-1">
-                              <SelectValue placeholder="Select stylesheet" />
+                              <SelectValue placeholder="Select guide" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>

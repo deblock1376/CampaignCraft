@@ -53,13 +53,13 @@ export default function BrandStylesheets() {
       form.reset();
       toast({
         title: "Success",
-        description: "Brand stylesheet created successfully",
+        description: "Grounding guide created successfully",
       });
     },
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to create brand stylesheet",
+        description: error.message || "Failed to create grounding guide",
         variant: "destructive",
       });
     },
@@ -76,13 +76,13 @@ export default function BrandStylesheets() {
       form.reset();
       toast({
         title: "Success",
-        description: "Brand stylesheet updated successfully",
+        description: "Grounding guide updated successfully",
       });
     },
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to update brand stylesheet",
+        description: error.message || "Failed to update grounding guide",
         variant: "destructive",
       });
     },
@@ -154,12 +154,12 @@ export default function BrandStylesheets() {
       <Sidebar />
       <main className="flex-1 overflow-hidden">
         <Header 
-          title="Brand Stylesheets" 
+          title="Grounding Library" 
           subtitle="Manage your newsroom's brand voice and messaging guidelines"
           action={
             <Button onClick={() => setIsCreateOpen(true)}>
               <i className="fas fa-plus mr-2"></i>
-              New Stylesheet
+              New Guide
             </Button>
           }
         />
@@ -168,7 +168,7 @@ export default function BrandStylesheets() {
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
-                {editingStylesheet ? "Edit Brand Stylesheet" : "Create Brand Stylesheet"}
+                {editingStylesheet ? "Edit Grounding Guide" : "Create Grounding Guide"}
               </DialogTitle>
             </DialogHeader>
             <Form {...form}>
