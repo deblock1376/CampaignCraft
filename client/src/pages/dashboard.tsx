@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
+import QuickStartTemplates from "@/components/quickstart/quick-start-templates";
 
 export default function Dashboard() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -106,31 +107,7 @@ export default function Dashboard() {
             </Card>
 
             {/* Quick Start Templates */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Start Templates</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {Array.isArray(templates) ? templates.slice(0, 3).map((template: any) => (
-                    <div key={template.id} className="border border-slate-200 rounded-lg p-4 hover:border-primary transition-colors cursor-pointer group">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                          <i className={`${template.icon} text-blue-600 text-sm`}></i>
-                        </div>
-                        <Badge variant="outline">{template.type}</Badge>
-                      </div>
-                      <h4 className="font-medium text-slate-900 mb-2">{template.name}</h4>
-                      <p className="text-sm text-slate-600 mb-3">{template.description}</p>
-                      <div className="flex items-center text-xs text-slate-500">
-                        <i className="fas fa-clock mr-1"></i>
-                        <span>{template.setupTime}</span>
-                      </div>
-                    </div>
-                  )) : null}
-                </div>
-              </CardContent>
-            </Card>
+            <QuickStartTemplates />
           </div>
         </div>
       </main>

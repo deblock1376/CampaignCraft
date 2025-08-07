@@ -78,6 +78,64 @@ class AIProviderService {
     }
   }
 
+  async generateContent(prompt: string, model: string): Promise<string> {
+    switch (model) {
+      case 'gpt-4o':
+        return this.generateSimpleWithOpenAI(prompt);
+      case 'claude-sonnet-4':
+      case 'claude-sonnet-4-20250514':
+        return this.generateSimpleWithAnthropic(prompt);
+      case 'gemini-pro':
+      case 'gemini-2.5-flash':
+        return this.generateSimpleWithGemini(prompt);
+      default:
+        throw new Error(`Unsupported AI model: ${model}`);
+    }
+  }
+
+  private async generateSimpleWithOpenAI(prompt: string): Promise<string> {
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
+      });
+
+      return response.choices[0]?.message?.content || '';
+    } catch (error) {
+      throw new Error(`OpenAI API error: ${(error as any).message}`);
+    }
+  }
+
+  private async generateSimpleWithAnthropic(prompt: string): Promise<string> {
+    try {
+      const response = await this.anthropic.messages.create({
+        model: "claude-3-5-sonnet-20241022",
+        max_tokens: 1024,
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
+      });
+
+      const textBlock = response.content.find(block => block.type === 'text');
+      return textBlock ? textBlock.text : '';
+    } catch (error) {
+      throw new Error(`Anthropic API error: ${(error as any).message}`);
+    }
+  }
+
+  private async generateSimpleWithGemini(prompt: string): Promise<string> {
+    try {
+      const model = this.gemini.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt
+      });
+      const response = await model;
+      return response.text || '';
+    } catch (error) {
+      throw new Error(`Gemini API error: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
   private buildCampaignPrompt(request: CampaignRequest): string {
     return `
 You are an expert marketing campaign writer for nonprofit newsrooms. Generate a ${request.type} campaign with the following requirements:
@@ -196,7 +254,7 @@ Response must be in JSON format with these fields:
       const result = JSON.parse(response.text || '{}');
       return this.formatCampaignResponse(result);
     } catch (error) {
-      throw new Error(`Gemini API error: ${(error as any).message}`);
+      throw new Error(`Gemini API error: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 

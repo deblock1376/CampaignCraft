@@ -308,6 +308,257 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Quick Start Tools
+  app.post("/api/quickstart/rapid-response", authenticateToken, async (req: any, res) => {
+    try {
+      const { headline, urgency, newsroomId, brandStylesheetId } = req.body;
+      
+      if (!headline || !newsroomId) {
+        return res.status(400).json({ message: "Headline and newsroom are required" });
+      }
+
+      const newsroom = await storage.getNewsroom(newsroomId);
+      if (!newsroom) {
+        return res.status(404).json({ message: "Newsroom not found" });
+      }
+
+      let brandStylesheet = null;
+      if (brandStylesheetId) {
+        brandStylesheet = await storage.getBrandStylesheet(brandStylesheetId);
+      }
+
+      const campaignRequest = {
+        type: 'email' as const,
+        objective: 'engagement' as const,
+        context: `Breaking news alert: ${headline}. Urgency level: ${urgency || 'high'}. Create a rapid response campaign that immediately informs our audience and drives engagement.`,
+        brandStylesheet: brandStylesheet ? {
+          name: brandStylesheet.name,
+          tone: brandStylesheet.tone,
+          voice: brandStylesheet.voice,
+          keyMessages: brandStylesheet.keyMessages || [],
+          guidelines: brandStylesheet.guidelines || '',
+        } : {
+          name: 'Default',
+          tone: 'Professional, authoritative',
+          voice: 'Clear and informative',
+          keyMessages: ['Breaking news coverage', 'Community information'],
+          guidelines: 'Focus on facts and urgency',
+        },
+        newsroomName: newsroom.name,
+      };
+
+      const generatedCampaign = await aiProviderService.generateCampaign(
+        campaignRequest, 
+        'claude-sonnet-4-20250514'
+      );
+
+      const campaign = await storage.createCampaign({
+        newsroomId,
+        title: `Breaking: ${headline}`,
+        type: 'email',
+        objective: 'engagement',
+        context: campaignRequest.context,
+        aiModel: 'claude-sonnet-4-20250514',
+        brandStylesheetId: brandStylesheetId || null,
+        status: 'draft',
+        content: generatedCampaign,
+      });
+
+      res.json(campaign);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create rapid response campaign", error: String(error) });
+    }
+  });
+
+  app.post("/api/quickstart/rewrite-segments", authenticateToken, async (req: any, res) => {
+    try {
+      const { campaignId, segments, newsroomId } = req.body;
+      
+      if (!campaignId || !segments || !newsroomId) {
+        return res.status(400).json({ message: "Campaign ID, segments, and newsroom are required" });
+      }
+
+      const originalCampaign = await storage.getCampaign(campaignId);
+      if (!originalCampaign) {
+        return res.status(404).json({ message: "Original campaign not found" });
+      }
+
+      const newsroom = await storage.getNewsroom(newsroomId);
+      const brandStylesheet = originalCampaign.brandStylesheetId 
+        ? await storage.getBrandStylesheet(originalCampaign.brandStylesheetId)
+        : null;
+
+      const segmentVariations = [];
+      
+      for (const segment of segments) {
+        const campaignRequest = {
+          type: originalCampaign.type as 'email' | 'social' | 'web',
+          objective: originalCampaign.objective as 'subscription' | 'donation' | 'membership' | 'engagement',
+          context: `${originalCampaign.context} \n\nRewrite this campaign specifically for the ${segment.name} segment. Target audience characteristics: ${segment.description}`,
+          brandStylesheet: brandStylesheet ? {
+            name: brandStylesheet.name,
+            tone: brandStylesheet.tone,
+            voice: brandStylesheet.voice,
+            keyMessages: brandStylesheet.keyMessages || [],
+            guidelines: brandStylesheet.guidelines || '',
+          } : {
+            name: 'Default',
+            tone: 'Professional, targeted',
+            voice: 'Audience-specific messaging',
+            keyMessages: ['Segment-focused content'],
+            guidelines: 'Tailor to audience segment',
+          },
+          newsroomName: newsroom?.name || '',
+        };
+
+        const generatedCampaign = await aiProviderService.generateCampaign(
+          campaignRequest, 
+          originalCampaign.aiModel
+        );
+
+        const segmentCampaign = await storage.createCampaign({
+          newsroomId,
+          title: `${originalCampaign.title} - ${segment.name}`,
+          type: originalCampaign.type,
+          objective: originalCampaign.objective,
+          context: campaignRequest.context,
+          aiModel: originalCampaign.aiModel,
+          brandStylesheetId: originalCampaign.brandStylesheetId,
+          status: 'draft',
+          content: generatedCampaign,
+        });
+
+        segmentVariations.push(segmentCampaign);
+      }
+
+      res.json(segmentVariations);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create segment variations", error: String(error) });
+    }
+  });
+
+  app.post("/api/quickstart/subject-lines", authenticateToken, async (req: any, res) => {
+    try {
+      const { context, campaignType, objective, count = 5 } = req.body;
+      
+      if (!context) {
+        return res.status(400).json({ message: "Context is required" });
+      }
+
+      const prompt = `Generate ${count} compelling email subject lines for a ${campaignType || 'email'} campaign with ${objective || 'engagement'} objective. Context: ${context}. Make them varied in style - some urgent, some curious, some benefit-focused. Return as a JSON array of strings.`;
+
+      const response = await aiProviderService.generateContent(prompt, 'claude-sonnet-4-20250514');
+      
+      let subjectLines;
+      try {
+        subjectLines = JSON.parse(response);
+      } catch {
+        // Fallback parsing if AI doesn't return pure JSON
+        const lines = response.split('\n')
+          .filter((line: string) => line.trim().length > 0)
+          .map((line: string) => line.replace(/^[-•*\d.]\s*/, '').trim())
+          .slice(0, count);
+        subjectLines = lines;
+      }
+
+      res.json({ subjectLines });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to generate subject lines", error: String(error) });
+    }
+  });
+
+  app.post("/api/quickstart/cta-buttons", authenticateToken, async (req: any, res) => {
+    try {
+      const { context, campaignType, objective, count = 5 } = req.body;
+      
+      if (!context) {
+        return res.status(400).json({ message: "Context is required" });
+      }
+
+      const prompt = `Generate ${count} compelling call-to-action button texts for a ${campaignType || 'email'} campaign with ${objective || 'engagement'} objective. Context: ${context}. Make them action-oriented and persuasive. Return as a JSON array of strings.`;
+
+      const response = await aiProviderService.generateContent(prompt, 'claude-sonnet-4-20250514');
+      
+      let ctaButtons;
+      try {
+        ctaButtons = JSON.parse(response);
+      } catch {
+        // Fallback parsing if AI doesn't return pure JSON
+        const buttons = response.split('\n')
+          .filter((line: string) => line.trim().length > 0)
+          .map((line: string) => line.replace(/^[-•*\d.]\s*/, '').trim())
+          .slice(0, count);
+        ctaButtons = buttons;
+      }
+
+      res.json({ ctaButtons });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to generate CTA buttons", error: String(error) });
+    }
+  });
+
+  app.post("/api/quickstart/grounding-library", authenticateToken, async (req: any, res) => {
+    try {
+      const { newsroomId, newsroomInfo, existingContent } = req.body;
+      
+      if (!newsroomId) {
+        return res.status(400).json({ message: "Newsroom ID is required" });
+      }
+
+      const newsroom = await storage.getNewsroom(newsroomId);
+      if (!newsroom) {
+        return res.status(404).json({ message: "Newsroom not found" });
+      }
+
+      const prompt = `Create a comprehensive brand grounding guide for ${newsroom.name}. 
+      
+      Newsroom Information: ${newsroomInfo || newsroom.description || 'Local news organization'}
+      Existing Content to Analyze: ${existingContent || 'No existing content provided'}
+      
+      Generate:
+      1. Brand tone (2-3 descriptive words)
+      2. Brand voice (1-2 sentences describing personality)
+      3. 3-5 key messages
+      4. Editorial guidelines (2-3 sentences)
+      
+      Return as JSON with keys: tone, voice, keyMessages (array), guidelines`;
+
+      const response = await aiProviderService.generateContent(prompt, 'claude-sonnet-4-20250514');
+      
+      let brandGuide;
+      try {
+        brandGuide = JSON.parse(response);
+      } catch {
+        // Fallback if AI doesn't return proper JSON
+        brandGuide = {
+          tone: "Professional, trustworthy",
+          voice: "Authoritative yet approachable, committed to community service and transparency.",
+          keyMessages: [
+            "Independent local journalism matters",
+            "Community-driven news coverage", 
+            "Transparency in reporting"
+          ],
+          guidelines: "Focus on local impact, use active voice, include community perspectives."
+        };
+      }
+
+      const stylesheet = await storage.createBrandStylesheet({
+        newsroomId,
+        name: `${newsroom.name} - AI Generated Guide`,
+        description: "Automatically generated brand guidelines based on newsroom analysis",
+        tone: brandGuide.tone,
+        voice: brandGuide.voice,
+        keyMessages: brandGuide.keyMessages,
+        guidelines: brandGuide.guidelines,
+        isDefault: false,
+      });
+
+      res.json(stylesheet);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to generate grounding library", error: String(error) });
+    }
+  });
+
   // Campaign Templates
   app.get("/api/templates", async (req, res) => {
     try {
