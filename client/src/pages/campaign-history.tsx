@@ -23,6 +23,15 @@ export default function CampaignHistory() {
   
   const { data: campaigns, isLoading, error } = useQuery({
     queryKey: ["/api/newsrooms", newsroomId, "campaigns"],
+    enabled: !!newsroomId,
+  });
+
+  console.log('Campaign History Debug:', {
+    user,
+    newsroomId,
+    campaigns,
+    isLoading,
+    error: error?.message || error,
   });
 
   const campaignList = Array.isArray(campaigns) ? campaigns : [];
@@ -59,6 +68,26 @@ export default function CampaignHistory() {
 
   // Check if any filters are active
   const hasActiveFilters = searchQuery !== "" || statusFilter !== "all" || typeFilter !== "all" || objectiveFilter !== "all";
+
+  if (error) {
+    return (
+      <>
+        <Sidebar />
+        <main className="flex-1 overflow-hidden">
+          <Header 
+            title="Campaign History" 
+            subtitle="View and manage all your marketing campaigns"
+          />
+          <div className="p-6">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-800">Error loading campaigns: {error instanceof Error ? error.message : String(error)}</p>
+              <p className="text-sm text-red-600 mt-1">User ID: {user.id}, Newsroom ID: {newsroomId}</p>
+            </div>
+          </div>
+        </main>
+      </>
+    );
+  }
 
   return (
     <>
