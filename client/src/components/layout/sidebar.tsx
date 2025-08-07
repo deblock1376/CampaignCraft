@@ -12,7 +12,7 @@ export default function Sidebar() {
     { href: "/", icon: "fas fa-home", label: "Dashboard" },
     { href: "/campaigns/new", icon: "fas fa-plus-circle", label: "New Campaign" },
     { href: "/campaigns/history", icon: "fas fa-history", label: "Campaign History" },
-    { href: "/stylesheets", icon: "fas fa-palette", label: "Grounding Library" },
+    { href: "/stylesheets", icon: "fas fa-palette", label: "New Library" },
     { href: "/settings", icon: "fas fa-cog", label: "Settings" },
   ];
 

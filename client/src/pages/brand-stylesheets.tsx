@@ -154,7 +154,7 @@ export default function BrandStylesheets() {
       <Sidebar />
       <main className="flex-1 overflow-hidden">
         <Header 
-          title="Grounding Library" 
+          title="New Library" 
           subtitle="Manage your newsroom's brand voice and messaging guidelines"
           action={
             <Button onClick={() => setIsCreateOpen(true)}>
