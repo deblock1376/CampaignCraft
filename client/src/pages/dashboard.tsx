@@ -9,14 +9,10 @@ import { Link } from "wouter";
 export default function Dashboard() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const newsroomId = user.newsroomId || 1;
+  const isAdmin = user.email === 'admin@campaigncraft.com';
 
   const { data: campaigns, isLoading } = useQuery({
     queryKey: ["/api/newsrooms", newsroomId, "campaigns"],
-    queryFn: async () => {
-      const response = await fetch(`/api/newsrooms/${newsroomId}/campaigns`);
-      if (!response.ok) throw new Error('Failed to fetch campaigns');
-      return response.json();
-    },
   });
 
   const { data: templates } = useQuery({
@@ -75,7 +71,14 @@ export default function Dashboard() {
                     {campaigns.slice(0, 5).map((campaign: any) => (
                       <div key={campaign.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                         <div>
-                          <p className="text-sm font-medium text-slate-900">{campaign.title}</p>
+                          <div className="flex items-center space-x-2 mb-1">
+                            <p className="text-sm font-medium text-slate-900">{campaign.title}</p>
+                            {campaign.newsroomName && (
+                              <Badge variant="outline" className="text-xs">
+                                {campaign.newsroomName}
+                              </Badge>
+                            )}
+                          </div>
                           <p className="text-xs text-slate-500">
                             {new Date(campaign.createdAt).toLocaleDateString()} • {campaign.type}
                           </p>

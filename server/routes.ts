@@ -181,7 +181,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const newsroomId = parseInt(req.params.newsroomId);
       const campaigns = await storage.getCampaignsByNewsroom(newsroomId);
-      res.json(campaigns);
+      
+      // Get newsroom info to include name in response
+      const newsroom = await storage.getNewsroom(newsroomId);
+      const campaignsWithNewsroom = campaigns.map(campaign => ({
+        ...campaign,
+        newsroomName: newsroom?.name || 'Unknown Newsroom'
+      }));
+      
+      res.json(campaignsWithNewsroom);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch campaigns" });
     }
