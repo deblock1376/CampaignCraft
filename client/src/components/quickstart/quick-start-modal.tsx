@@ -29,7 +29,8 @@ export default function QuickStartModal({ isOpen, onClose, tool, title, descript
   const [context, setContext] = useState("");
   const [campaignType, setCampaignType] = useState("email");
   const [objective, setObjective] = useState("engagement");
-  const [newsroomId] = useState(1); // For now, using newsroom ID 1
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const newsroomId = user.newsroomId || 1;
   
   // Rapid Response specific
   const [headline, setHeadline] = useState("");
@@ -52,7 +53,7 @@ export default function QuickStartModal({ isOpen, onClose, tool, title, descript
   });
 
   const { data: campaigns } = useQuery({
-    queryKey: ["/api/campaigns", newsroomId],
+    queryKey: ["/api/newsrooms", newsroomId, "campaigns"],
   });
 
   const mutation = useMutation({
