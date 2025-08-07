@@ -127,7 +127,7 @@ export default function EmailOptimizer() {
               <p className="text-slate-600">Generate high-performing subject lines, preheader text, and button copy optimized for nonprofit local news</p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="space-y-8">
               {/* Generator Form */}
               <Card>
                 <CardHeader>
