@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import CampaignPreview from "./campaign-preview";
 
 const formSchema = z.object({
-  type: z.enum(['email', 'social', 'web']),
+  type: z.enum(['email', 'social']),
   objective: z.enum(['subscription', 'donation', 'membership', 'engagement']),
   context: z.string().min(10, "Please provide more context"),
   aiModel: z.string(),
@@ -132,8 +132,8 @@ export default function CampaignForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Campaign Type</FormLabel>
-                      <div className="grid grid-cols-3 gap-2">
-                        {(['email', 'social', 'web'] as const).map((type) => (
+                      <div className="grid grid-cols-2 gap-2">
+                        {(['email', 'social'] as const).map((type) => (
                           <Button
                             key={type}
                             type="button"
@@ -142,7 +142,7 @@ export default function CampaignForm() {
                             onClick={() => field.onChange(type)}
                             className="flex flex-col h-auto py-3"
                           >
-                            <i className={`fas fa-${type === 'email' ? 'envelope' : type === 'social' ? 'share-alt' : 'globe'} mb-1`}></i>
+                            <i className={`fas fa-${type === 'email' ? 'envelope' : 'share-alt'} mb-1`}></i>
                             <span className="capitalize">{type}</span>
                           </Button>
                         ))}
