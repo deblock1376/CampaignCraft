@@ -253,9 +253,9 @@ export default function Admin() {
         title="Admin Control Panel" 
         subtitle="Manage newsroom accounts and access"
         action={
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 shrink-0">
             <Link href="/dashboard">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="whitespace-nowrap">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Dashboard
               </Button>
