@@ -54,6 +54,8 @@ export default function QuickStartModal({ isOpen, onClose, tool, title, descript
 
   const { data: campaigns, isLoading: campaignsLoading, error: campaignsError } = useQuery({
     queryKey: ["/api/newsrooms", newsroomId, "campaigns"],
+    retry: false,
+    refetchOnWindowFocus: false,
   });
 
   const mutation = useMutation({
@@ -234,7 +236,7 @@ export default function QuickStartModal({ isOpen, onClose, tool, title, descript
               </Select>
               {campaignsError && (
                 <div className="text-sm text-red-600 mt-1">
-                  Error loading campaigns: {(campaignsError as any)?.message}
+                  Error loading campaigns: {campaignsError instanceof Error ? campaignsError.message : String(campaignsError)}
                 </div>
               )}
             </div>
