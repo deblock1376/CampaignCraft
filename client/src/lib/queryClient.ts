@@ -49,14 +49,35 @@ export const getQueryFn: <T>(options: {
       headers["Authorization"] = `Bearer ${token}`;
     }
     
-    console.log('Making authenticated request to:', queryKey[0], 'with token:', token ? token.substring(0, 20) + '...' : 'none');
+    // Properly construct URL from queryKey array
+    let url: string;
+    if (Array.isArray(queryKey)) {
+      if (queryKey.length === 3 && queryKey[0] === '/api/newsrooms') {
+        // Handle ["/api/newsrooms", newsroomId, "campaigns"] format
+        url = `${queryKey[0]}/${queryKey[1]}/${queryKey[2]}`;
+      } else {
+        // Default join behavior
+        url = queryKey.join('/');
+      }
+    } else {
+      url = queryKey[0] as string;
+    }
+    console.log('Making authenticated request to:', url, 'with token:', token ? token.substring(0, 20) + '...' : 'none');
     
-    const res = await fetch(queryKey[0] as string, {
+    const res = await fetch(url, {
       headers,
       credentials: "include",
     });
 
-    console.log('Response status:', res.status, 'for', queryKey[0]);
+    console.log('Response status:', res.status, 'for', url);
+    
+    // Log response content type and body for debugging
+    const contentType = res.headers.get('content-type');
+    if (!res.ok) {
+      const responseText = await res.text();
+      console.log('Error response:', res.status, contentType, responseText.substring(0, 200));
+      throw new Error(`${res.status}: ${responseText}`);
+    }
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
       return null;
@@ -72,8 +93,8 @@ export const getQueryFn: <T>(options: {
       return null;
     }
 
-    await throwIfResNotOk(res);
-    return await res.json();
+    const data = await res.json();
+    return data;
   };
 
 export const queryClient = new QueryClient({
