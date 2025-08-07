@@ -157,7 +157,7 @@ export default function BrandStylesheets() {
           title="Grounding Library" 
           subtitle="Manage your newsroom's brand voice and messaging guidelines"
           action={
-            <Button onClick={() => setIsCreateOpen(true)}>
+            <Button onClick={() => setIsCreateOpen(true)} className="flex items-center justify-center">
               <i className="fas fa-plus mr-2"></i>
               New Library
             </Button>
