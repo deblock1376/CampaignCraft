@@ -1,0 +1,16 @@
+CampaignCraft Style Guide - Test Document
+
+This is a test document to verify our document upload functionality for the grounding library.
+
+Brand Voice Guidelines:
+- Use clear, accessible language
+- Focus on community impact
+- Maintain professional tone while being approachable
+- Include local context and relevance
+
+Key Messaging:
+- Quality journalism matters
+- Community-driven reporting
+- Transparency and accountability
+
+This document demonstrates how reference materials can be uploaded to inform AI campaign generation.
