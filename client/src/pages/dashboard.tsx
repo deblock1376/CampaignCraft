@@ -70,24 +70,29 @@ export default function Dashboard() {
                 ) : Array.isArray(campaigns) && campaigns.length > 0 ? (
                   <div className="space-y-3">
                     {campaigns.slice(0, 5).map((campaign: any) => (
-                      <div key={campaign.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                        <div>
-                          <div className="flex items-center space-x-2 mb-1">
-                            <p className="text-sm font-medium text-slate-900">{campaign.title}</p>
-                            {campaign.newsroomName && (
-                              <Badge variant="outline" className="text-xs">
-                                {campaign.newsroomName}
-                              </Badge>
-                            )}
+                      <Link key={campaign.id} href="/campaigns/history">
+                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer group">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <p className="text-sm font-medium text-slate-900 group-hover:text-primary">{campaign.title}</p>
+                              {campaign.newsroomName && (
+                                <Badge variant="outline" className="text-xs">
+                                  {campaign.newsroomName}
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-xs text-slate-500">
+                              {new Date(campaign.createdAt).toLocaleDateString()} • {campaign.type}
+                            </p>
                           </div>
-                          <p className="text-xs text-slate-500">
-                            {new Date(campaign.createdAt).toLocaleDateString()} • {campaign.type}
-                          </p>
+                          <div className="flex items-center space-x-2">
+                            <Badge variant={campaign.status === 'active' ? 'default' : 'secondary'}>
+                              {campaign.status}
+                            </Badge>
+                            <i className="fas fa-external-link-alt text-xs text-slate-400 group-hover:text-primary transition-colors"></i>
+                          </div>
                         </div>
-                        <Badge variant={campaign.status === 'active' ? 'default' : 'secondary'}>
-                          {campaign.status}
-                        </Badge>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 ) : (
