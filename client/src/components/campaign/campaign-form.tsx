@@ -117,8 +117,10 @@ export default function CampaignForm() {
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="gpt-4o">OpenAI GPT-4o (Creative)</SelectItem>
-                          <SelectItem value="claude-sonnet-4-20250514">Anthropic Claude Sonnet 4 (Analytical)</SelectItem>
                           <SelectItem value="gemini-2.5-flash">Google Gemini 2.5 Flash (Fast & Balanced)</SelectItem>
+                          <SelectItem value="claude-sonnet-4-20250514" disabled className="text-gray-400">
+                            Anthropic Claude Sonnet 4 (coming soon)
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
