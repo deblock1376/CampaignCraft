@@ -112,6 +112,7 @@ export class MemStorage implements IStorage {
         body: "Inter"
       },
       guidelines: "Focus on local impact, use active voice, include community perspectives",
+      documentPaths: [],
       isDefault: true,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -174,6 +175,47 @@ export class MemStorage implements IStorage {
     this.currentId = 10;
   }
 
+  // Users
+  async getUser(id: number): Promise<User | undefined> {
+    return this.users.get(id);
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(u => u.email === email);
+  }
+
+  async getUserByNewsroomId(newsroomId: number): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(u => u.newsroomId === newsroomId);
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const id = this.currentId++;
+    const user: User = {
+      ...insertUser,
+      id,
+      role: insertUser.role || 'user',
+      newsroomId: insertUser.newsroomId || null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.users.set(id, user);
+    return user;
+  }
+
+  async updateUser(id: number, updates: Partial<InsertUser>): Promise<User> {
+    const existing = this.users.get(id);
+    if (!existing) {
+      throw new Error(`User with id ${id} not found`);
+    }
+    const updated: User = {
+      ...existing,
+      ...updates,
+      updatedAt: new Date(),
+    };
+    this.users.set(id, updated);
+    return updated;
+  }
+
   // Newsrooms
   async getNewsroom(id: number): Promise<Newsroom | undefined> {
     return this.newsrooms.get(id);
@@ -198,6 +240,23 @@ export class MemStorage implements IStorage {
     return newsroom;
   }
 
+  async getAllNewsrooms(): Promise<Newsroom[]> {
+    return Array.from(this.newsrooms.values());
+  }
+
+  async updateNewsroom(id: number, updates: Partial<InsertNewsroom>): Promise<Newsroom> {
+    const existing = this.newsrooms.get(id);
+    if (!existing) {
+      throw new Error(`Newsroom with id ${id} not found`);
+    }
+    const updated: Newsroom = {
+      ...existing,
+      ...updates,
+    };
+    this.newsrooms.set(id, updated);
+    return updated;
+  }
+
   // Brand Stylesheets
   async getBrandStylesheet(id: number): Promise<BrandStylesheet | undefined> {
     return this.brandStylesheets.get(id);
@@ -217,6 +276,7 @@ export class MemStorage implements IStorage {
       colorPalette: insertStylesheet.colorPalette || null,
       typography: insertStylesheet.typography || null,
       guidelines: insertStylesheet.guidelines || null,
+      documentPaths: insertStylesheet.documentPaths || null,
       isDefault: insertStylesheet.isDefault || null,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -252,6 +312,16 @@ export class MemStorage implements IStorage {
     return Array.from(this.campaigns.values())
       .filter(c => c.newsroomId === newsroomId)
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async getAllCampaigns(): Promise<(Campaign & { newsroomName: string })[]> {
+    return Array.from(this.campaigns.values()).map(campaign => {
+      const newsroom = this.newsrooms.get(campaign.newsroomId);
+      return {
+        ...campaign,
+        newsroomName: newsroom?.name || 'Unknown Newsroom'
+      };
+    }).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
   async createCampaign(insertCampaign: InsertCampaign): Promise<Campaign> {
