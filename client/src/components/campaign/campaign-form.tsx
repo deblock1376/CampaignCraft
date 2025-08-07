@@ -96,10 +96,6 @@ export default function CampaignForm() {
 
   return (
     <div className="space-y-8">
-      {/* DEBUG: This should show at the top */}
-      <div className="p-4 bg-red-100 text-red-800 rounded">
-        DEBUG: Campaign Configuration should appear here
-      </div>
       {/* Configuration Panel */}
       <div className="space-y-6">
         <Card>
@@ -107,12 +103,12 @@ export default function CampaignForm() {
             <CollapsibleTrigger asChild>
               <CardHeader className="cursor-pointer hover:bg-slate-50 transition-colors">
                 <div className="flex items-center justify-between">
-                  <CardTitle>Campaign Configuration</CardTitle>
-                  <Button variant="ghost" size="sm">
+                  <CardTitle className="text-lg font-semibold">Campaign Configuration</CardTitle>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                     {isConfigOpen ? (
-                      <i className="fas fa-chevron-up text-slate-500"></i>
+                      <i className="fas fa-chevron-up text-slate-600"></i>
                     ) : (
-                      <i className="fas fa-chevron-down text-slate-500"></i>
+                      <i className="fas fa-chevron-down text-slate-600"></i>
                     )}
                   </Button>
                 </div>
