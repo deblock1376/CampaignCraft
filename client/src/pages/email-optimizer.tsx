@@ -121,13 +121,9 @@ export default function EmailOptimizer() {
         <Header title="Email Content Optimizer" subtitle="Generate high-performing email content for nonprofit news" />
         
         <div className="flex-1 p-8 overflow-y-auto max-h-screen">
-          <div className="max-w-6xl mx-auto">
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-slate-900 mb-2">Email Content Optimizer</h1>
-              <p className="text-slate-600">Generate high-performing subject lines, preheader text, and button copy optimized for nonprofit local news</p>
-            </div>
+          <div className="max-w-4xl mx-auto">
 
-            <div className="space-y-8">
+            <div className="space-y-6">
               {/* Generator Form */}
               <Card>
                 <CardHeader>
