@@ -6,6 +6,7 @@ import { storage } from "./storage";
 import { aiProviderService } from "./services/ai-providers";
 import { insertBrandStylesheetSchema, insertCampaignSchema, insertCampaignTemplateSchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
+import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 
@@ -483,6 +484,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Account creation error:", error);
       res.status(500).json({ error: "Failed to create account" });
+    }
+  });
+
+  // Object Storage Routes for Document Upload
+  app.post("/api/objects/upload", authenticateToken, async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error getting upload URL:", error);
+      res.status(500).json({ error: "Failed to get upload URL" });
+    }
+  });
+
+  // Route to serve uploaded documents  
+  app.get("/objects/:objectPath(*)", authenticateToken, async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const objectFile = await objectStorageService.getObjectEntityFile(req.path);
+      objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error accessing object:", error);
+      if (error instanceof ObjectNotFoundError) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+      return res.status(500).json({ error: "Failed to access document" });
+    }
+  });
+
+  // Route to finalize document upload and add to grounding guide
+  app.put("/api/grounding-guides/:id/documents", authenticateToken, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { documentURL, filename } = req.body;
+      
+      if (!documentURL || !filename) {
+        return res.status(400).json({ error: "Document URL and filename are required" });
+      }
+
+      const objectStorageService = new ObjectStorageService();
+      const objectPath = objectStorageService.normalizeObjectEntityPath(documentURL);
+      
+      // Get current grounding guide
+      const guide = await storage.getBrandStylesheet(parseInt(id));
+      if (!guide) {
+        return res.status(404).json({ error: "Grounding guide not found" });
+      }
+
+      // Check if user has access to this grounding guide
+      if (req.user.newsroomId !== guide.newsroomId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      // Add document path to the grounding guide
+      const currentPaths = guide.documentPaths || [];
+      const documentInfo = `${filename}:${objectPath}`;
+      
+      if (!currentPaths.includes(documentInfo)) {
+        currentPaths.push(documentInfo);
+        
+        await storage.updateBrandStylesheet(guide.id, {
+          documentPaths: currentPaths
+        });
+      }
+
+      res.json({ success: true, objectPath, filename });
+    } catch (error) {
+      console.error("Error adding document to grounding guide:", error);
+      res.status(500).json({ error: "Failed to add document" });
+    }
+  });
+
+  // Route to remove document from grounding guide
+  app.delete("/api/grounding-guides/:id/documents", authenticateToken, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { documentPath } = req.body;
+      
+      if (!documentPath) {
+        return res.status(400).json({ error: "Document path is required" });
+      }
+
+      const guide = await storage.getBrandStylesheet(parseInt(id));
+      if (!guide) {
+        return res.status(404).json({ error: "Grounding guide not found" });
+      }
+
+      // Check if user has access to this grounding guide
+      if (req.user.newsroomId !== guide.newsroomId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      // Remove document path from the grounding guide
+      const currentPaths = guide.documentPaths || [];
+      const updatedPaths = currentPaths.filter(path => !path.includes(documentPath));
+      
+      await storage.updateBrandStylesheet(guide.id, {
+        documentPaths: updatedPaths
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error removing document from grounding guide:", error);
+      res.status(500).json({ error: "Failed to remove document" });
     }
   });
 

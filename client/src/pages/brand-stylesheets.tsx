@@ -17,6 +17,8 @@ import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { ObjectUploader } from "@/components/ObjectUploader";
+import { Upload, FileText, X } from "lucide-react";
 
 const formSchema = insertBrandStylesheetSchema.extend({
   keyMessagesText: z.string().optional(),
@@ -362,6 +364,109 @@ export default function BrandStylesheets() {
                             </ul>
                           </div>
                         )}
+                        
+                        {/* Documents Section */}
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-sm font-medium text-slate-700">Documents</p>
+                            <ObjectUploader
+                              maxNumberOfFiles={5}
+                              maxFileSize={10485760}
+                              onGetUploadParameters={async () => {
+                                const response = await apiRequest("POST", "/api/objects/upload");
+                                const data = await response.json();
+                                return {
+                                  method: "PUT" as const,
+                                  url: data.uploadURL
+                                };
+                              }}
+                              onComplete={async (result) => {
+                                if (result.successful && result.successful.length > 0) {
+                                  const uploadedFile = result.successful[0];
+                                  const filename = uploadedFile.name;
+                                  const documentURL = uploadedFile.uploadURL;
+                                  
+                                  try {
+                                    await apiRequest("PUT", `/api/grounding-guides/${stylesheet.id}/documents`, {
+                                      documentURL,
+                                      filename
+                                    });
+                                    
+                                    queryClient.invalidateQueries({ 
+                                      queryKey: ["/api/newsrooms", newsroomId, "stylesheets"] 
+                                    });
+                                    
+                                    toast({
+                                      title: "Document uploaded",
+                                      description: `${filename} added to grounding guide`
+                                    });
+                                  } catch (error) {
+                                    toast({
+                                      title: "Upload failed",
+                                      description: "Failed to add document to grounding guide",
+                                      variant: "destructive"
+                                    });
+                                  }
+                                }
+                              }}
+                              buttonClassName="h-6 px-2 text-xs"
+                            >
+                              <Upload className="w-3 h-3 mr-1" />
+                              Add
+                            </ObjectUploader>
+                          </div>
+                          
+                          {stylesheet.documentPaths && stylesheet.documentPaths.length > 0 ? (
+                            <div className="space-y-1">
+                              {stylesheet.documentPaths.slice(0, 3).map((docPath: string, index: number) => {
+                                const [filename] = docPath.split(':');
+                                return (
+                                  <div key={index} className="flex items-center justify-between text-xs bg-slate-50 rounded px-2 py-1">
+                                    <div className="flex items-center">
+                                      <FileText className="w-3 h-3 mr-1 text-slate-400" />
+                                      <span className="truncate max-w-32">{filename}</span>
+                                    </div>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm" 
+                                      className="h-4 w-4 p-0 hover:bg-slate-200"
+                                      onClick={async () => {
+                                        try {
+                                          await apiRequest("DELETE", `/api/grounding-guides/${stylesheet.id}/documents`, {
+                                            documentPath: docPath.split(':')[1]
+                                          });
+                                          
+                                          queryClient.invalidateQueries({ 
+                                            queryKey: ["/api/newsrooms", newsroomId, "stylesheets"] 
+                                          });
+                                          
+                                          toast({
+                                            title: "Document removed",
+                                            description: `${filename} removed from grounding guide`
+                                          });
+                                        } catch (error) {
+                                          toast({
+                                            title: "Remove failed",
+                                            description: "Failed to remove document",
+                                            variant: "destructive"
+                                          });
+                                        }
+                                      }}
+                                    >
+                                      <X className="w-3 h-3" />
+                                    </Button>
+                                  </div>
+                                );
+                              })}
+                              {stylesheet.documentPaths.length > 3 && (
+                                <p className="text-xs text-slate-400">+{stylesheet.documentPaths.length - 3} more documents</p>
+                              )}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-400">No documents uploaded</p>
+                          )}
+                        </div>
+                        
                         <div className="flex justify-end space-x-2 pt-4">
                           <Button variant="outline" size="sm" onClick={() => handleEdit(stylesheet)}>
                             <i className="fas fa-edit mr-1"></i>
