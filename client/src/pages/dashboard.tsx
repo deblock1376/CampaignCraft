@@ -73,16 +73,14 @@ export default function Dashboard() {
                       <Link key={campaign.id} href="/campaigns/history">
                         <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer group">
                           <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-1">
+                            <div className="mb-1">
                               <p className="text-sm font-medium text-slate-900 group-hover:text-primary">{campaign.title}</p>
-                              {campaign.newsroomName && (
-                                <Badge variant="outline" className="text-xs">
-                                  {campaign.newsroomName}
-                                </Badge>
-                              )}
                             </div>
                             <p className="text-xs text-slate-500">
                               {new Date(campaign.createdAt).toLocaleDateString()} • {campaign.type}
+                              {campaign.newsroomName && (
+                                <> • {campaign.newsroomName}</>
+                              )}
                             </p>
                           </div>
                           <div className="flex items-center space-x-2">
