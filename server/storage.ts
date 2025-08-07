@@ -191,6 +191,7 @@ export class MemStorage implements IStorage {
       description: insertNewsroom.description || null,
       website: insertNewsroom.website || null,
       logo: insertNewsroom.logo || null,
+      isActive: insertNewsroom.isActive ?? true,
       createdAt: new Date(),
     };
     this.newsrooms.set(id, newsroom);
