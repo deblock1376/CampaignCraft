@@ -50,10 +50,12 @@ export default function QuickStartModal({ isOpen, onClose, tool, title, descript
 
   const { data: brandStylesheets } = useQuery({
     queryKey: ["/api/brand-stylesheets", newsroomId],
+    enabled: !!newsroomId,
   });
 
   const { data: campaigns, isLoading: campaignsLoading, error: campaignsError } = useQuery({
     queryKey: ["/api/newsrooms", newsroomId, "campaigns"],
+    enabled: !!newsroomId,
     retry: false,
     refetchOnWindowFocus: false,
   });

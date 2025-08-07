@@ -178,7 +178,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Campaigns
-  app.get("/api/newsrooms/:newsroomId/campaigns", async (req, res) => {
+  app.get("/api/newsrooms/:newsroomId/campaigns", authenticateToken, async (req: any, res) => {
     try {
       const newsroomId = parseInt(req.params.newsroomId);
       const campaigns = await storage.getCampaignsByNewsroom(newsroomId);
