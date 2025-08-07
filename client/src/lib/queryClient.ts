@@ -58,6 +58,15 @@ export const getQueryFn: <T>(options: {
       return null;
     }
 
+    if (res.status === 401 || res.status === 403) {
+      // Clear invalid token and user data
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      // Redirect to login
+      window.location.href = "/login";
+      return null;
+    }
+
     await throwIfResNotOk(res);
     return await res.json();
   };
