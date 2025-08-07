@@ -93,9 +93,9 @@ export default function CampaignForm() {
   const recentCampaigns = Array.isArray(campaigns) ? campaigns.slice(0, 2) : [];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="space-y-8">
       {/* Configuration Panel */}
-      <div className="lg:col-span-1 space-y-6">
+      <div className="space-y-6">
         <Card>
           <CardHeader>
             <CardTitle>Campaign Configuration</CardTitle>
@@ -213,7 +213,7 @@ export default function CampaignForm() {
                   name="context"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Campaign Context</FormLabel>
+                      <FormLabel>Campaign Notes</FormLabel>
                       <FormControl>
                         <Textarea
                           placeholder="Brief context about the news story or campaign trigger..."
@@ -279,7 +279,7 @@ export default function CampaignForm() {
       </div>
 
       {/* Campaign Preview & Generation */}
-      <div className="lg:col-span-2">
+      <div>
         <CampaignPreview 
           campaign={generatedCampaign} 
           isGenerating={generateMutation.isPending}
