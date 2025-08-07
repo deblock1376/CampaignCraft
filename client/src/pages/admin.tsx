@@ -253,7 +253,7 @@ export default function Admin() {
         title="Admin Control Panel" 
         subtitle="Manage newsroom accounts and access"
         action={
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-4">
             <Link href="/dashboard">
               <Button variant="outline" size="sm">
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -375,9 +375,9 @@ export default function Admin() {
               </DialogContent>
             </Dialog>
             
-            <div className="flex items-center space-x-2">
-              <Shield className="w-5 h-5 text-primary" />
-              <span className="text-sm font-medium text-primary">Administrator</span>
+            <div className="flex items-center space-x-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg">
+              <Shield className="w-4 h-4 text-blue-600" />
+              <span className="text-sm font-medium text-blue-700">Administrator</span>
             </div>
           </div>
         }
