@@ -8,6 +8,7 @@ import Dashboard from "@/pages/dashboard";
 import NewCampaign from "@/pages/new-campaign";
 import CampaignHistory from "@/pages/campaign-history";
 import BrandStylesheets from "@/pages/brand-stylesheets";
+import EmailOptimizer from "@/pages/email-optimizer";
 import Settings from "@/pages/settings";
 import Admin from "@/pages/admin";
 import Login from "@/pages/login";
@@ -39,6 +40,7 @@ function Router() {
       <Route path="/campaigns/new" component={NewCampaign} />
       <Route path="/campaigns/history" component={CampaignHistory} />
       <Route path="/stylesheets" component={BrandStylesheets} />
+      <Route path="/email-optimizer" component={EmailOptimizer} />
       <Route path="/settings" component={Settings} />
       <Route path="/admin" component={Admin} />
       <Route path="/login" component={Login} />

@@ -13,6 +13,7 @@ export default function Sidebar() {
     { href: "/campaigns/new", icon: "fas fa-plus-circle", label: "New Campaign" },
     { href: "/campaigns/history", icon: "fas fa-history", label: "Campaign History" },
     { href: "/stylesheets", icon: "fas fa-palette", label: "Grounding Library" },
+    { href: "/email-optimizer", icon: "fas fa-envelope", label: "Email Optimizer" },
     { href: "/settings", icon: "fas fa-cog", label: "Settings" },
   ];
 

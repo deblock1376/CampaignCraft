@@ -592,6 +592,145 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Email Optimizer Routes
+  app.post("/api/email-optimizer/generate", authenticateToken, async (req: any, res) => {
+    try {
+      const { contentType, campaignContext, targetAudience, mainGoal, existingText } = req.body;
+      
+      if (!contentType || !campaignContext || !targetAudience || !mainGoal) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      // Get user's grounding guides for context
+      const user = await storage.getUser(req.user.userId);
+      if (!user || !user.newsroomId) {
+        return res.status(401).json({ error: "User not found" });
+      }
+      const stylesheets = await storage.getBrandStylesheetsByNewsroom(user.newsroomId);
+      const defaultStylesheet = stylesheets.find(s => s.isDefault) || stylesheets[0];
+
+      const contentTypeMap: Record<string, string> = {
+        subject_line: "subject lines",
+        preheader: "preheader text", 
+        button_text: "button text"
+      };
+
+      const prompt = `You are an expert email marketing strategist specializing in nonprofit local news. Your task is to generate 5 highly optimized ${contentTypeMap[contentType]} options.
+
+CAMPAIGN CONTEXT:
+${campaignContext}
+
+TARGET AUDIENCE: ${targetAudience}
+MAIN GOAL: ${mainGoal}
+${existingText ? `CURRENT TEXT: ${existingText}` : ''}
+
+BRAND GUIDELINES:
+${defaultStylesheet ? `
+- Tone: ${defaultStylesheet.tone}
+- Voice: ${defaultStylesheet.voice}
+- Key Messages: ${defaultStylesheet.keyMessages?.join(', ') || 'N/A'}
+- Guidelines: ${defaultStylesheet.guidelines || 'N/A'}
+` : 'Use professional, community-focused tone'}
+
+Generate 5 ${contentTypeMap[contentType]} options optimized for nonprofit local news. For each option, provide:
+1. The text
+2. A brief explanation of the strategy
+3. A performance score (1-100) based on email marketing best practices
+4. A category (e.g., "Urgency", "Curiosity", "Community Impact", "Direct Benefit")
+
+${contentType === 'subject_line' ? `
+SUBJECT LINE REQUIREMENTS:
+- Keep under 50 characters
+- Create urgency without clickbait
+- Include local relevance when possible
+- Avoid spam trigger words
+- Focus on community impact
+` : ''}
+
+${contentType === 'preheader' ? `
+PREHEADER REQUIREMENTS:
+- 90-130 characters optimal
+- Complement the subject line, don't repeat it
+- Provide additional context or hook
+- End with compelling reason to open
+` : ''}
+
+${contentType === 'button_text' ? `
+BUTTON TEXT REQUIREMENTS:
+- 2-5 words maximum
+- Use action-oriented verbs
+- Be specific about the outcome
+- Create sense of value or urgency
+` : ''}
+
+Return JSON format:
+{
+  "options": [
+    {
+      "text": "example text",
+      "reasoning": "explanation of strategy",
+      "score": 85,
+      "category": "category name"
+    }
+  ]
+}`;
+
+      console.log("Generating email content with prompt:", prompt.substring(0, 200) + "...");
+
+      const aiResponse = await aiProviderService.generateCampaign(prompt, "claude-sonnet-4-20250514", null);
+      
+      let options;
+      try {
+        // Try to parse the AI response as JSON
+        const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsedResponse = JSON.parse(jsonMatch[0]);
+          options = parsedResponse.options || [];
+        } else {
+          throw new Error("No JSON found in response");
+        }
+      } catch (parseError) {
+        console.error("Failed to parse AI response as JSON, creating fallback options");
+        // Create fallback options based on content type
+        options = createFallbackOptions(contentType, campaignContext, targetAudience, mainGoal);
+      }
+
+      res.json({ options });
+    } catch (error) {
+      console.error("Error generating email content:", error);
+      res.status(500).json({ error: "Failed to generate content" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// Fallback function for email content generation
+function createFallbackOptions(contentType: string, context: string, audience: string, goal: string) {
+  const baseOptions: Record<string, Array<{text: string, reasoning: string, score: number, category: string}>> = {
+    subject_line: [
+      { text: "Breaking: Local News Update", reasoning: "Creates urgency with 'Breaking' and emphasizes local relevance", score: 82, category: "Urgency" },
+      { text: "Your Community Needs This Info", reasoning: "Direct appeal to community responsibility and personal relevance", score: 79, category: "Community Impact" },
+      { text: "Important Updates Inside", reasoning: "Simple, direct approach that promises valuable content", score: 75, category: "Direct Benefit" },
+      { text: "What's Happening in Your Area", reasoning: "Personal and local focus that creates curiosity", score: 78, category: "Curiosity" },
+      { text: "Don't Miss This Local Story", reasoning: "Combines urgency with local relevance and FOMO", score: 80, category: "Urgency" }
+    ],
+    preheader: [
+      { text: "Get the latest updates that directly impact your daily life and community decisions", reasoning: "Emphasizes personal relevance and community impact", score: 85, category: "Personal Relevance" },
+      { text: "Local reporting you can trust - stories that matter to your neighborhood", reasoning: "Builds trust and emphasizes local focus", score: 83, category: "Trust Building" },
+      { text: "Breaking developments in your area - stay informed about changes affecting you", reasoning: "Creates urgency while promising relevant information", score: 81, category: "Urgency" },
+      { text: "Independent journalism serving your community - read the full story inside", reasoning: "Emphasizes mission and calls for action", score: 79, category: "Mission Driven" },
+      { text: "Your voice matters - see how local decisions impact your family and future", reasoning: "Empowers reader and creates personal connection", score: 82, category: "Empowerment" }
+    ],
+    button_text: [
+      { text: "Read Full Story", reasoning: "Clear, direct action that promises complete information", score: 85, category: "Direct Action" },
+      { text: "Learn More", reasoning: "Simple, non-threatening call to action", score: 78, category: "Educational" },
+      { text: "Get Details", reasoning: "Promises specific information, creates value", score: 80, category: "Information" },
+      { text: "See Impact", reasoning: "Emphasizes consequences and relevance", score: 82, category: "Relevance" },
+      { text: "Join Community", reasoning: "Builds sense of belonging and engagement", score: 79, category: "Community" }
+    ]
+  };
+
+  return baseOptions[contentType] || [];
 }
