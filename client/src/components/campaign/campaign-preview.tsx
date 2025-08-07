@@ -329,10 +329,14 @@ export default function CampaignPreview({
                       Copy
                     </Button>
                   </div>
-                  <div 
-                    className="text-slate-700 leading-relaxed whitespace-pre-wrap"
-                    dangerouslySetInnerHTML={{ __html: campaign.content?.content || '' }}
-                  />
+                  <div className="text-slate-700 leading-relaxed">
+                    <div className="whitespace-pre-line">
+                      {typeof campaign.content?.content === 'string' 
+                        ? campaign.content.content.split('. ').join('.\n\n').replace(/\n{3,}/g, '\n\n')
+                        : campaign.content?.content
+                      }
+                    </div>
+                  </div>
                 </div>
                 
                 {campaign.content?.cta && (

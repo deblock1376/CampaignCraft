@@ -421,8 +421,10 @@ export default function QuickStartModal({ isOpen, onClose, tool, title, descript
                   </div>
                   <div>
                     <Label className="text-sm font-medium">Email Content</Label>
-                    <div className="p-3 bg-slate-50 rounded border mt-1 text-sm max-h-32 overflow-y-auto">
-                      {campaign.content?.content}
+                    <div className="p-3 bg-slate-50 rounded border mt-1 text-sm max-h-40 overflow-y-auto">
+                      <div className="whitespace-pre-line leading-relaxed">
+                        {campaign.content?.content?.split('. ').join('.\n\n').replace(/\n{3,}/g, '\n\n')}
+                      </div>
                     </div>
                   </div>
                   <div>
