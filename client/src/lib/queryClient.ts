@@ -49,21 +49,26 @@ export const getQueryFn: <T>(options: {
       headers["Authorization"] = `Bearer ${token}`;
     }
     
+    console.log('Making authenticated request to:', queryKey[0], 'with token:', token ? token.substring(0, 20) + '...' : 'none');
+    
     const res = await fetch(queryKey[0] as string, {
       headers,
       credentials: "include",
     });
+
+    console.log('Response status:', res.status, 'for', queryKey[0]);
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
       return null;
     }
 
     if (res.status === 401 || res.status === 403) {
+      console.log('Authentication failed, clearing tokens and redirecting to login');
       // Clear invalid token and user data
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      // Redirect to login
-      window.location.href = "/login";
+      // Force reload instead of just redirect
+      window.location.reload();
       return null;
     }
 

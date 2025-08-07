@@ -26,15 +26,21 @@ export default function Login() {
 
       if (response.ok) {
         const data = await response.json();
+        // Clear old data first
+        localStorage.clear();
+        
         // Store user session and token in localStorage
         localStorage.setItem("user", JSON.stringify(data.user));
         localStorage.setItem("token", data.token);
+        
         toast({
           title: "Login successful",
           description: `Welcome back, ${data.user.name}!`,
         });
-        // Force a page refresh to update authentication state
+        
+        // Clear query cache and force full page reload to ensure fresh state
         window.location.href = "/dashboard";
+        setTimeout(() => window.location.reload(), 100);
       } else {
         const error = await response.json();
         toast({
