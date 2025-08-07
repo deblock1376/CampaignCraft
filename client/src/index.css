@@ -13,26 +13,26 @@
   --card-foreground: hsl(222, 84%, 4.9%);
   --border: hsl(214, 32%, 91%);
   --input: hsl(214, 32%, 91%);
-  --primary: hsl(271, 81%, 56%);
+  --primary: hsl(210, 72%, 29%);
   --primary-foreground: hsl(210, 40%, 98%);
-  --secondary: hsl(270, 20%, 96%);
+  --secondary: hsl(210, 20%, 96%);
   --secondary-foreground: hsl(222, 84%, 4.9%);
-  --accent: hsl(280, 65%, 45%);
+  --accent: hsl(210, 82%, 35%);
   --accent-foreground: hsl(210, 40%, 98%);
   --destructive: hsl(0, 84%, 60%);
   --destructive-foreground: hsl(210, 40%, 98%);
   --ring: hsl(215, 20%, 65%);
   --radius: 0.5rem;
-  --chart-1: hsl(271, 81%, 56%);
-  --chart-2: hsl(280, 65%, 45%);
-  --chart-3: hsl(290, 70%, 50%);
-  --chart-4: hsl(260, 75%, 60%);
-  --chart-5: hsl(250, 80%, 65%);
+  --chart-1: hsl(210, 72%, 29%);
+  --chart-2: hsl(210, 82%, 35%);
+  --chart-3: hsl(210, 90%, 40%);
+  --chart-4: hsl(210, 60%, 25%);
+  --chart-5: hsl(210, 50%, 20%);
   --sidebar-background: hsl(0, 0%, 100%);
   --sidebar-foreground: hsl(222, 84%, 4.9%);
-  --sidebar-primary: hsl(271, 81%, 56%);
+  --sidebar-primary: hsl(210, 72%, 29%);
   --sidebar-primary-foreground: hsl(210, 40%, 98%);
-  --sidebar-accent: hsl(270, 20%, 96%);
+  --sidebar-accent: hsl(210, 20%, 96%);
   --sidebar-accent-foreground: hsl(222, 84%, 4.9%);
   --sidebar-border: hsl(214, 32%, 91%);
   --sidebar-ring: hsl(215, 20%, 65%);
@@ -49,20 +49,20 @@
   --card-foreground: hsl(210, 40%, 98%);
   --border: hsl(217, 32%, 17%);
   --input: hsl(217, 32%, 17%);
-  --primary: hsl(271, 81%, 56%);
+  --primary: hsl(210, 72%, 29%);
   --primary-foreground: hsl(210, 40%, 98%);
-  --secondary: hsl(270, 15%, 17%);
+  --secondary: hsl(210, 15%, 17%);
   --secondary-foreground: hsl(210, 40%, 98%);
-  --accent: hsl(280, 65%, 45%);
+  --accent: hsl(210, 82%, 35%);
   --accent-foreground: hsl(210, 40%, 98%);
   --destructive: hsl(0, 62%, 30%);
   --destructive-foreground: hsl(210, 40%, 98%);
   --ring: hsl(217, 32%, 17%);
   --sidebar-background: hsl(222, 84%, 4.9%);
   --sidebar-foreground: hsl(210, 40%, 98%);
-  --sidebar-primary: hsl(271, 81%, 56%);
+  --sidebar-primary: hsl(210, 72%, 29%);
   --sidebar-primary-foreground: hsl(210, 40%, 98%);
-  --sidebar-accent: hsl(270, 15%, 17%);
+  --sidebar-accent: hsl(210, 15%, 17%);
   --sidebar-accent-foreground: hsl(210, 40%, 98%);
   --sidebar-border: hsl(217, 32%, 17%);
   --sidebar-ring: hsl(217, 32%, 17%);
@@ -82,7 +82,7 @@
 /* Custom Scrollbar Styles */
 .scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: hsl(271, 81%, 56%) hsl(270, 20%, 96%);
+  scrollbar-color: hsl(210, 72%, 29%) hsl(210, 20%, 96%);
 }
 
 .scrollbar-thin::-webkit-scrollbar {
@@ -90,15 +90,15 @@
 }
 
 .scrollbar-thin::-webkit-scrollbar-track {
-  background: hsl(270, 20%, 96%);
+  background: hsl(210, 20%, 96%);
   border-radius: 4px;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: hsl(271, 81%, 56%);
+  background: hsl(210, 72%, 29%);
   border-radius: 4px;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: hsl(280, 65%, 45%);
+  background: hsl(210, 82%, 35%);
 }
