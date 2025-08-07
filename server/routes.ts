@@ -196,7 +196,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/campaigns/:id", async (req, res) => {
+  app.get("/api/campaigns/:id", authenticateToken, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const campaign = await storage.getCampaign(id);
@@ -209,7 +209,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/newsrooms/:newsroomId/campaigns", async (req, res) => {
+  app.post("/api/newsrooms/:newsroomId/campaigns", authenticateToken, async (req: any, res) => {
     try {
       const newsroomId = parseInt(req.params.newsroomId);
       const validatedData = insertCampaignSchema.parse({
@@ -226,7 +226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/campaigns/:id", async (req, res) => {
+  app.put("/api/campaigns/:id", authenticateToken, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const updates = insertCampaignSchema.partial().parse(req.body);
