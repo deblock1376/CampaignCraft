@@ -96,26 +96,25 @@ export default function CampaignForm() {
 
   return (
     <div className="space-y-8">
-      {/* Configuration Panel */}
-      <div className="space-y-6">
-        <Card>
-          <Collapsible open={isConfigOpen} onOpenChange={setIsConfigOpen}>
-            <CollapsibleTrigger asChild>
-              <CardHeader className="cursor-pointer hover:bg-slate-50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-semibold">Campaign Configuration</CardTitle>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                    {isConfigOpen ? (
-                      <i className="fas fa-chevron-up text-slate-600"></i>
-                    ) : (
-                      <i className="fas fa-chevron-down text-slate-600"></i>
-                    )}
-                  </Button>
-                </div>
-              </CardHeader>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <CardContent>
+      {/* Configuration Panel - Collapsible */}
+      <Collapsible open={isConfigOpen} onOpenChange={setIsConfigOpen}>
+        <Card className="w-full">
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer hover:bg-slate-50 transition-colors">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-semibold">Campaign Configuration</CardTitle>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  {isConfigOpen ? (
+                    <i className="fas fa-chevron-up text-slate-600"></i>
+                  ) : (
+                    <i className="fas fa-chevron-down text-slate-600"></i>
+                  )}
+                </Button>
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     <FormField
@@ -268,11 +267,11 @@ export default function CampaignForm() {
                 </Form>
               </CardContent>
             </CollapsibleContent>
-          </Collapsible>
         </Card>
+      </Collapsible>
 
-        {/* Recent Campaigns */}
-        <Card>
+      {/* Recent Campaigns */}
+      <Card>
           <CardHeader>
             <CardTitle>Recent Campaigns</CardTitle>
           </CardHeader>
@@ -298,7 +297,6 @@ export default function CampaignForm() {
             )}
           </CardContent>
         </Card>
-      </div>
 
       {/* Campaign Preview & Generation */}
       <div>
