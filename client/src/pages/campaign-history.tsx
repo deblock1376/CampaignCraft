@@ -180,7 +180,14 @@ export default function CampaignHistory() {
                       {filteredCampaigns.map((campaign: any) => (
                         <div key={campaign.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-slate-50 transition-colors">
                         <div className="flex-1">
-                          <h3 className="font-medium text-slate-900">{campaign.title}</h3>
+                          <div className="flex items-center space-x-2 mb-1">
+                            <h3 className="font-medium text-slate-900">{campaign.title}</h3>
+                            {campaign.newsroomName && (
+                              <Badge variant="outline" className="text-xs">
+                                {campaign.newsroomName}
+                              </Badge>
+                            )}
+                          </div>
                           <div className="flex items-center space-x-4 mt-1 text-sm text-slate-600">
                             <span>{new Date(campaign.createdAt).toLocaleDateString()}</span>
                             <span>•</span>
