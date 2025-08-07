@@ -66,7 +66,24 @@ export default function QuickStartModal({ isOpen, onClose, tool, title, descript
         'grounding-library': '/api/quickstart/grounding-library',
       };
       
-      return apiRequest(endpoints[tool as keyof typeof endpoints], 'POST', data);
+      const url = endpoints[tool as keyof typeof endpoints];
+      const token = localStorage.getItem("token");
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Request failed: ${response.status}`);
+      }
+
+      return response.json();
     },
     onSuccess: (data) => {
       setResults(data);
