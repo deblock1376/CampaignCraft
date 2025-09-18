@@ -218,7 +218,7 @@ export default function QuickStartModal({ isOpen, onClose, tool, title, descript
                   <SelectValue placeholder={
                     campaignsLoading ? "Loading campaigns..." : 
                     campaignsError ? "Error loading campaigns" :
-                    (!campaigns || campaigns.length === 0) ? "No campaigns found" :
+                    (!campaigns || !Array.isArray(campaigns) || campaigns.length === 0) ? "No campaigns found" :
                     "Choose campaign to rewrite..."
                   } />
                 </SelectTrigger>
