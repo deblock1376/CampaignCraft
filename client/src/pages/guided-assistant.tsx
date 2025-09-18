@@ -30,10 +30,11 @@ export default function GuidedAssistantPage() {
 
   return (
     <>
-      <Header title="Marketing Assistant" subtitle="Step-by-step guide to creating campaigns and content" />
-      <main className="flex">
-        <Sidebar />
-        <div className="flex-1 p-8">
+      <Sidebar />
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <Header title="Marketing Assistant" subtitle="Step-by-step guide to creating campaigns and content" />
+        
+        <div className="flex-1 overflow-y-auto p-8">
           <div className="max-w-4xl mx-auto">
             <GuidedAssistant onToolSelect={handleToolSelect} />
           </div>

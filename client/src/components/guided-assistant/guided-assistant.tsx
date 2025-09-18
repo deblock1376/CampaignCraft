@@ -57,14 +57,14 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
           id: 'prepare-headline',
           title: 'Prepare Your Breaking News Headline',
           description: 'Have your headline ready and determine the urgency level',
-          action: () => {},
+          action: () => markStepCompleted('prepare-headline'),
           completed: false
         },
         {
           id: 'choose-guidelines',
-          title: 'Select Brand Guidelines (Optional)',
+          title: 'Select Brand Guidelines (Optional)', 
           description: 'Choose existing brand guidelines to maintain consistency',
-          action: () => {},
+          action: () => markStepCompleted('choose-guidelines'),
           completed: false
         },
         {
@@ -88,14 +88,14 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
           id: 'select-campaign',
           title: 'Choose Your Source Campaign',
           description: 'Pick an existing campaign that you want to adapt',
-          action: () => {},
+          action: () => markStepCompleted('select-campaign'),
           completed: false
         },
         {
           id: 'define-segments',
           title: 'Define Your Audience Segments',
           description: 'Identify the different audience groups you want to target',
-          action: () => {},
+          action: () => markStepCompleted('define-segments'),
           completed: false
         },
         {
@@ -119,7 +119,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
           id: 'define-context',
           title: 'Define Your Campaign Context',
           description: 'Describe what your email campaign is about',
-          action: () => {},
+          action: () => markStepCompleted('define-context'),
           completed: false
         },
         {
@@ -150,14 +150,14 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
           id: 'gather-info',
           title: 'Gather Newsroom Information',
           description: 'Collect information about your newsroom, mission, and audience',
-          action: () => {},
+          action: () => markStepCompleted('gather-info'),
           completed: false
         },
         {
           id: 'collect-content',
           title: 'Collect Existing Content (Optional)',
           description: 'Provide samples of your existing content for style analysis',
-          action: () => {},
+          action: () => markStepCompleted('collect-content'),
           completed: false
         },
         {
