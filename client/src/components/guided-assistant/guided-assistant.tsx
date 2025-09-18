@@ -47,6 +47,7 @@ interface GuidedAssistantProps {
 interface WizardState {
   breakingNews: {
     headline: string;
+    articleSummary: string;
     urgency: string;
     brandStylesheetId: string;
   };
@@ -70,7 +71,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [wizardState, setWizardState] = useState<WizardState>({
-    breakingNews: { headline: '', urgency: 'high', brandStylesheetId: '' },
+    breakingNews: { headline: '', articleSummary: '', urgency: 'high', brandStylesheetId: '' },
     audienceTargeting: { campaignId: '', segments: [{ name: '', description: '' }] },
     emailOptimization: { context: '', campaignType: 'email', objective: 'engagement' },
     brandSetup: { newsroomInfo: '', existingContent: '' }
@@ -78,9 +79,10 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const newsroomId = user.newsroomId || 1;
+  const isAdmin = user.email === 'admin@campaigncraft.com';
 
   const { data: brandStylesheets } = useQuery({
-    queryKey: ["/api/brand-stylesheets", newsroomId],
+    queryKey: isAdmin ? ["/api/brand-stylesheets"] : ["/api/newsrooms", newsroomId, "stylesheets"],
     enabled: !!newsroomId,
   });
 
@@ -100,8 +102,8 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
       steps: [
         {
           id: 'prepare-headline',
-          title: 'Enter Your Breaking News Headline',
-          description: 'Provide the headline and set the urgency level for your campaign',
+          title: 'Enter Breaking News Details',
+          description: 'Provide the headline, article summary, and set the urgency level for your campaign',
           completed: false
         },
         {
@@ -218,7 +220,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
     setCurrentStep(0);
     setCompletedSteps([]);
     setWizardState({
-      breakingNews: { headline: '', urgency: 'high', brandStylesheetId: '' },
+      breakingNews: { headline: '', articleSummary: '', urgency: 'high', brandStylesheetId: '' },
       audienceTargeting: { campaignId: '', segments: [{ name: '', description: '' }] },
       emailOptimization: { context: '', campaignType: 'email', objective: 'engagement' },
       brandSetup: { newsroomInfo: '', existingContent: '' }
@@ -260,7 +262,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
     switch (goalId) {
       case 'breaking-news':
         const breakingNewsState = state as typeof wizardState.breakingNews;
-        if (stepId === 'prepare-headline') return breakingNewsState.headline.length > 0;
+        if (stepId === 'prepare-headline') return breakingNewsState.headline.length > 0 && breakingNewsState.articleSummary.length > 0;
         if (stepId === 'choose-guidelines') return true; // Optional step
         if (stepId === 'generate-campaign') return true;
         break;
@@ -334,6 +336,17 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
                 />
               </div>
               <div>
+                <Label htmlFor="articleSummary">Article Summary *</Label>
+                <Textarea
+                  id="articleSummary"
+                  value={breakingNewsState.articleSummary}
+                  onChange={(e) => updateWizardState(stateKey, { articleSummary: e.target.value })}
+                  placeholder="Brief summary of the breaking news article content..."
+                  rows={3}
+                  data-testid="textarea-article-summary"
+                />
+              </div>
+              <div>
                 <Label htmlFor="urgency">Urgency Level</Label>
                 <Select 
                   value={breakingNewsState.urgency} 
@@ -385,6 +398,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
               <h4 className="font-medium">Review Your Campaign Details:</h4>
               <div className="text-sm space-y-1">
                 <p><span className="font-medium">Headline:</span> {breakingNewsState.headline}</p>
+                <p><span className="font-medium">Article Summary:</span> {breakingNewsState.articleSummary}</p>
                 <p><span className="font-medium">Urgency:</span> {breakingNewsState.urgency}</p>
                 {breakingNewsState.brandStylesheetId && (
                   <p><span className="font-medium">Brand Guidelines:</span> Selected</p>

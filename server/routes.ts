@@ -128,6 +128,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Brand Stylesheets
+  app.get("/api/brand-stylesheets", authenticateToken, requireAdmin, async (req: any, res) => {
+    try {
+      const stylesheets = await storage.getAllBrandStylesheets();
+      res.json(stylesheets);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch all brand stylesheets" });
+    }
+  });
+
   app.get("/api/newsrooms/:newsroomId/stylesheets", async (req, res) => {
     try {
       const newsroomId = parseInt(req.params.newsroomId);

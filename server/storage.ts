@@ -37,6 +37,7 @@ export interface IStorage {
   // Brand Stylesheets
   getBrandStylesheet(id: number): Promise<BrandStylesheet | undefined>;
   getBrandStylesheetsByNewsroom(newsroomId: number): Promise<BrandStylesheet[]>;
+  getAllBrandStylesheets(): Promise<BrandStylesheet[]>;
   createBrandStylesheet(stylesheet: InsertBrandStylesheet): Promise<BrandStylesheet>;
   updateBrandStylesheet(id: number, stylesheet: Partial<InsertBrandStylesheet>): Promise<BrandStylesheet>;
   deleteBrandStylesheet(id: number): Promise<void>;
@@ -266,6 +267,10 @@ export class MemStorage implements IStorage {
     return Array.from(this.brandStylesheets.values()).filter(s => s.newsroomId === newsroomId);
   }
 
+  async getAllBrandStylesheets(): Promise<BrandStylesheet[]> {
+    return Array.from(this.brandStylesheets.values());
+  }
+
   async createBrandStylesheet(insertStylesheet: InsertBrandStylesheet): Promise<BrandStylesheet> {
     const id = this.currentId++;
     const stylesheet: BrandStylesheet = {
@@ -453,6 +458,10 @@ export class DatabaseStorage implements IStorage {
 
   async getBrandStylesheetsByNewsroom(newsroomId: number): Promise<BrandStylesheet[]> {
     return await db.select().from(brandStylesheets).where(eq(brandStylesheets.newsroomId, newsroomId));
+  }
+
+  async getAllBrandStylesheets(): Promise<BrandStylesheet[]> {
+    return await db.select().from(brandStylesheets);
   }
 
   async createBrandStylesheet(insertStylesheet: InsertBrandStylesheet): Promise<BrandStylesheet> {
