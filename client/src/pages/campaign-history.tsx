@@ -207,7 +207,7 @@ export default function CampaignHistory() {
                           <div className="flex items-center space-x-2 mb-1">
                             <h3 className="font-medium text-slate-900">{campaign.title}</h3>
                             {campaign.newsroomName && (
-                              <Badge variant="outline" className="text-xs">
+                              <Badge variant="outline" className="text-xs px-2 py-1 h-5">
                                 {campaign.newsroomName}
                               </Badge>
                             )}
@@ -223,11 +223,14 @@ export default function CampaignHistory() {
                           </div>
                         </div>
                         <div className="flex items-center space-x-4">
-                          <Badge variant={
-                            campaign.status === 'active' ? 'default' :
-                            campaign.status === 'completed' ? 'secondary' :
-                            campaign.status === 'draft' ? 'outline' : 'secondary'
-                          }>
+                          <Badge 
+                            variant={
+                              campaign.status === 'active' ? 'default' :
+                              campaign.status === 'completed' ? 'secondary' :
+                              campaign.status === 'draft' ? 'outline' : 'secondary'
+                            }
+                            className="text-xs px-2 py-1 h-5 capitalize"
+                          >
                             {campaign.status}
                           </Badge>
                           <Dialog>
@@ -289,11 +292,14 @@ export default function CampaignHistory() {
                                     </div>
                                     <div>
                                       <h4 className="font-medium text-sm text-gray-700 mb-2">Status</h4>
-                                      <Badge variant={
-                                        campaign.status === 'active' ? 'default' :
-                                        campaign.status === 'completed' ? 'secondary' :
-                                        campaign.status === 'draft' ? 'outline' : 'secondary'
-                                      }>
+                                      <Badge 
+                                        variant={
+                                          campaign.status === 'active' ? 'default' :
+                                          campaign.status === 'completed' ? 'secondary' :
+                                          campaign.status === 'draft' ? 'outline' : 'secondary'
+                                        }
+                                        className="text-xs px-2 py-1 h-5 capitalize"
+                                      >
                                         {campaign.status}
                                       </Badge>
                                     </div>
