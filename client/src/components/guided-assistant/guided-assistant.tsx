@@ -3,6 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useQuery } from "@tanstack/react-query";
 import { 
   ArrowRight, 
   ArrowLeft, 
@@ -21,7 +26,7 @@ export interface AssistantStep {
   id: string;
   title: string;
   description: string;
-  action: () => void;
+  optional?: boolean;
   completed: boolean;
 }
 
@@ -39,10 +44,50 @@ interface GuidedAssistantProps {
   onToolSelect?: (toolId: string, toolTitle: string, toolDescription: string, toolIcon: string) => void;
 }
 
+interface WizardState {
+  breakingNews: {
+    headline: string;
+    urgency: string;
+    brandStylesheetId: string;
+  };
+  audienceTargeting: {
+    campaignId: string;
+    segments: Array<{ name: string; description: string }>;
+  };
+  emailOptimization: {
+    context: string;
+    campaignType: string;
+    objective: string;
+  };
+  brandSetup: {
+    newsroomInfo: string;
+    existingContent: string;
+  };
+}
+
 export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) {
   const [currentGoal, setCurrentGoal] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
+  const [wizardState, setWizardState] = useState<WizardState>({
+    breakingNews: { headline: '', urgency: 'high', brandStylesheetId: '' },
+    audienceTargeting: { campaignId: '', segments: [{ name: '', description: '' }] },
+    emailOptimization: { context: '', campaignType: 'email', objective: 'engagement' },
+    brandSetup: { newsroomInfo: '', existingContent: '' }
+  });
+
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const newsroomId = user.newsroomId || 1;
+
+  const { data: brandStylesheets } = useQuery({
+    queryKey: ["/api/brand-stylesheets", newsroomId],
+    enabled: !!newsroomId,
+  });
+
+  const { data: campaigns } = useQuery({
+    queryKey: ["/api/newsrooms", newsroomId, "campaigns"],
+    enabled: !!newsroomId,
+  });
 
   const goals: AssistantGoal[] = [
     {
@@ -55,23 +100,21 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
       steps: [
         {
           id: 'prepare-headline',
-          title: 'Prepare Your Breaking News Headline',
-          description: 'Have your headline ready and determine the urgency level',
-          action: () => markStepCompleted('prepare-headline'),
+          title: 'Enter Your Breaking News Headline',
+          description: 'Provide the headline and set the urgency level for your campaign',
           completed: false
         },
         {
           id: 'choose-guidelines',
           title: 'Select Brand Guidelines (Optional)', 
           description: 'Choose existing brand guidelines to maintain consistency',
-          action: () => markStepCompleted('choose-guidelines'),
+          optional: true,
           completed: false
         },
         {
           id: 'generate-campaign',
-          title: 'Generate Rapid-Response Campaign',
-          description: 'Use AI to create your complete breaking news campaign',
-          action: () => onToolSelect?.('rapid-response', 'Create Rapid-Response Campaign', 'Generate breaking news campaigns in minutes with AI-powered content', 'fas fa-bolt'),
+          title: 'Generate & Review Campaign',
+          description: 'Generate your complete breaking news campaign',
           completed: false
         }
       ]
@@ -87,22 +130,19 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
         {
           id: 'select-campaign',
           title: 'Choose Your Source Campaign',
-          description: 'Pick an existing campaign that you want to adapt',
-          action: () => markStepCompleted('select-campaign'),
+          description: 'Select an existing campaign to adapt for different audiences',
           completed: false
         },
         {
           id: 'define-segments',
           title: 'Define Your Audience Segments',
-          description: 'Identify the different audience groups you want to target',
-          action: () => markStepCompleted('define-segments'),
+          description: 'Create specific audience groups you want to target',
           completed: false
         },
         {
           id: 'generate-variations',
-          title: 'Generate Campaign Variations',
-          description: 'Create customized versions for each audience segment',
-          action: () => onToolSelect?.('rewrite-segments', 'Re-write Campaigns for Segments', 'Automatically adapt existing campaigns for different audience segments', 'fas fa-users'),
+          title: 'Generate & Review Variations',
+          description: 'Create customized campaign versions for each segment',
           completed: false
         }
       ]
@@ -118,22 +158,19 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
         {
           id: 'define-context',
           title: 'Define Your Campaign Context',
-          description: 'Describe what your email campaign is about',
-          action: () => markStepCompleted('define-context'),
+          description: 'Provide details about your email campaign goals and settings',
           completed: false
         },
         {
           id: 'generate-subjects',
           title: 'Generate Subject Lines',
           description: 'Create multiple compelling subject line options',
-          action: () => onToolSelect?.('subject-lines', 'Suggest Subject Lines', 'Generate compelling email subject lines that boost open rates', 'fas fa-envelope'),
           completed: false
         },
         {
           id: 'create-ctas',
-          title: 'Create Call-to-Action Buttons',
-          description: 'Generate persuasive CTA text that drives clicks',
-          action: () => onToolSelect?.('cta-buttons', 'Suggest Button CTAs', 'Create persuasive call-to-action buttons that drive conversions', 'fas fa-hand-pointer'),
+          title: 'Generate Call-to-Action Buttons',
+          description: 'Create persuasive CTA text that drives clicks',
           completed: false
         }
       ]
@@ -148,23 +185,21 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
       steps: [
         {
           id: 'gather-info',
-          title: 'Gather Newsroom Information',
-          description: 'Collect information about your newsroom, mission, and audience',
-          action: () => markStepCompleted('gather-info'),
+          title: 'Enter Newsroom Information',
+          description: 'Provide details about your newsroom, mission, and audience',
           completed: false
         },
         {
           id: 'collect-content',
-          title: 'Collect Existing Content (Optional)',
-          description: 'Provide samples of your existing content for style analysis',
-          action: () => markStepCompleted('collect-content'),
+          title: 'Add Existing Content (Optional)',
+          description: 'Share samples of your existing content for style analysis',
+          optional: true,
           completed: false
         },
         {
           id: 'generate-guidelines',
-          title: 'Generate Brand Guidelines',
+          title: 'Generate & Review Guidelines',
           description: 'Create comprehensive brand guidelines using AI analysis',
-          action: () => onToolSelect?.('grounding-library', 'Build a Grounding Library', 'Create comprehensive brand guidelines from your existing content', 'fas fa-book'),
           completed: false
         }
       ]
@@ -182,6 +217,12 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
     setCurrentGoal(null);
     setCurrentStep(0);
     setCompletedSteps([]);
+    setWizardState({
+      breakingNews: { headline: '', urgency: 'high', brandStylesheetId: '' },
+      audienceTargeting: { campaignId: '', segments: [{ name: '', description: '' }] },
+      emailOptimization: { context: '', campaignType: 'email', objective: 'engagement' },
+      brandSetup: { newsroomInfo: '', existingContent: '' }
+    });
   };
 
   const nextStep = () => {
@@ -196,15 +237,386 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
     }
   };
 
+  const updateWizardState = (goalId: string, updates: any) => {
+    setWizardState(prev => ({
+      ...prev,
+      [goalId]: { ...prev[goalId as keyof WizardState], ...updates }
+    }));
+  };
+
+  const isStepValid = (goalId: string, stepId: string): boolean => {
+    const state = wizardState[goalId as keyof WizardState];
+    
+    switch (goalId) {
+      case 'breaking-news':
+        if (stepId === 'prepare-headline') return (state as any).headline.length > 0;
+        if (stepId === 'choose-guidelines') return true; // Optional step
+        if (stepId === 'generate-campaign') return true;
+        break;
+      case 'audience-targeting':
+        if (stepId === 'select-campaign') return (state as any).campaignId.length > 0;
+        if (stepId === 'define-segments') return (state as any).segments.some((s: any) => s.name && s.description);
+        if (stepId === 'generate-variations') return true;
+        break;
+      case 'email-optimization':
+        if (stepId === 'define-context') return (state as any).context.length > 0;
+        if (stepId === 'generate-subjects') return true;
+        if (stepId === 'create-ctas') return true;
+        break;
+      case 'brand-setup':
+        if (stepId === 'gather-info') return (state as any).newsroomInfo.length > 0;
+        if (stepId === 'collect-content') return true; // Optional step
+        if (stepId === 'generate-guidelines') return true;
+        break;
+    }
+    return false;
+  };
+
   const executeCurrentStep = () => {
     if (selectedGoal) {
       const step = selectedGoal.steps[currentStep];
-      step.action();
+      
+      // Mark step as completed
       markStepCompleted(step.id);
+      
+      // Advance to next step or complete workflow
       if (currentStep < selectedGoal.steps.length - 1) {
         nextStep();
       }
     }
+  };
+
+  const renderStepForm = (goalId: string, stepId: string) => {
+    const state = wizardState[goalId as keyof WizardState];
+
+    switch (goalId) {
+      case 'breaking-news':
+        const breakingNewsState = state as typeof wizardState.breakingNews;
+        
+        if (stepId === 'prepare-headline') {
+          return (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="headline">Breaking News Headline *</Label>
+                <Input
+                  id="headline"
+                  value={breakingNewsState.headline}
+                  onChange={(e) => updateWizardState('breakingNews', { headline: e.target.value })}
+                  placeholder="Local mayor announces major infrastructure project"
+                  data-testid="input-headline"
+                />
+              </div>
+              <div>
+                <Label htmlFor="urgency">Urgency Level</Label>
+                <Select 
+                  value={breakingNewsState.urgency} 
+                  onValueChange={(value) => updateWizardState('breakingNews', { urgency: value })}
+                >
+                  <SelectTrigger data-testid="select-urgency">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="critical">Critical</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          );
+        }
+        
+        if (stepId === 'choose-guidelines') {
+          return (
+            <div>
+              <Label htmlFor="brandStylesheet">Brand Guidelines (Optional)</Label>
+              <Select 
+                value={breakingNewsState.brandStylesheetId} 
+                onValueChange={(value) => updateWizardState('breakingNews', { brandStylesheetId: value })}
+              >
+                <SelectTrigger data-testid="select-brand-guidelines">
+                  <SelectValue placeholder="Choose brand guidelines..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.isArray(brandStylesheets) ? brandStylesheets.map((sheet: any) => (
+                    <SelectItem key={sheet.id} value={sheet.id.toString()}>
+                      {sheet.name}
+                    </SelectItem>
+                  )) : (
+                    <SelectItem value="none" disabled>No guidelines available</SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          );
+        }
+
+        if (stepId === 'generate-campaign') {
+          return (
+            <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
+              <h4 className="font-medium">Review Your Campaign Details:</h4>
+              <div className="text-sm space-y-1">
+                <p><span className="font-medium">Headline:</span> {breakingNewsState.headline}</p>
+                <p><span className="font-medium">Urgency:</span> {breakingNewsState.urgency}</p>
+                {breakingNewsState.brandStylesheetId && (
+                  <p><span className="font-medium">Brand Guidelines:</span> Selected</p>
+                )}
+              </div>
+            </div>
+          );
+        }
+        break;
+
+      case 'audience-targeting':
+        const audienceState = state as typeof wizardState.audienceTargeting;
+        
+        if (stepId === 'select-campaign') {
+          return (
+            <div>
+              <Label htmlFor="campaign">Source Campaign *</Label>
+              <Select 
+                value={audienceState.campaignId} 
+                onValueChange={(value) => updateWizardState('audienceTargeting', { campaignId: value })}
+              >
+                <SelectTrigger data-testid="select-source-campaign">
+                  <SelectValue placeholder="Choose campaign to rewrite..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.isArray(campaigns) && campaigns.length > 0 ? (
+                    campaigns.map((campaign: any) => (
+                      <SelectItem key={campaign.id} value={campaign.id.toString()}>
+                        {campaign.title}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="none" disabled>No campaigns available</SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          );
+        }
+
+        if (stepId === 'define-segments') {
+          return (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label>Audience Segments *</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const newSegments = [...audienceState.segments, { name: '', description: '' }];
+                    updateWizardState('audienceTargeting', { segments: newSegments });
+                  }}
+                  data-testid="button-add-segment"
+                >
+                  <MessageSquare className="w-4 h-4 mr-1" />
+                  Add Segment
+                </Button>
+              </div>
+              {audienceState.segments.map((segment, index) => (
+                <Card key={index} className="p-3 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      placeholder="Segment name (e.g., Young Professionals)"
+                      value={segment.name}
+                      onChange={(e) => {
+                        const newSegments = [...audienceState.segments];
+                        newSegments[index].name = e.target.value;
+                        updateWizardState('audienceTargeting', { segments: newSegments });
+                      }}
+                      data-testid={`input-segment-name-${index}`}
+                    />
+                    {audienceState.segments.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const newSegments = audienceState.segments.filter((_, i) => i !== index);
+                          updateWizardState('audienceTargeting', { segments: newSegments });
+                        }}
+                        data-testid={`button-remove-segment-${index}`}
+                      >
+                        ✕
+                      </Button>
+                    )}
+                  </div>
+                  <Textarea
+                    placeholder="Describe this audience segment's characteristics..."
+                    value={segment.description}
+                    onChange={(e) => {
+                      const newSegments = [...audienceState.segments];
+                      newSegments[index].description = e.target.value;
+                      updateWizardState('audienceTargeting', { segments: newSegments });
+                    }}
+                    data-testid={`textarea-segment-description-${index}`}
+                  />
+                </Card>
+              ))}
+            </div>
+          );
+        }
+
+        if (stepId === 'generate-variations') {
+          const selectedCampaign = Array.isArray(campaigns) ? campaigns.find((c: any) => c.id.toString() === audienceState.campaignId) : null;
+          return (
+            <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
+              <h4 className="font-medium">Review Your Segment Targeting:</h4>
+              <div className="text-sm space-y-2">
+                <p><span className="font-medium">Source Campaign:</span> {selectedCampaign?.title || 'Not selected'}</p>
+                <div>
+                  <span className="font-medium">Target Segments:</span>
+                  <ul className="mt-1 space-y-1">
+                    {audienceState.segments.filter(s => s.name && s.description).map((segment, index) => (
+                      <li key={index} className="pl-2">• {segment.name}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          );
+        }
+        break;
+
+      case 'email-optimization':
+        const emailState = state as typeof wizardState.emailOptimization;
+        
+        if (stepId === 'define-context') {
+          return (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="context">Campaign Context *</Label>
+                <Textarea
+                  id="context"
+                  value={emailState.context}
+                  onChange={(e) => updateWizardState('emailOptimization', { context: e.target.value })}
+                  placeholder="Describe what your email campaign is about..."
+                  rows={3}
+                  data-testid="textarea-email-context"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="campaignType">Campaign Type</Label>
+                  <Select 
+                    value={emailState.campaignType} 
+                    onValueChange={(value) => updateWizardState('emailOptimization', { campaignType: value })}
+                  >
+                    <SelectTrigger data-testid="select-campaign-type">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="email">Email</SelectItem>
+                      <SelectItem value="social">Social Media</SelectItem>
+                      <SelectItem value="web">Web</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="objective">Objective</Label>
+                  <Select 
+                    value={emailState.objective} 
+                    onValueChange={(value) => updateWizardState('emailOptimization', { objective: value })}
+                  >
+                    <SelectTrigger data-testid="select-objective">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="subscription">Subscription</SelectItem>
+                      <SelectItem value="donation">Donation</SelectItem>
+                      <SelectItem value="membership">Membership</SelectItem>
+                      <SelectItem value="engagement">Engagement</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        if (stepId === 'generate-subjects') {
+          return (
+            <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
+              <h4 className="font-medium">Ready to Generate Subject Lines</h4>
+              <div className="text-sm space-y-1">
+                <p><span className="font-medium">Context:</span> {emailState.context}</p>
+                <p><span className="font-medium">Type:</span> {emailState.campaignType}</p>
+                <p><span className="font-medium">Objective:</span> {emailState.objective}</p>
+              </div>
+            </div>
+          );
+        }
+
+        if (stepId === 'create-ctas') {
+          return (
+            <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
+              <h4 className="font-medium">Ready to Generate Call-to-Action Buttons</h4>
+              <div className="text-sm space-y-1">
+                <p><span className="font-medium">Context:</span> {emailState.context}</p>
+                <p><span className="font-medium">Type:</span> {emailState.campaignType}</p>
+                <p><span className="font-medium">Objective:</span> {emailState.objective}</p>
+              </div>
+            </div>
+          );
+        }
+        break;
+
+      case 'brand-setup':
+        const brandState = state as typeof wizardState.brandSetup;
+        
+        if (stepId === 'gather-info') {
+          return (
+            <div>
+              <Label htmlFor="newsroomInfo">About Your Newsroom *</Label>
+              <Textarea
+                id="newsroomInfo"
+                value={brandState.newsroomInfo}
+                onChange={(e) => updateWizardState('brandSetup', { newsroomInfo: e.target.value })}
+                placeholder="Tell us about your newsroom, mission, and audience..."
+                rows={4}
+                data-testid="textarea-newsroom-info"
+              />
+            </div>
+          );
+        }
+
+        if (stepId === 'collect-content') {
+          return (
+            <div>
+              <Label htmlFor="existingContent">Existing Content (Optional)</Label>
+              <Textarea
+                id="existingContent"
+                value={brandState.existingContent}
+                onChange={(e) => updateWizardState('brandSetup', { existingContent: e.target.value })}
+                placeholder="Paste some existing content for AI to analyze your style..."
+                rows={4}
+                data-testid="textarea-existing-content"
+              />
+            </div>
+          );
+        }
+
+        if (stepId === 'generate-guidelines') {
+          return (
+            <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
+              <h4 className="font-medium">Ready to Generate Brand Guidelines</h4>
+              <div className="text-sm space-y-1">
+                <p><span className="font-medium">Newsroom Info:</span> Provided</p>
+                {brandState.existingContent && (
+                  <p><span className="font-medium">Existing Content:</span> Provided for analysis</p>
+                )}
+              </div>
+            </div>
+          );
+        }
+        break;
+    }
+
+    return <div>Form not implemented for this step.</div>;
   };
 
   if (!currentGoal) {
@@ -322,10 +734,15 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
           <CardContent className="space-y-4">
             <p className="text-gray-600">{selectedGoal.steps[currentStep].description}</p>
             
+            {/* Step Form Content */}
+            <div className="space-y-4">
+              {renderStepForm(selectedGoal.id, selectedGoal.steps[currentStep].id)}
+            </div>
+            
             <div className="flex gap-3">
               <Button 
                 onClick={executeCurrentStep}
-                disabled={completedSteps.includes(selectedGoal.steps[currentStep].id)}
+                disabled={completedSteps.includes(selectedGoal.steps[currentStep].id) || !isStepValid(selectedGoal.id, selectedGoal.steps[currentStep].id)}
                 className="flex-1"
                 data-testid={`execute-step-${selectedGoal.steps[currentStep].id}`}
               >
@@ -337,7 +754,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
                 ) : (
                   <>
                     <MessageSquare className="w-4 h-4 mr-2" />
-                    {currentStep === selectedGoal.steps.length - 1 ? 'Complete' : 'Continue'}
+                    {currentStep === selectedGoal.steps.length - 1 ? 'Generate' : 'Continue'}
                   </>
                 )}
               </Button>
