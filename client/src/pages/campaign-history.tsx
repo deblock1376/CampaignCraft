@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Eye, Calendar, Target, Zap, TrendingUp, Search, Filter, X } from "lucide-react";
+import { Eye, Calendar, Search, Filter, X } from "lucide-react";
 
 export default function CampaignHistory() {
   const [selectedCampaign, setSelectedCampaign] = useState(null);
@@ -243,9 +243,8 @@ export default function CampaignHistory() {
                               </DialogHeader>
                               
                               <Tabs defaultValue="content" className="w-full">
-                                <TabsList className="grid w-full grid-cols-3">
+                                <TabsList className="grid w-full grid-cols-2">
                                   <TabsTrigger value="content">Content</TabsTrigger>
-                                  <TabsTrigger value="metrics">Performance</TabsTrigger>
                                   <TabsTrigger value="details">Details</TabsTrigger>
                                 </TabsList>
                                 
@@ -272,46 +271,6 @@ export default function CampaignHistory() {
                                       </p>
                                     </div>
                                   </div>
-                                </TabsContent>
-                                
-                                <TabsContent value="metrics" className="space-y-4">
-                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <Card>
-                                      <CardContent className="p-4 text-center">
-                                        <TrendingUp className="w-8 h-8 mx-auto text-blue-500 mb-2" />
-                                        <p className="text-2xl font-bold">{campaign.metrics?.estimatedOpenRate || campaign.content?.metrics?.estimatedOpenRate}%</p>
-                                        <p className="text-sm text-gray-600">Est. Open Rate</p>
-                                      </CardContent>
-                                    </Card>
-                                    <Card>
-                                      <CardContent className="p-4 text-center">
-                                        <Target className="w-8 h-8 mx-auto text-green-500 mb-2" />
-                                        <p className="text-2xl font-bold">{campaign.metrics?.estimatedClickRate || campaign.content?.metrics?.estimatedClickRate}%</p>
-                                        <p className="text-sm text-gray-600">Est. Click Rate</p>
-                                      </CardContent>
-                                    </Card>
-                                    <Card>
-                                      <CardContent className="p-4 text-center">
-                                        <Zap className="w-8 h-8 mx-auto text-purple-500 mb-2" />
-                                        <p className="text-2xl font-bold">{campaign.metrics?.estimatedConversion || campaign.content?.metrics?.estimatedConversion}%</p>
-                                        <p className="text-sm text-gray-600">Est. Conversion</p>
-                                      </CardContent>
-                                    </Card>
-                                  </div>
-                                  
-                                  {campaign.content?.insights && (
-                                    <div>
-                                      <h4 className="font-medium text-sm text-gray-700 mb-3">AI Insights</h4>
-                                      <ul className="space-y-2">
-                                        {campaign.content.insights.map((insight: string, index: number) => (
-                                          <li key={index} className="flex items-start space-x-2">
-                                            <span className="text-blue-500 mt-1">•</span>
-                                            <span className="text-sm">{insight}</span>
-                                          </li>
-                                        ))}
-                                      </ul>
-                                    </div>
-                                  )}
                                 </TabsContent>
                                 
                                 <TabsContent value="details" className="space-y-4">
