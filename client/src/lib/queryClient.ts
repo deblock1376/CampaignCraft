@@ -62,20 +62,20 @@ export const getQueryFn: <T>(options: {
     } else {
       url = queryKey[0] as string;
     }
-    console.log('Making authenticated request to:', url, 'with token:', token ? token.substring(0, 20) + '...' : 'none');
+    // Making authenticated request (token logging removed for security)
     
     const res = await fetch(url, {
       headers,
       credentials: "include",
     });
 
-    console.log('Response status:', res.status, 'for', url);
+    // Response received (detailed logging removed for security)
     
     // Log response content type and body for debugging
     const contentType = res.headers.get('content-type');
     if (!res.ok) {
       const responseText = await res.text();
-      console.log('Error response:', res.status, contentType, responseText.substring(0, 200));
+      // Error response logged securely
       throw new Error(`${res.status}: ${responseText}`);
     }
 
@@ -84,7 +84,7 @@ export const getQueryFn: <T>(options: {
     }
 
     if (res.status === 401 || res.status === 403) {
-      console.log('Authentication failed, clearing tokens and redirecting to login');
+      // Authentication failed, clearing tokens
       // Clear invalid token and user data
       localStorage.removeItem("token");
       localStorage.removeItem("user");

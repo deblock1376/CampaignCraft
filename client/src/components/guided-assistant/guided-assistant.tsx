@@ -245,26 +245,40 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
   };
 
   const isStepValid = (goalId: string, stepId: string): boolean => {
-    const state = wizardState[goalId as keyof WizardState];
+    const stateKeyMap: Record<string, keyof WizardState> = {
+      'breaking-news': 'breakingNews',
+      'audience-targeting': 'audienceTargeting', 
+      'email-optimization': 'emailOptimization',
+      'brand-setup': 'brandSetup'
+    };
+
+    const stateKey = stateKeyMap[goalId];
+    const state = stateKey ? wizardState[stateKey] : null;
+    
+    if (!state) return false;
     
     switch (goalId) {
       case 'breaking-news':
-        if (stepId === 'prepare-headline') return (state as any).headline.length > 0;
+        const breakingNewsState = state as typeof wizardState.breakingNews;
+        if (stepId === 'prepare-headline') return breakingNewsState.headline.length > 0;
         if (stepId === 'choose-guidelines') return true; // Optional step
         if (stepId === 'generate-campaign') return true;
         break;
       case 'audience-targeting':
-        if (stepId === 'select-campaign') return (state as any).campaignId.length > 0;
-        if (stepId === 'define-segments') return (state as any).segments.some((s: any) => s.name && s.description);
+        const audienceState = state as typeof wizardState.audienceTargeting;
+        if (stepId === 'select-campaign') return audienceState.campaignId.length > 0;
+        if (stepId === 'define-segments') return audienceState.segments.some((s: any) => s.name && s.description);
         if (stepId === 'generate-variations') return true;
         break;
       case 'email-optimization':
-        if (stepId === 'define-context') return (state as any).context.length > 0;
+        const emailState = state as typeof wizardState.emailOptimization;
+        if (stepId === 'define-context') return emailState.context.length > 0;
         if (stepId === 'generate-subjects') return true;
         if (stepId === 'create-ctas') return true;
         break;
       case 'brand-setup':
-        if (stepId === 'gather-info') return (state as any).newsroomInfo.length > 0;
+        const brandState = state as typeof wizardState.brandSetup;
+        if (stepId === 'gather-info') return brandState.newsroomInfo.length > 0;
         if (stepId === 'collect-content') return true; // Optional step
         if (stepId === 'generate-guidelines') return true;
         break;
@@ -287,7 +301,20 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
   };
 
   const renderStepForm = (goalId: string, stepId: string) => {
-    const state = wizardState[goalId as keyof WizardState];
+    // Map goal IDs to wizard state keys
+    const stateKeyMap: Record<string, keyof WizardState> = {
+      'breaking-news': 'breakingNews',
+      'audience-targeting': 'audienceTargeting', 
+      'email-optimization': 'emailOptimization',
+      'brand-setup': 'brandSetup'
+    };
+
+    const stateKey = stateKeyMap[goalId];
+    const state = stateKey ? wizardState[stateKey] : null;
+
+    if (!state) {
+      return <div>Loading form...</div>;
+    }
 
     switch (goalId) {
       case 'breaking-news':
@@ -301,7 +328,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
                 <Input
                   id="headline"
                   value={breakingNewsState.headline}
-                  onChange={(e) => updateWizardState('breakingNews', { headline: e.target.value })}
+                  onChange={(e) => updateWizardState(stateKey, { headline: e.target.value })}
                   placeholder="Local mayor announces major infrastructure project"
                   data-testid="input-headline"
                 />
@@ -310,7 +337,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
                 <Label htmlFor="urgency">Urgency Level</Label>
                 <Select 
                   value={breakingNewsState.urgency} 
-                  onValueChange={(value) => updateWizardState('breakingNews', { urgency: value })}
+                  onValueChange={(value) => updateWizardState(stateKey, { urgency: value })}
                 >
                   <SelectTrigger data-testid="select-urgency">
                     <SelectValue />
@@ -333,7 +360,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
               <Label htmlFor="brandStylesheet">Brand Guidelines (Optional)</Label>
               <Select 
                 value={breakingNewsState.brandStylesheetId} 
-                onValueChange={(value) => updateWizardState('breakingNews', { brandStylesheetId: value })}
+                onValueChange={(value) => updateWizardState(stateKey, { brandStylesheetId: value })}
               >
                 <SelectTrigger data-testid="select-brand-guidelines">
                   <SelectValue placeholder="Choose brand guidelines..." />
@@ -377,7 +404,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
               <Label htmlFor="campaign">Source Campaign *</Label>
               <Select 
                 value={audienceState.campaignId} 
-                onValueChange={(value) => updateWizardState('audienceTargeting', { campaignId: value })}
+                onValueChange={(value) => updateWizardState(stateKey, { campaignId: value })}
               >
                 <SelectTrigger data-testid="select-source-campaign">
                   <SelectValue placeholder="Choose campaign to rewrite..." />
@@ -409,7 +436,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
                   size="sm"
                   onClick={() => {
                     const newSegments = [...audienceState.segments, { name: '', description: '' }];
-                    updateWizardState('audienceTargeting', { segments: newSegments });
+                    updateWizardState(stateKey, { segments: newSegments });
                   }}
                   data-testid="button-add-segment"
                 >
@@ -426,7 +453,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
                       onChange={(e) => {
                         const newSegments = [...audienceState.segments];
                         newSegments[index].name = e.target.value;
-                        updateWizardState('audienceTargeting', { segments: newSegments });
+                        updateWizardState(stateKey, { segments: newSegments });
                       }}
                       data-testid={`input-segment-name-${index}`}
                     />
@@ -437,7 +464,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
                         size="sm"
                         onClick={() => {
                           const newSegments = audienceState.segments.filter((_, i) => i !== index);
-                          updateWizardState('audienceTargeting', { segments: newSegments });
+                          updateWizardState(stateKey, { segments: newSegments });
                         }}
                         data-testid={`button-remove-segment-${index}`}
                       >
@@ -451,7 +478,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
                     onChange={(e) => {
                       const newSegments = [...audienceState.segments];
                       newSegments[index].description = e.target.value;
-                      updateWizardState('audienceTargeting', { segments: newSegments });
+                      updateWizardState(stateKey, { segments: newSegments });
                     }}
                     data-testid={`textarea-segment-description-${index}`}
                   />
@@ -493,7 +520,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
                 <Textarea
                   id="context"
                   value={emailState.context}
-                  onChange={(e) => updateWizardState('emailOptimization', { context: e.target.value })}
+                  onChange={(e) => updateWizardState(stateKey, { context: e.target.value })}
                   placeholder="Describe what your email campaign is about..."
                   rows={3}
                   data-testid="textarea-email-context"
@@ -504,7 +531,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
                   <Label htmlFor="campaignType">Campaign Type</Label>
                   <Select 
                     value={emailState.campaignType} 
-                    onValueChange={(value) => updateWizardState('emailOptimization', { campaignType: value })}
+                    onValueChange={(value) => updateWizardState(stateKey, { campaignType: value })}
                   >
                     <SelectTrigger data-testid="select-campaign-type">
                       <SelectValue />
@@ -520,7 +547,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
                   <Label htmlFor="objective">Objective</Label>
                   <Select 
                     value={emailState.objective} 
-                    onValueChange={(value) => updateWizardState('emailOptimization', { objective: value })}
+                    onValueChange={(value) => updateWizardState(stateKey, { objective: value })}
                   >
                     <SelectTrigger data-testid="select-objective">
                       <SelectValue />
@@ -575,7 +602,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
               <Textarea
                 id="newsroomInfo"
                 value={brandState.newsroomInfo}
-                onChange={(e) => updateWizardState('brandSetup', { newsroomInfo: e.target.value })}
+                onChange={(e) => updateWizardState(stateKey, { newsroomInfo: e.target.value })}
                 placeholder="Tell us about your newsroom, mission, and audience..."
                 rows={4}
                 data-testid="textarea-newsroom-info"
@@ -591,7 +618,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
               <Textarea
                 id="existingContent"
                 value={brandState.existingContent}
-                onChange={(e) => updateWizardState('brandSetup', { existingContent: e.target.value })}
+                onChange={(e) => updateWizardState(stateKey, { existingContent: e.target.value })}
                 placeholder="Paste some existing content for AI to analyze your style..."
                 rows={4}
                 data-testid="textarea-existing-content"
