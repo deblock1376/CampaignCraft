@@ -152,6 +152,16 @@ Changelog:
   - Grounding Library Builder: automatically creates brand guidelines from content analysis
   - All tools integrated with multi-AI provider support and proper error handling
   - Interactive modal interface with form validation and real-time results display
+- September 18, 2025: Implemented Guided Marketing Assistant for step-by-step campaign creation
+  - Created comprehensive guided workflow system with 4 focused goals for different marketing needs
+  - Breaking News Campaign: 3-step process for urgent content creation with brand consistency
+  - Audience Targeting: guided workflow for adapting campaigns to specific audience segments
+  - Email Optimization: step-by-step creation of compelling subject lines and CTAs
+  - Brand Setup: guided process for building comprehensive brand guidelines
+  - Clean, intuitive interface with progress tracking and visual step indicators
+  - Seamless integration with existing Quick Start Templates for tool execution
+  - Time estimates and category-based organization for improved user experience
+  - Added new navigation route (/assistant) and sidebar integration for easy access
 ```
 
 ## User Preferences
