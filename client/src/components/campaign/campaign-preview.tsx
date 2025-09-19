@@ -308,11 +308,6 @@ export default function CampaignPreview({
                       Copy
                     </Button>
                   </div>
-                  <div className="flex items-center space-x-4 text-sm text-slate-600">
-                    <span><i className="fas fa-eye mr-1"></i>Est. Open Rate: {campaign.metrics?.estimatedOpenRate}%</span>
-                    <span><i className="fas fa-mouse-pointer mr-1"></i>Est. Click Rate: {campaign.metrics?.estimatedClickRate}%</span>
-                    <span><i className="fas fa-users mr-1"></i>Target: 15,247 subscribers</span>
-                  </div>
                 </div>
               )}
               
