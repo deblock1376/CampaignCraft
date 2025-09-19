@@ -7,7 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import { 
   ArrowRight, 
   ArrowLeft, 
@@ -80,6 +82,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const newsroomId = user.newsroomId || 1;
   const isAdmin = user.email === 'admin@campaigncraft.com';
+  const { toast } = useToast();
 
   const { data: brandStylesheets } = useQuery({
     queryKey: isAdmin ? ["/api/brand-stylesheets"] : ["/api/newsrooms", newsroomId, "stylesheets"],
@@ -89,6 +92,44 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
   const { data: campaigns } = useQuery({
     queryKey: ["/api/newsrooms", newsroomId, "campaigns"],
     enabled: !!newsroomId,
+  });
+
+  // Campaign generation mutation
+  const generateCampaignMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const token = localStorage.getItem("token");
+      const response = await fetch('/api/quickstart/rapid-response', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Request failed: ${response.status}`);
+      }
+
+      return response.json();
+    },
+    onSuccess: (campaign) => {
+      // Invalidate campaigns cache to refresh Recent Campaigns
+      queryClient.invalidateQueries({ queryKey: ["/api/newsrooms", newsroomId, "campaigns"] });
+      
+      toast({
+        title: "Campaign Generated Successfully!",
+        description: `"${campaign.title}" has been created and added to your Recent Campaigns.`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Generation Failed",
+        description: error.message || "Failed to generate campaign. Please try again.",
+        variant: "destructive",
+      });
+    },
   });
 
   const goals: AssistantGoal[] = [
@@ -291,6 +332,22 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
   const executeCurrentStep = () => {
     if (selectedGoal) {
       const step = selectedGoal.steps[currentStep];
+      
+      // Check if this is the final step of Breaking News campaign
+      if (selectedGoal.id === 'breaking-news' && step.id === 'generate-campaign') {
+        const breakingNewsState = wizardState.breakingNews;
+        
+        // Generate campaign with collected data
+        const campaignData = {
+          headline: breakingNewsState.headline,
+          urgency: breakingNewsState.urgency,
+          newsroomId: newsroomId,
+          brandStylesheetId: breakingNewsState.brandStylesheetId ? parseInt(breakingNewsState.brandStylesheetId) : null,
+          articleSummary: breakingNewsState.articleSummary, // Include the new article summary
+        };
+        
+        generateCampaignMutation.mutate(campaignData);
+      }
       
       // Mark step as completed
       markStepCompleted(step.id);
@@ -783,7 +840,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
             <div className="flex gap-3">
               <Button 
                 onClick={executeCurrentStep}
-                disabled={completedSteps.includes(selectedGoal.steps[currentStep].id) || !isStepValid(selectedGoal.id, selectedGoal.steps[currentStep].id)}
+                disabled={completedSteps.includes(selectedGoal.steps[currentStep].id) || !isStepValid(selectedGoal.id, selectedGoal.steps[currentStep].id) || generateCampaignMutation.isPending}
                 className="flex-1"
                 data-testid={`execute-step-${selectedGoal.steps[currentStep].id}`}
               >
@@ -791,6 +848,11 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
                   <>
                     <CheckCircle className="w-4 h-4 mr-2" />
                     Completed
+                  </>
+                ) : generateCampaignMutation.isPending && selectedGoal.id === 'breaking-news' && selectedGoal.steps[currentStep].id === 'generate-campaign' ? (
+                  <>
+                    <MessageSquare className="w-4 h-4 mr-2 animate-spin" />
+                    Generating Campaign...
                   </>
                 ) : (
                   <>

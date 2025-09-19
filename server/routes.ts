@@ -322,7 +322,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Quick Start Tools
   app.post("/api/quickstart/rapid-response", authenticateToken, async (req: any, res) => {
     try {
-      const { headline, urgency, newsroomId, brandStylesheetId } = req.body;
+      const { headline, urgency, newsroomId, brandStylesheetId, articleSummary } = req.body;
       
       if (!headline || !newsroomId) {
         return res.status(400).json({ message: "Headline and newsroom are required" });
@@ -341,7 +341,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const campaignRequest = {
         type: 'email' as const,
         objective: 'engagement' as const,
-        context: `Breaking news alert: ${headline}. Urgency level: ${urgency || 'high'}. Create a rapid response campaign that immediately informs our audience and drives engagement.`,
+        context: `Breaking news alert: ${headline}. Urgency level: ${urgency || 'high'}. ${articleSummary ? `Article summary: ${articleSummary}. ` : ''}Create a rapid response campaign that immediately informs our audience and drives engagement.`,
         brandStylesheet: brandStylesheet ? {
           name: brandStylesheet.name,
           tone: brandStylesheet.tone,
