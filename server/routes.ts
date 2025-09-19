@@ -322,11 +322,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Quick Start Tools
   app.post("/api/quickstart/rapid-response", authenticateToken, async (req: any, res) => {
     try {
-      const { headline, urgency, newsroomId, brandStylesheetId, articleSummary } = req.body;
+      const { headline, urgency, newsroomId, brandStylesheetId, articleSummary, aiModel } = req.body;
       
-      if (!headline || !newsroomId) {
-        return res.status(400).json({ message: "Headline and newsroom are required" });
+      if (!newsroomId || (!headline && !articleSummary)) {
+        return res.status(400).json({ message: "Newsroom and either headline or article summary are required" });
       }
+      
+      // Generate headline from summary if not provided
+      const campaignHeadline = headline || (articleSummary ? articleSummary.split('.')[0].trim() : 'Breaking News Alert');
 
       const newsroom = await storage.getNewsroom(newsroomId);
       if (!newsroom) {
@@ -341,7 +344,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const campaignRequest = {
         type: 'email' as const,
         objective: 'engagement' as const,
-        context: `Breaking news alert: ${headline}. Urgency level: ${urgency || 'high'}. ${articleSummary ? `Article summary: ${articleSummary}. ` : ''}Create a rapid response campaign that immediately informs our audience and drives engagement.`,
+        context: `Breaking news alert: ${campaignHeadline}. Urgency level: ${urgency || 'high'}. ${articleSummary ? `Article summary: ${articleSummary}. ` : ''}Create a rapid response campaign that immediately informs our audience and drives engagement.`,
         brandStylesheet: brandStylesheet ? {
           name: brandStylesheet.name,
           tone: brandStylesheet.tone,
@@ -360,16 +363,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const generatedCampaign = await aiProviderService.generateCampaign(
         campaignRequest, 
-        'claude-sonnet-4-20250514'
+        aiModel || 'claude-sonnet-4-20250514'
       );
 
       const campaign = await storage.createCampaign({
         newsroomId,
-        title: `Breaking: ${headline}`,
+        title: `Breaking: ${campaignHeadline}`,
         type: 'email',
         objective: 'engagement',
         context: campaignRequest.context,
-        aiModel: 'claude-sonnet-4-20250514',
+        aiModel: aiModel || 'claude-sonnet-4-20250514',
         brandStylesheetId: brandStylesheetId || null,
         status: 'draft',
         content: generatedCampaign,
@@ -480,6 +483,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ subjectLines });
     } catch (error) {
       res.status(500).json({ message: "Failed to generate subject lines", error: String(error) });
+    }
+  });
+
+  // Article Summarization endpoint
+  app.post("/api/quickstart/summarize-article", authenticateToken, async (req: any, res) => {
+    try {
+      const { article, aiModel } = req.body;
+      
+      if (!article || !aiModel) {
+        return res.status(400).json({ message: "Article text and AI model are required" });
+      }
+
+      // Create summarization prompt
+      const prompt = `Please create a concise, compelling summary of this news article for use in a marketing campaign. 
+      
+The summary should:
+- Be 2-3 sentences maximum
+- Capture the key facts and importance
+- Be engaging enough for email/social media campaigns
+- Maintain journalistic accuracy
+
+Article to summarize:
+${article}
+
+Please respond with just the summary text, no additional formatting or explanations.`;
+
+      // Generate summary using selected AI model
+      const summary = await aiProviderService.generateContent(prompt, aiModel);
+
+      res.json({ summary: summary.trim() });
+    } catch (error) {
+      console.error("Article summarization error:", error);
+      res.status(500).json({ 
+        message: "Failed to summarize article", 
+        error: String(error),
+        details: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 

@@ -48,8 +48,9 @@ interface GuidedAssistantProps {
 
 interface WizardState {
   breakingNews: {
-    headline: string;
-    articleSummary: string;
+    fullArticle: string;
+    aiModel: string;
+    generatedSummary: string;
     urgency: string;
     brandStylesheetId: string;
   };
@@ -73,7 +74,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [wizardState, setWizardState] = useState<WizardState>({
-    breakingNews: { headline: '', articleSummary: '', urgency: 'high', brandStylesheetId: '' },
+    breakingNews: { fullArticle: '', aiModel: 'claude-sonnet-4', generatedSummary: '', urgency: 'high', brandStylesheetId: '' },
     audienceTargeting: { campaignId: '', segments: [{ name: '', description: '' }] },
     emailOptimization: { context: '', campaignType: 'email', objective: 'engagement' },
     brandSetup: { newsroomInfo: '', existingContent: '' }
@@ -92,6 +93,42 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
   const { data: campaigns } = useQuery({
     queryKey: ["/api/newsrooms", newsroomId, "campaigns"],
     enabled: !!newsroomId,
+  });
+
+  // Article summarization mutation
+  const summarizeArticleMutation = useMutation({
+    mutationFn: async (data: { article: string; aiModel: string }) => {
+      const token = localStorage.getItem("token");
+      const response = await fetch('/api/quickstart/summarize-article', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Request failed: ${response.status}`);
+      }
+
+      return response.json();
+    },
+    onSuccess: (result) => {
+      updateWizardState('breakingNews', { generatedSummary: result.summary });
+      toast({
+        title: "Summary Generated!",
+        description: "Article summary has been created successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Summarization Failed",
+        description: error.message || "Failed to generate summary. Please try again.",
+        variant: "destructive",
+      });
+    },
   });
 
   // Campaign generation mutation
@@ -142,9 +179,21 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
       estimatedTime: '3-5 minutes',
       steps: [
         {
-          id: 'prepare-headline',
-          title: 'Enter Breaking News Details',
-          description: 'Provide the headline, article summary, and set the urgency level for your campaign',
+          id: 'input-article',
+          title: 'Add Full Article & Choose AI Model',
+          description: 'Paste your complete news article and select the AI model for processing',
+          completed: false
+        },
+        {
+          id: 'generate-summary',
+          title: 'Generate Article Summary',
+          description: 'AI will create a concise summary of your article for the campaign',
+          completed: false
+        },
+        {
+          id: 'review-urgency',
+          title: 'Review Summary & Set Urgency',
+          description: 'Review the generated summary and set the campaign urgency level',
           completed: false
         },
         {
@@ -157,7 +206,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
         {
           id: 'generate-campaign',
           title: 'Generate & Review Campaign',
-          description: 'Generate your complete breaking news campaign',
+          description: 'Generate your complete breaking news campaign using the summary',
           completed: false
         }
       ]
@@ -261,7 +310,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
     setCurrentStep(0);
     setCompletedSteps([]);
     setWizardState({
-      breakingNews: { headline: '', articleSummary: '', urgency: 'high', brandStylesheetId: '' },
+      breakingNews: { fullArticle: '', aiModel: 'claude-sonnet-4', generatedSummary: '', urgency: 'high', brandStylesheetId: '' },
       audienceTargeting: { campaignId: '', segments: [{ name: '', description: '' }] },
       emailOptimization: { context: '', campaignType: 'email', objective: 'engagement' },
       brandSetup: { newsroomInfo: '', existingContent: '' }
@@ -303,9 +352,11 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
     switch (goalId) {
       case 'breaking-news':
         const breakingNewsState = state as typeof wizardState.breakingNews;
-        if (stepId === 'prepare-headline') return breakingNewsState.headline.length > 0 && breakingNewsState.articleSummary.length > 0;
+        if (stepId === 'input-article') return breakingNewsState.fullArticle.length > 0 && breakingNewsState.aiModel.length > 0;
+        if (stepId === 'generate-summary') return breakingNewsState.fullArticle.length > 0 && breakingNewsState.aiModel.length > 0;
+        if (stepId === 'review-urgency') return breakingNewsState.generatedSummary.length > 0;
         if (stepId === 'choose-guidelines') return true; // Optional step
-        if (stepId === 'generate-campaign') return true;
+        if (stepId === 'generate-campaign') return breakingNewsState.generatedSummary.length > 0;
         break;
       case 'audience-targeting':
         const audienceState = state as typeof wizardState.audienceTargeting;
@@ -333,20 +384,28 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
     if (selectedGoal) {
       const step = selectedGoal.steps[currentStep];
       
-      // Check if this is the final step of Breaking News campaign
-      if (selectedGoal.id === 'breaking-news' && step.id === 'generate-campaign') {
+      // Handle Breaking News workflow steps
+      if (selectedGoal.id === 'breaking-news') {
+        if (step.id === 'generate-summary') {
+          const breakingNewsState = wizardState.breakingNews;
+          summarizeArticleMutation.mutate({
+            article: breakingNewsState.fullArticle,
+            aiModel: breakingNewsState.aiModel
+          });
+        } else if (step.id === 'generate-campaign') {
         const breakingNewsState = wizardState.breakingNews;
         
         // Generate campaign with collected data
         const campaignData = {
-          headline: breakingNewsState.headline,
+          articleSummary: breakingNewsState.generatedSummary, // Use generated summary
+          aiModel: breakingNewsState.aiModel, // Use selected AI model
           urgency: breakingNewsState.urgency,
           newsroomId: newsroomId,
           brandStylesheetId: breakingNewsState.brandStylesheetId ? parseInt(breakingNewsState.brandStylesheetId) : null,
-          articleSummary: breakingNewsState.articleSummary, // Include the new article summary
         };
         
         generateCampaignMutation.mutate(campaignData);
+        }
       }
       
       // Mark step as completed
@@ -379,28 +438,66 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
       case 'breaking-news':
         const breakingNewsState = state as typeof wizardState.breakingNews;
         
-        if (stepId === 'prepare-headline') {
+        if (stepId === 'input-article') {
           return (
             <div className="space-y-4">
               <div>
-                <Label htmlFor="headline">Breaking News Headline *</Label>
-                <Input
-                  id="headline"
-                  value={breakingNewsState.headline}
-                  onChange={(e) => updateWizardState(stateKey, { headline: e.target.value })}
-                  placeholder="Local mayor announces major infrastructure project"
-                  data-testid="input-headline"
+                <Label htmlFor="fullArticle">Full News Article *</Label>
+                <Textarea
+                  id="fullArticle"
+                  value={breakingNewsState.fullArticle}
+                  onChange={(e) => updateWizardState(stateKey, { fullArticle: e.target.value })}
+                  placeholder="Paste your complete news article here..."
+                  rows={8}
+                  data-testid="textarea-full-article"
                 />
               </div>
               <div>
-                <Label htmlFor="articleSummary">Article Summary *</Label>
+                <Label htmlFor="aiModel">AI Model *</Label>
+                <Select 
+                  value={breakingNewsState.aiModel} 
+                  onValueChange={(value) => updateWizardState(stateKey, { aiModel: value })}
+                >
+                  <SelectTrigger data-testid="select-ai-model">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="claude-sonnet-4">Claude Sonnet 4 (Recommended)</SelectItem>
+                    <SelectItem value="gpt-4o">GPT-4o</SelectItem>
+                    <SelectItem value="gemini-pro">Gemini Pro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          );
+        }
+        
+        if (stepId === 'generate-summary') {
+          return (
+            <div className="space-y-4">
+              <div className="p-4 bg-blue-50 rounded-lg">
+                <h4 className="font-medium text-blue-900 mb-2">Ready to Generate Summary</h4>
+                <p className="text-blue-700 text-sm">AI will analyze your article and create a concise summary for the campaign using {breakingNewsState.aiModel}.</p>
+                <div className="mt-3 text-xs text-blue-600">
+                  <strong>Article length:</strong> {breakingNewsState.fullArticle.split(' ').length} words
+                </div>
+              </div>
+            </div>
+          );
+        }
+        
+        if (stepId === 'review-urgency') {
+          return (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="generatedSummary">Generated Summary</Label>
                 <Textarea
-                  id="articleSummary"
-                  value={breakingNewsState.articleSummary}
-                  onChange={(e) => updateWizardState(stateKey, { articleSummary: e.target.value })}
-                  placeholder="Brief summary of the breaking news article content..."
-                  rows={3}
-                  data-testid="textarea-article-summary"
+                  id="generatedSummary"
+                  value={breakingNewsState.generatedSummary}
+                  onChange={(e) => updateWizardState(stateKey, { generatedSummary: e.target.value })}
+                  placeholder="AI-generated summary will appear here..."
+                  rows={4}
+                  data-testid="textarea-generated-summary"
                 />
               </div>
               <div>
@@ -454,8 +551,8 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
             <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
               <h4 className="font-medium">Review Your Campaign Details:</h4>
               <div className="text-sm space-y-1">
-                <p><span className="font-medium">Headline:</span> {breakingNewsState.headline}</p>
-                <p><span className="font-medium">Article Summary:</span> {breakingNewsState.articleSummary}</p>
+                <p><span className="font-medium">Article Summary:</span> {breakingNewsState.generatedSummary}</p>
+                <p><span className="font-medium">AI Model:</span> {breakingNewsState.aiModel}</p>
                 <p><span className="font-medium">Urgency:</span> {breakingNewsState.urgency}</p>
                 {breakingNewsState.brandStylesheetId && (
                   <p><span className="font-medium">Brand Guidelines:</span> Selected</p>
