@@ -377,7 +377,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(campaign);
     } catch (error) {
-      res.status(500).json({ message: "Failed to create rapid response campaign", error: String(error) });
+      console.error("Rapid response campaign generation error:", error);
+      res.status(500).json({ 
+        message: "Failed to create rapid response campaign", 
+        error: String(error),
+        details: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 
@@ -939,7 +944,7 @@ Return JSON format:
 
       console.log("Generating email content with prompt:", prompt.substring(0, 200) + "...");
 
-      const aiResponse = await aiProviderService.generateCampaign(prompt, "claude-sonnet-4-20250514", null);
+      const aiResponse = await aiProviderService.generateContent(prompt, "claude-sonnet-4-20250514");
       
       let options;
       try {

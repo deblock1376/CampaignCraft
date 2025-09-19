@@ -125,11 +125,10 @@ class AIProviderService {
 
   private async generateSimpleWithGemini(prompt: string): Promise<string> {
     try {
-      const model = this.gemini.generateContent({
+      const response = await this.gemini.models.generateContent({
         model: "gemini-2.5-flash",
         contents: prompt
       });
-      const response = await model;
       return response.text || '';
     } catch (error) {
       throw new Error(`Gemini API error: ${error instanceof Error ? error.message : String(error)}`);
@@ -182,7 +181,7 @@ Response must be in JSON format with these fields:
       const result = JSON.parse(response.choices[0].message.content || '{}');
       return this.formatCampaignResponse(result);
     } catch (error) {
-      throw new Error(`OpenAI API error: ${error.message}`);
+      throw new Error(`OpenAI API error: ${(error as any).message}`);
     }
   }
 
@@ -200,7 +199,15 @@ Response must be in JSON format with these fields:
       if (content.type !== 'text') {
         throw new Error('Unexpected response type from Claude');
       }
-      const result = JSON.parse(content.text);
+      
+      // Extract JSON from markdown code blocks if present
+      let jsonText = content.text;
+      const jsonMatch = jsonText.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
+      if (jsonMatch) {
+        jsonText = jsonMatch[1];
+      }
+      
+      const result = JSON.parse(jsonText);
       return this.formatCampaignResponse(result);
     } catch (error) {
       throw new Error(`Anthropic API error: ${(error as any).message}`);
