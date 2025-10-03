@@ -29,16 +29,13 @@ export default function CampaignEvaluate() {
 
   const evaluateMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("/api/campaigns/evaluate", {
-        method: "POST",
-        body: JSON.stringify({
-          campaignContent,
-          campaignType,
-          framework,
-          newsroomId,
-        }),
+      const response = await apiRequest("POST", "/api/campaigns/evaluate", {
+        campaignContent,
+        campaignType,
+        framework,
+        newsroomId,
       });
-      return response;
+      return response.json();
     },
     onSuccess: (data) => {
       setEvaluation(data);
@@ -58,18 +55,15 @@ export default function CampaignEvaluate() {
 
   const rewriteMutation = useMutation({
     mutationFn: async (recommendations: string[]) => {
-      const response = await apiRequest("/api/campaigns/ai-rewrite", {
-        method: "POST",
-        body: JSON.stringify({
-          originalContent: campaignContent,
-          recommendations,
-          campaignType,
-          newsroomId,
-        }),
+      const response = await apiRequest("POST", "/api/campaigns/ai-rewrite", {
+        originalContent: campaignContent,
+        recommendations,
+        campaignType,
+        newsroomId,
       });
-      return response;
+      return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       setCampaignContent(data.rewrittenContent);
       toast({
         title: "Campaign Rewritten",

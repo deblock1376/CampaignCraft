@@ -9,10 +9,13 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import CampaignPreview from "./campaign-preview";
+import DraftCarousel from "./draft-carousel";
 
 const formSchema = z.object({
   type: z.enum(['email', 'social']),
@@ -25,6 +28,8 @@ const formSchema = z.object({
 export default function CampaignForm() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedCampaign, setGeneratedCampaign] = useState(null);
+  const [generatedDrafts, setGeneratedDrafts] = useState<any[]>([]);
+  const [useMultiDraft, setUseMultiDraft] = useState(true);
   const [activeTab, setActiveTab] = useState('content');
   const [isConfigOpen, setIsConfigOpen] = useState(true);
   const { toast } = useToast();
@@ -62,20 +67,32 @@ export default function CampaignForm() {
 
   const generateMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await apiRequest("POST", "/api/campaigns/generate", {
+      const endpoint = useMultiDraft ? "/api/campaigns/generate-drafts" : "/api/campaigns/generate";
+      const response = await apiRequest("POST", endpoint, {
         ...data,
         brandStylesheetId: parseInt(data.brandStylesheetId),
         newsroomId: newsroomId,
+        draftCount: 5,
       });
       return response.json();
     },
     onSuccess: (data) => {
-      setGeneratedCampaign(data);
+      if (Array.isArray(data)) {
+        setGeneratedDrafts(data);
+        setGeneratedCampaign(null);
+        toast({
+          title: `${data.length} Draft Variations Generated!`,
+          description: "Review and select your favorite campaign variations below.",
+        });
+      } else {
+        setGeneratedCampaign(data);
+        setGeneratedDrafts([]);
+        toast({
+          title: "Campaign Generated!",
+          description: "Your AI-powered campaign has been created successfully.",
+        });
+      }
       queryClient.invalidateQueries({ queryKey: ["/api/newsrooms", newsroomId, "campaigns"] });
-      toast({
-        title: "Campaign Generated!",
-        description: "Your AI-powered campaign has been created successfully.",
-      });
     },
     onError: (error: any) => {
       toast({
@@ -88,14 +105,43 @@ export default function CampaignForm() {
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     setIsGenerating(true);
+    setGeneratedDrafts([]);
+    setGeneratedCampaign(null);
     generateMutation.mutate(data);
     setTimeout(() => setIsGenerating(false), 1000);
+  };
+
+  const handleMergeComplete = (mergedCampaign: any) => {
+    setGeneratedCampaign(mergedCampaign);
+    setGeneratedDrafts([]);
   };
 
   const recentCampaigns = Array.isArray(campaigns) ? campaigns.slice(0, 2) : [];
 
   return (
     <div className="space-y-8">
+      {/* Multi-Draft Toggle */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="multi-draft" className="text-base">
+                Generate Multiple Variations
+              </Label>
+              <p className="text-sm text-slate-500">
+                Create 5 AI-powered draft variations to review and merge
+              </p>
+            </div>
+            <Switch
+              id="multi-draft"
+              checked={useMultiDraft}
+              onCheckedChange={setUseMultiDraft}
+              data-testid="switch-multi-draft"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Campaign Preview & Generation */}
       <div>
         <CampaignPreview 
@@ -111,6 +157,11 @@ export default function CampaignForm() {
           setIsConfigOpen={setIsConfigOpen}
         />
       </div>
+
+      {/* Draft Carousel */}
+      {generatedDrafts.length > 0 && (
+        <DraftCarousel drafts={generatedDrafts} onMerge={handleMergeComplete} />
+      )}
 
       {/* Recent Campaigns */}
       <Card>

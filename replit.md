@@ -162,6 +162,19 @@ Changelog:
   - Seamless integration with existing Quick Start Templates for tool execution
   - Time estimates and category-based organization for improved user experience
   - Added new navigation route (/assistant) and sidebar integration for easy access
+- October 3, 2025: Major Platform Redesign - Two-Path System Implementation
+  - Redesigned homepage with clear Path 1 (Create Campaign) and Path 2 (Get Feedback) structure
+  - Path 1: Multi-Draft Carousel System
+    - Generate 5+ AI-powered campaign variations with different creative approaches
+    - Interactive carousel with navigation, selection, and visual indicators
+    - Select and merge favorite drafts into optimized final campaigns
+    - Database schema extended with parentCampaignId, draftNumber, selectedForMerge fields
+    - Backend routes: /api/campaigns/generate-drafts and /api/campaigns/merge-drafts
+  - Path 2: Campaign Evaluation Engine
+    - New /campaigns/evaluate route for campaign analysis
+    - BlueLena and Audience Value Proposition frameworks for scoring
+    - AI-powered recommendations and one-click rewrites
+  - Comprehensive end-to-end testing with Playwright confirms all features functional
 ```
 
 ## User Preferences
