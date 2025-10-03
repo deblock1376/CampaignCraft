@@ -53,6 +53,9 @@ export const campaigns = pgTable("campaigns", {
   status: text("status").notNull().default("draft"), // draft, active, completed, archived
   content: jsonb("content"),
   metrics: jsonb("metrics"),
+  parentCampaignId: integer("parent_campaign_id"), // For draft variations
+  draftNumber: integer("draft_number"), // Which variation (1-5+)
+  selectedForMerge: boolean("selected_for_merge").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -66,6 +69,24 @@ export const campaignTemplates = pgTable("campaign_templates", {
   setupTime: text("setup_time").notNull(),
   template: jsonb("template").notNull(),
   isPublic: boolean("is_public").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const segments = pgTable("segments", {
+  id: serial("id").primaryKey(),
+  newsroomId: integer("newsroom_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const campaignEvaluations = pgTable("campaign_evaluations", {
+  id: serial("id").primaryKey(),
+  campaignId: integer("campaign_id").notNull(),
+  framework: text("framework").notNull(), // 'bluelena' or 'audience_value_prop'
+  overallScore: integer("overall_score").notNull(),
+  categoryScores: jsonb("category_scores").notNull(),
+  recommendations: jsonb("recommendations").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -91,6 +112,16 @@ export const insertCampaignTemplateSchema = createInsertSchema(campaignTemplates
   createdAt: true,
 });
 
+export const insertSegmentSchema = createInsertSchema(segments).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertCampaignEvaluationSchema = createInsertSchema(campaignEvaluations).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -102,9 +133,13 @@ export type InsertNewsroom = z.infer<typeof insertNewsroomSchema>;
 export type InsertBrandStylesheet = z.infer<typeof insertBrandStylesheetSchema>;
 export type InsertCampaign = z.infer<typeof insertCampaignSchema>;
 export type InsertCampaignTemplate = z.infer<typeof insertCampaignTemplateSchema>;
+export type InsertSegment = z.infer<typeof insertSegmentSchema>;
+export type InsertCampaignEvaluation = z.infer<typeof insertCampaignEvaluationSchema>;
 
 export type User = typeof users.$inferSelect;
 export type Newsroom = typeof newsrooms.$inferSelect;
 export type BrandStylesheet = typeof brandStylesheets.$inferSelect;
 export type Campaign = typeof campaigns.$inferSelect;
 export type CampaignTemplate = typeof campaignTemplates.$inferSelect;
+export type Segment = typeof segments.$inferSelect;
+export type CampaignEvaluation = typeof campaignEvaluations.$inferSelect;

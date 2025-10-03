@@ -4,16 +4,22 @@ import {
   brandStylesheets, 
   campaigns, 
   campaignTemplates,
+  segments,
+  campaignEvaluations,
   type User,
   type Newsroom,
   type BrandStylesheet,
   type Campaign,
   type CampaignTemplate,
+  type Segment,
+  type CampaignEvaluation,
   type InsertUser,
   type InsertNewsroom,
   type InsertBrandStylesheet,
   type InsertCampaign,
-  type InsertCampaignTemplate
+  type InsertCampaignTemplate,
+  type InsertSegment,
+  type InsertCampaignEvaluation
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
@@ -54,6 +60,18 @@ export interface IStorage {
   getCampaignTemplate(id: number): Promise<CampaignTemplate | undefined>;
   getCampaignTemplates(): Promise<CampaignTemplate[]>;
   createCampaignTemplate(template: InsertCampaignTemplate): Promise<CampaignTemplate>;
+  
+  // Segments
+  getSegment(id: number): Promise<Segment | undefined>;
+  getSegmentsByNewsroom(newsroomId: number): Promise<Segment[]>;
+  createSegment(segment: InsertSegment): Promise<Segment>;
+  updateSegment(id: number, segment: Partial<InsertSegment>): Promise<Segment>;
+  deleteSegment(id: number): Promise<void>;
+  
+  // Campaign Evaluations
+  getCampaignEvaluation(id: number): Promise<CampaignEvaluation | undefined>;
+  getEvaluationsByCampaign(campaignId: number): Promise<CampaignEvaluation[]>;
+  createCampaignEvaluation(evaluation: InsertCampaignEvaluation): Promise<CampaignEvaluation>;
 }
 
 export class MemStorage implements IStorage {
@@ -556,6 +574,49 @@ export class DatabaseStorage implements IStorage {
       .values(insertTemplate)
       .returning();
     return template;
+  }
+
+  // Segments
+  async getSegment(id: number): Promise<Segment | undefined> {
+    const segment = await db.select().from(segments).where(eq(segments.id, id));
+    return segment[0];
+  }
+
+  async getSegmentsByNewsroom(newsroomId: number): Promise<Segment[]> {
+    return await db.select().from(segments).where(eq(segments.newsroomId, newsroomId));
+  }
+
+  async createSegment(segment: InsertSegment): Promise<Segment> {
+    const [newSegment] = await db.insert(segments).values(segment).returning();
+    return newSegment;
+  }
+
+  async updateSegment(id: number, updates: Partial<InsertSegment>): Promise<Segment> {
+    const [updated] = await db
+      .update(segments)
+      .set(updates)
+      .where(eq(segments.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteSegment(id: number): Promise<void> {
+    await db.delete(segments).where(eq(segments.id, id));
+  }
+
+  // Campaign Evaluations
+  async getCampaignEvaluation(id: number): Promise<CampaignEvaluation | undefined> {
+    const evaluation = await db.select().from(campaignEvaluations).where(eq(campaignEvaluations.id, id));
+    return evaluation[0];
+  }
+
+  async getEvaluationsByCampaign(campaignId: number): Promise<CampaignEvaluation[]> {
+    return await db.select().from(campaignEvaluations).where(eq(campaignEvaluations.campaignId, campaignId));
+  }
+
+  async createCampaignEvaluation(evaluation: InsertCampaignEvaluation): Promise<CampaignEvaluation> {
+    const [newEvaluation] = await db.insert(campaignEvaluations).values(evaluation).returning();
+    return newEvaluation;
   }
 }
 
