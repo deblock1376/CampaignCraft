@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Dashboard from "@/pages/dashboard";
 import NewCampaign from "@/pages/new-campaign";
 import CampaignHistory from "@/pages/campaign-history";
+import CampaignEvaluate from "@/pages/campaign-evaluate";
 import BrandStylesheets from "@/pages/brand-stylesheets";
 import EmailOptimizer from "@/pages/email-optimizer";
 import Settings from "@/pages/settings";
@@ -39,6 +40,7 @@ function Router() {
       <Route path="/" component={Dashboard} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/campaigns/new" component={NewCampaign} />
+      <Route path="/campaigns/evaluate" component={CampaignEvaluate} />
       <Route path="/campaigns/history" component={CampaignHistory} />
       <Route path="/assistant" component={GuidedAssistant} />
       <Route path="/stylesheets" component={BrandStylesheets} />

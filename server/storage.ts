@@ -357,6 +357,9 @@ export class MemStorage implements IStorage {
       brandStylesheetId: insertCampaign.brandStylesheetId || null,
       content: insertCampaign.content || null,
       metrics: insertCampaign.metrics || null,
+      parentCampaignId: insertCampaign.parentCampaignId || null,
+      draftNumber: insertCampaign.draftNumber || null,
+      selectedForMerge: insertCampaign.selectedForMerge || false,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -401,6 +404,34 @@ export class MemStorage implements IStorage {
     };
     this.campaignTemplates.set(id, template);
     return template;
+  }
+
+  // Segments (stub for MemStorage - not used in production)
+  async getSegment(id: number): Promise<Segment | undefined> {
+    throw new Error('MemStorage not implemented');
+  }
+  async getSegmentsByNewsroom(newsroomId: number): Promise<Segment[]> {
+    return [];
+  }
+  async createSegment(segment: InsertSegment): Promise<Segment> {
+    throw new Error('MemStorage not implemented');
+  }
+  async updateSegment(id: number, segment: Partial<InsertSegment>): Promise<Segment> {
+    throw new Error('MemStorage not implemented');
+  }
+  async deleteSegment(id: number): Promise<void> {
+    throw new Error('MemStorage not implemented');
+  }
+
+  // Campaign Evaluations (stub for MemStorage - not used in production)
+  async getCampaignEvaluation(id: number): Promise<CampaignEvaluation | undefined> {
+    throw new Error('MemStorage not implemented');
+  }
+  async getEvaluationsByCampaign(campaignId: number): Promise<CampaignEvaluation[]> {
+    return [];
+  }
+  async createCampaignEvaluation(evaluation: InsertCampaignEvaluation): Promise<CampaignEvaluation> {
+    throw new Error('MemStorage not implemented');
   }
 }
 
@@ -528,6 +559,9 @@ export class DatabaseStorage implements IStorage {
       status: campaigns.status,
       content: campaigns.content,
       metrics: campaigns.metrics,
+      parentCampaignId: campaigns.parentCampaignId,
+      draftNumber: campaigns.draftNumber,
+      selectedForMerge: campaigns.selectedForMerge,
       createdAt: campaigns.createdAt,
       updatedAt: campaigns.updatedAt,
       newsroomName: newsrooms.name,
