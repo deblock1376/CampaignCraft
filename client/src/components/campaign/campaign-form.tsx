@@ -30,6 +30,7 @@ export default function CampaignForm() {
   const [generatedCampaign, setGeneratedCampaign] = useState(null);
   const [generatedDrafts, setGeneratedDrafts] = useState<any[]>([]);
   const [useMultiDraft, setUseMultiDraft] = useState(true);
+  const [compareModels, setCompareModels] = useState(false);
   const [activeTab, setActiveTab] = useState('content');
   const [isConfigOpen, setIsConfigOpen] = useState(true);
   const { toast } = useToast();
@@ -72,7 +73,8 @@ export default function CampaignForm() {
         ...data,
         brandStylesheetId: parseInt(data.brandStylesheetId),
         newsroomId: newsroomId,
-        draftCount: 5,
+        draftCount: compareModels ? 3 : 5,
+        compareModels: compareModels,
       });
       return response.json();
     },
@@ -120,25 +122,47 @@ export default function CampaignForm() {
 
   return (
     <div className="space-y-8">
-      {/* Multi-Draft Toggle */}
+      {/* Multi-Draft Options */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-6 space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label htmlFor="multi-draft" className="text-base">
                 Generate Multiple Variations
               </Label>
               <p className="text-sm text-slate-500">
-                Create 5 AI-powered draft variations to review and merge
+                Create {compareModels ? '3 AI model' : '5 AI-powered'} draft variations to review and merge
               </p>
             </div>
             <Switch
               id="multi-draft"
               checked={useMultiDraft}
-              onCheckedChange={setUseMultiDraft}
+              onCheckedChange={(checked) => {
+                setUseMultiDraft(checked);
+                if (!checked) setCompareModels(false);
+              }}
               data-testid="switch-multi-draft"
             />
           </div>
+          
+          {useMultiDraft && (
+            <div className="flex items-center justify-between pl-4 border-l-2 border-slate-200">
+              <div className="space-y-0.5">
+                <Label htmlFor="compare-models" className="text-sm">
+                  Compare AI Models
+                </Label>
+                <p className="text-xs text-slate-500">
+                  Generate one draft from each AI model (GPT-4o, Claude, Gemini)
+                </p>
+              </div>
+              <Switch
+                id="compare-models"
+                checked={compareModels}
+                onCheckedChange={setCompareModels}
+                data-testid="switch-compare-models"
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 

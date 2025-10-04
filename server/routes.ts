@@ -330,6 +330,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         brandStylesheetId: z.number(),
         newsroomId: z.number(),
         draftCount: z.number().min(1).max(10).default(5),
+        compareModels: z.boolean().optional().default(false),
       });
 
       const validatedData = schema.parse(req.body);
@@ -362,41 +363,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Generate multiple draft variations
       const draftPromises = [];
-      const variationPrompts = [
-        "Create a compelling campaign with strong emotional appeal",
-        "Create a data-driven campaign emphasizing facts and credibility",
-        "Create an urgent campaign with clear call-to-action",
-        "Create a storytelling-focused campaign with narrative elements",
-        "Create a concise, direct campaign optimized for quick engagement",
-      ];
+      
+      if (validatedData.compareModels) {
+        // Model comparison mode: generate one draft from each AI model
+        const models = [
+          { model: 'gpt-4o', name: 'GPT-4o' },
+          { model: 'claude-sonnet-4-20250514', name: 'Claude Sonnet 4' },
+          { model: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
+        ];
 
-      for (let i = 0; i < validatedData.draftCount; i++) {
-        const variationContext = `${validatedData.context}\n\nVariation ${i + 1}: ${variationPrompts[i] || 'Create a unique campaign variation'}`;
-        const campaignRequest = {
-          ...baseCampaignRequest,
-          context: variationContext,
-        };
+        for (let i = 0; i < models.length; i++) {
+          const { model, name } = models[i];
+          draftPromises.push(
+            aiProviderService.generateCampaign(baseCampaignRequest, model)
+              .then(async (generatedCampaign) => {
+                return await storage.createCampaign({
+                  newsroomId: validatedData.newsroomId,
+                  title: generatedCampaign.subject || `${validatedData.type} Campaign - ${name}`,
+                  type: validatedData.type,
+                  objective: validatedData.objective,
+                  context: validatedData.context,
+                  aiModel: model,
+                  brandStylesheetId: validatedData.brandStylesheetId,
+                  status: 'draft',
+                  content: generatedCampaign,
+                  metrics: generatedCampaign.metrics,
+                  draftNumber: i + 1,
+                  parentCampaignId: null,
+                  selectedForMerge: false,
+                });
+              })
+          );
+        }
+      } else {
+        // Regular variation mode: multiple variations with same model
+        const variationPrompts = [
+          "Create a compelling campaign with strong emotional appeal",
+          "Create a data-driven campaign emphasizing facts and credibility",
+          "Create an urgent campaign with clear call-to-action",
+          "Create a storytelling-focused campaign with narrative elements",
+          "Create a concise, direct campaign optimized for quick engagement",
+        ];
 
-        draftPromises.push(
-          aiProviderService.generateCampaign(campaignRequest, validatedData.aiModel)
-            .then(async (generatedCampaign) => {
-              return await storage.createCampaign({
-                newsroomId: validatedData.newsroomId,
-                title: generatedCampaign.subject || `${validatedData.type} Campaign - Variation ${i + 1}`,
-                type: validatedData.type,
-                objective: validatedData.objective,
-                context: validatedData.context,
-                aiModel: validatedData.aiModel,
-                brandStylesheetId: validatedData.brandStylesheetId,
-                status: 'draft',
-                content: generatedCampaign,
-                metrics: generatedCampaign.metrics,
-                draftNumber: i + 1,
-                parentCampaignId: null, // Will be updated after we have the first draft's ID
-                selectedForMerge: false,
-              });
-            })
-        );
+        for (let i = 0; i < validatedData.draftCount; i++) {
+          const variationContext = `${validatedData.context}\n\nVariation ${i + 1}: ${variationPrompts[i] || 'Create a unique campaign variation'}`;
+          const campaignRequest = {
+            ...baseCampaignRequest,
+            context: variationContext,
+          };
+
+          draftPromises.push(
+            aiProviderService.generateCampaign(campaignRequest, validatedData.aiModel)
+              .then(async (generatedCampaign) => {
+                return await storage.createCampaign({
+                  newsroomId: validatedData.newsroomId,
+                  title: generatedCampaign.subject || `${validatedData.type} Campaign - Variation ${i + 1}`,
+                  type: validatedData.type,
+                  objective: validatedData.objective,
+                  context: validatedData.context,
+                  aiModel: validatedData.aiModel,
+                  brandStylesheetId: validatedData.brandStylesheetId,
+                  status: 'draft',
+                  content: generatedCampaign,
+                  metrics: generatedCampaign.metrics,
+                  draftNumber: i + 1,
+                  parentCampaignId: null, // Will be updated after we have the first draft's ID
+                  selectedForMerge: false,
+                });
+              })
+          );
+        }
       }
 
       const drafts = await Promise.all(draftPromises);
