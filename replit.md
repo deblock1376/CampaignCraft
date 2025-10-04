@@ -175,6 +175,23 @@ Changelog:
     - BlueLena and Audience Value Proposition frameworks for scoring
     - AI-powered recommendations and one-click rewrites
   - Comprehensive end-to-end testing with Playwright confirms all features functional
+- October 4, 2025: Enhanced Platform Features - Segments, LLM Comparison, Unified History
+  - Segment Management System
+    - Full CRUD operations for audience segments (/segments page)
+    - Create, edit, delete audience segments with descriptions
+    - Reuse segments across campaigns for targeted messaging
+    - Database segments table with newsroom isolation
+  - LLM Comparison Mode (Path 1 Enhancement)
+    - "Compare AI Models" toggle in campaign generation
+    - Generates 3 drafts simultaneously: GPT-4o, Claude Sonnet 4, Gemini 2.5 Flash
+    - Side-by-side model comparison with AI model badges
+    - Select and merge best outputs from different models
+  - Unified Campaign History Integration
+    - Save evaluated campaigns from Path 2 (Get Feedback)
+    - POST /api/campaigns/save-evaluated endpoint
+    - All campaigns (Path 1 create + Path 2 evaluate) appear in single history view
+    - Comprehensive search and filter across all campaign sources
+  - All features tested end-to-end with Playwright validation
 ```
 
 ## User Preferences
