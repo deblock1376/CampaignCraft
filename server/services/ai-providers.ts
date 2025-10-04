@@ -177,7 +177,7 @@ Brand Voice & Tone:
 ✅ Required Output Format (JSON)
 Generate a complete email campaign with:
 
-1. **subject** (string, ≤ 50 characters): Compelling subject line that creates urgency
+1. **subject** (string, MAXIMUM 50 characters - HARD LIMIT): Compelling subject line that creates urgency. Count every character including spaces and punctuation. If your subject is longer than 50 characters, you MUST make it shorter. NO EXCEPTIONS.
 2. **content** (string): FULL EMAIL MESSAGE BODY - This should be a complete, ready-to-send email with:
    - Strong opening hook related to the breaking news
    - Narrative storytelling that connects the story to local impact
@@ -292,8 +292,14 @@ Response must be valid JSON with all fields included.
   }
 
   private formatCampaignResponse(result: any): CampaignResponse {
+    // Enforce 50 character limit on subject line (BlueLena requirement)
+    let subject = result.subject || '';
+    if (subject.length > 50) {
+      subject = subject.substring(0, 47) + '...';
+    }
+    
     return {
-      subject: result.subject,
+      subject,
       content: result.content || '',
       cta: result.cta || '',
       insights: Array.isArray(result.insights) ? result.insights : [],
