@@ -145,11 +145,11 @@ export default function DraftCarousel({ drafts, onMerge }: DraftCarouselProps) {
             </div>
           )}
 
-          {currentDraft.content?.body && (
+          {currentDraft.content?.content && (
             <div>
-              <p className="text-sm font-medium text-slate-600 mb-1">Body Content</p>
-              <div className="prose prose-sm max-w-none" data-testid="text-draft-body">
-                {currentDraft.content.body}
+              <p className="text-sm font-medium text-slate-600 mb-1">Email Body</p>
+              <div className="prose prose-sm max-w-none whitespace-pre-wrap" style={{ lineHeight: '1.7' }} data-testid="text-draft-body">
+                {currentDraft.content.content}
               </div>
             </div>
           )}
@@ -158,7 +158,11 @@ export default function DraftCarousel({ drafts, onMerge }: DraftCarouselProps) {
             <div>
               <p className="text-sm font-medium text-slate-600 mb-1">Call-to-Action</p>
               <p className="font-medium text-primary" data-testid="text-draft-cta">
-                {currentDraft.content.cta}
+                {(() => {
+                  // Parse [Button]...[/Button] format
+                  const buttonMatch = currentDraft.content.cta.match(/\[Button\](.*?)\[\/Button\]/);
+                  return buttonMatch ? buttonMatch[1] : currentDraft.content.cta;
+                })()}
               </p>
             </div>
           )}

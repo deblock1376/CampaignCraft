@@ -325,9 +325,9 @@ export default function CampaignPreview({
                     </Button>
                   </div>
                   <div className="text-slate-700 leading-relaxed">
-                    <div className="whitespace-pre-line">
+                    <div className="whitespace-pre-wrap" style={{ lineHeight: '1.7' }}>
                       {typeof campaign.content?.content === 'string' 
-                        ? campaign.content.content.split('. ').join('.\n\n').replace(/\n{3,}/g, '\n\n')
+                        ? campaign.content.content
                         : campaign.content?.content
                       }
                     </div>
@@ -341,14 +341,23 @@ export default function CampaignPreview({
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => copyToClipboard(campaign.content.cta, "Call to action")}
+                        onClick={() => {
+                          // Extract button text from [Button]...[/Button] format
+                          const buttonMatch = campaign.content.cta.match(/\[Button\](.*?)\[\/Button\]/);
+                          const buttonText = buttonMatch ? buttonMatch[1] : campaign.content.cta;
+                          copyToClipboard(buttonText, "Call to action");
+                        }}
                       >
                         <Copy className="w-4 h-4 mr-1" />
                         Copy
                       </Button>
                     </div>
                     <Button className="bg-primary text-white hover:bg-blue-700">
-                      {campaign.content.cta}
+                      {(() => {
+                        // Parse [Button]...[/Button] format
+                        const buttonMatch = campaign.content.cta.match(/\[Button\](.*?)\[\/Button\]/);
+                        return buttonMatch ? buttonMatch[1] : campaign.content.cta;
+                      })()}
                     </Button>
                   </div>
                 )}
