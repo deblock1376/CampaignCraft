@@ -655,6 +655,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Save Evaluated Campaign
+  app.post("/api/campaigns/save-evaluated", async (req, res) => {
+    try {
+      const schema = z.object({
+        title: z.string().min(1),
+        content: z.string().min(1),
+        type: z.enum(['email', 'social', 'web']),
+        newsroomId: z.number(),
+        objective: z.enum(['subscription', 'donation', 'membership', 'engagement']),
+        context: z.string(),
+        aiModel: z.string(),
+      });
+
+      const validatedData = schema.parse(req.body);
+
+      // Parse the content if it's a string
+      let parsedContent = validatedData.content;
+      try {
+        parsedContent = JSON.parse(validatedData.content);
+      } catch {
+        // If parsing fails, treat it as plain text and structure it
+        parsedContent = {
+          subject: validatedData.title,
+          body: validatedData.content,
+          cta: 'Learn More',
+        };
+      }
+
+      const campaign = await storage.createCampaign({
+        newsroomId: validatedData.newsroomId,
+        title: validatedData.title,
+        type: validatedData.type,
+        objective: validatedData.objective,
+        context: validatedData.context,
+        aiModel: validatedData.aiModel,
+        brandStylesheetId: null,
+        status: 'active',
+        content: parsedContent,
+      });
+
+      res.json(campaign);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error('Save evaluated campaign error:', error);
+      res.status(500).json({ message: "Failed to save campaign", error: String(error) });
+    }
+  });
+
   // Quick Start Tools
   app.post("/api/quickstart/rapid-response", authenticateToken, async (req: any, res) => {
     try {

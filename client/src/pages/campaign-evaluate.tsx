@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Target, Sparkles, AlertCircle, CheckCircle2, ArrowRight } from "lucide-react";
+import { Target, Sparkles, AlertCircle, CheckCircle2, ArrowRight, Save } from "lucide-react";
 
 export default function CampaignEvaluate() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -22,6 +23,8 @@ export default function CampaignEvaluate() {
   const [campaignType, setCampaignType] = useState("email");
   const [framework, setFramework] = useState<"bluelena" | "audience_value_prop">("bluelena");
   const [evaluation, setEvaluation] = useState<any>(null);
+  const [campaignTitle, setCampaignTitle] = useState("");
+  const [showSaveForm, setShowSaveForm] = useState(false);
 
   const { data: campaigns } = useQuery({
     queryKey: ["/api/newsrooms", newsroomId, "campaigns"],
@@ -65,11 +68,37 @@ export default function CampaignEvaluate() {
     },
     onSuccess: (data: any) => {
       setCampaignContent(data.rewrittenContent);
+      setShowSaveForm(true);
       toast({
         title: "Campaign Rewritten",
-        description: "Your campaign has been improved with AI suggestions",
+        description: "Your campaign has been improved with AI suggestions. Save it to your campaign library!",
       });
       setEvaluation(null);
+    },
+  });
+
+  const saveCampaignMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/campaigns/save-evaluated", {
+        title: campaignTitle || `Evaluated ${campaignType} Campaign`,
+        content: campaignContent,
+        type: campaignType,
+        newsroomId,
+        objective: 'engagement',
+        context: `Evaluated and rewritten campaign using ${framework} framework`,
+        aiModel: 'claude-sonnet-4-20250514',
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/newsrooms", newsroomId, "campaigns"] });
+      toast({
+        title: "Campaign Saved",
+        description: "Your evaluated campaign has been saved successfully",
+      });
+      setCampaignContent("");
+      setCampaignTitle("");
+      setShowSaveForm(false);
     },
   });
 
@@ -272,6 +301,60 @@ export default function CampaignEvaluate() {
                       </>
                     )}
                   </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Save Campaign Form */}
+            {showSaveForm && (
+              <Card className="border-2 border-emerald-500">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Save className="h-5 w-5 mr-2 text-emerald-600" />
+                    Save Improved Campaign
+                  </CardTitle>
+                  <CardDescription>
+                    Save this AI-improved campaign to your campaign library
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="campaign-title">Campaign Title</Label>
+                    <Input
+                      id="campaign-title"
+                      data-testid="input-campaign-title"
+                      placeholder="Enter a title for this campaign"
+                      value={campaignTitle}
+                      onChange={(e) => setCampaignTitle(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex space-x-3">
+                    <Button 
+                      onClick={() => saveCampaignMutation.mutate()}
+                      disabled={saveCampaignMutation.isPending}
+                      className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                      data-testid="button-save-campaign"
+                    >
+                      {saveCampaignMutation.isPending ? (
+                        <>
+                          <span className="mr-2">Saving...</span>
+                          <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                        </>
+                      ) : (
+                        <>
+                          <Save className="mr-2 h-4 w-4" />
+                          Save to Library
+                        </>
+                      )}
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={() => setShowSaveForm(false)}
+                      disabled={saveCampaignMutation.isPending}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             )}
