@@ -14,6 +14,7 @@ export default function Sidebar() {
     { href: "/campaigns/history", icon: "fas fa-history", label: "Campaign History" },
     { href: "/assistant", icon: "fas fa-user-friends", label: "Marketing Assistant" },
     { href: "/stylesheets", icon: "fas fa-palette", label: "Grounding Library" },
+    { href: "/segments", icon: "fas fa-users", label: "Audience Segments" },
     { href: "/email-optimizer", icon: "fas fa-envelope", label: "Email Optimizer" },
     { href: "/settings", icon: "fas fa-cog", label: "Settings" },
   ];

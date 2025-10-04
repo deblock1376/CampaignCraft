@@ -10,6 +10,7 @@ import CampaignHistory from "@/pages/campaign-history";
 import CampaignEvaluate from "@/pages/campaign-evaluate";
 import BrandStylesheets from "@/pages/brand-stylesheets";
 import EmailOptimizer from "@/pages/email-optimizer";
+import Segments from "@/pages/segments";
 import Settings from "@/pages/settings";
 import GuidedAssistant from "@/pages/guided-assistant";
 import Admin from "@/pages/admin";
@@ -44,6 +45,7 @@ function Router() {
       <Route path="/campaigns/history" component={CampaignHistory} />
       <Route path="/assistant" component={GuidedAssistant} />
       <Route path="/stylesheets" component={BrandStylesheets} />
+      <Route path="/segments" component={Segments} />
       <Route path="/email-optimizer" component={EmailOptimizer} />
       <Route path="/settings" component={Settings} />
       <Route path="/admin" component={Admin} />

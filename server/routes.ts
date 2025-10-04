@@ -489,6 +489,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Segment Management Routes
+  app.get("/api/newsrooms/:newsroomId/segments", async (req, res) => {
+    try {
+      const newsroomId = parseInt(req.params.newsroomId);
+      const segments = await storage.getSegmentsByNewsroom(newsroomId);
+      res.json(segments);
+    } catch (error) {
+      console.error('Get segments error:', error);
+      res.status(500).json({ message: "Failed to retrieve segments", error: String(error) });
+    }
+  });
+
+  app.post("/api/newsrooms/:newsroomId/segments", async (req, res) => {
+    try {
+      const newsroomId = parseInt(req.params.newsroomId);
+      const schema = z.object({
+        name: z.string().min(1),
+        description: z.string().min(1),
+      });
+
+      const { name, description } = schema.parse(req.body);
+
+      const segment = await storage.createSegment({
+        newsroomId,
+        name,
+        description,
+      });
+
+      res.json(segment);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error('Create segment error:', error);
+      res.status(500).json({ message: "Failed to create segment", error: String(error) });
+    }
+  });
+
+  app.patch("/api/segments/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const schema = z.object({
+        name: z.string().min(1).optional(),
+        description: z.string().min(1).optional(),
+      });
+
+      const updates = schema.parse(req.body);
+      const segment = await storage.updateSegment(id, updates);
+
+      res.json(segment);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error('Update segment error:', error);
+      res.status(500).json({ message: "Failed to update segment", error: String(error) });
+    }
+  });
+
+  app.delete("/api/segments/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteSegment(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Delete segment error:', error);
+      res.status(500).json({ message: "Failed to delete segment", error: String(error) });
+    }
+  });
+
   // Campaign Evaluation
   app.post("/api/campaigns/evaluate", async (req, res) => {
     try {
