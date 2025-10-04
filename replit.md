@@ -192,6 +192,19 @@ Changelog:
     - All campaigns (Path 1 create + Path 2 evaluate) appear in single history view
     - Comprehensive search and filter across all campaign sources
   - All features tested end-to-end with Playwright validation
+- October 4, 2025: BlueLena Copywriting Integration
+  - Updated AI campaign generation to follow BlueLena professional copywriting guidelines
+  - Campaign emails now generate complete, emotionally resonant full-length copy (200-400 words)
+  - Enforced subject line limit: ≤ 50 characters (with backend validation and truncation)
+  - Email structure follows BlueLena standards:
+    - Breaking news hook with urgency and local relevance
+    - Narrative storytelling connecting story to community impact
+    - Reader support appeal emphasizing role in sustaining independent journalism
+    - AP Style formatting (no Oxford commas)
+  - CTA format standardized: [Button]Button text[/Button] parsed and displayed as buttons
+  - Frontend updated to display full email bodies with proper paragraph formatting
+  - All AI providers (GPT-4o, Claude Sonnet 4, Gemini 2.5 Flash) use updated BlueLena prompts
+  - End-to-end testing confirms proper generation with subject limits and full email copy
 ```
 
 ## User Preferences
