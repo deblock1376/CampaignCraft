@@ -489,6 +489,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Campaign Evaluation
+  app.post("/api/campaigns/evaluate", async (req, res) => {
+    try {
+      const schema = z.object({
+        campaignContent: z.string().min(1),
+        campaignType: z.string(),
+        framework: z.enum(['bluelena', 'audience_value_prop']),
+        newsroomId: z.number(),
+        aiModel: z.string().optional(),
+      });
+
+      const { campaignContent, campaignType, framework, newsroomId, aiModel } = schema.parse(req.body);
+
+      const evaluation = await aiProviderService.evaluateCampaign(
+        campaignContent,
+        campaignType,
+        framework,
+        aiModel || 'claude-sonnet-4-20250514'
+      );
+
+      res.json(evaluation);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error('Campaign evaluation error:', error);
+      res.status(500).json({ message: "Failed to evaluate campaign", error: String(error) });
+    }
+  });
+
+  // AI Rewrite Campaign
+  app.post("/api/campaigns/ai-rewrite", async (req, res) => {
+    try {
+      const schema = z.object({
+        originalContent: z.string().min(1),
+        recommendations: z.array(z.string()),
+        campaignType: z.string(),
+        newsroomId: z.number(),
+        aiModel: z.string().optional(),
+      });
+
+      const { originalContent, recommendations, campaignType, aiModel } = schema.parse(req.body);
+
+      const rewrittenContent = await aiProviderService.rewriteCampaign(
+        originalContent,
+        recommendations,
+        campaignType,
+        aiModel || 'claude-sonnet-4-20250514'
+      );
+
+      res.json({ rewrittenContent });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error('AI rewrite error:', error);
+      res.status(500).json({ message: "Failed to rewrite campaign", error: String(error) });
+    }
+  });
+
   // Quick Start Tools
   app.post("/api/quickstart/rapid-response", authenticateToken, async (req: any, res) => {
     try {

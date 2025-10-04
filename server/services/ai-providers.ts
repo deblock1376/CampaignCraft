@@ -278,6 +278,99 @@ Response must be in JSON format with these fields:
       },
     };
   }
+  async evaluateCampaign(
+    campaignContent: string,
+    campaignType: string,
+    framework: 'bluelena' | 'audience_value_prop',
+    model: string = 'claude-sonnet-4-20250514'
+  ): Promise<{
+    overallScore: number;
+    categoryScores: Record<string, number>;
+    recommendations: string[];
+  }> {
+    const frameworkGuidelines = framework === 'bluelena' 
+      ? `BlueLena Best Practices:
+        - Subject Line: Clear, compelling, under 50 characters, creates urgency
+        - Content Structure: Scannable, logical flow, clear hierarchy
+        - Audience Alignment: Speaks to target audience needs and pain points
+        - Brand Consistency: Aligns with brand voice and messaging
+        - Mobile Optimization: Works on mobile devices, short paragraphs`
+      : `Audience Value Proposition Framework:
+        - Value Clarity: Clear benefit statement for the audience
+        - Relevance: Addresses specific audience needs
+        - Differentiation: Shows why this matters uniquely
+        - Proof: Credible evidence or social proof
+        - Action: Clear next step for the audience`;
+
+    const prompt = `You are a marketing evaluation expert. Evaluate this ${campaignType} campaign using the ${framework === 'bluelena' ? 'BlueLena' : 'Audience Value Proposition'} framework.
+
+Campaign Content:
+${campaignContent}
+
+${frameworkGuidelines}
+
+Provide your evaluation in this exact JSON format:
+{
+  "overallScore": <number 0-100>,
+  "categoryScores": {
+    ${framework === 'bluelena' 
+      ? '"subject_line": <number>, "content_structure": <number>, "audience_alignment": <number>, "brand_consistency": <number>, "mobile_optimization": <number>'
+      : '"value_clarity": <number>, "relevance": <number>, "differentiation": <number>, "proof": <number>, "action": <number>'
+    }
+  },
+  "recommendations": ["<specific actionable recommendation>", ...]
+}`;
+
+    const response = await this.generateContent(prompt, model);
+    
+    try {
+      // Try multiple parsing strategies
+      let cleaned = response;
+      
+      // Remove markdown code blocks
+      cleaned = cleaned.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      
+      // Try to extract JSON object
+      const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        cleaned = jsonMatch[0];
+      }
+      
+      cleaned = cleaned.trim();
+      
+      const parsed = JSON.parse(cleaned);
+      
+      // Validate the structure
+      if (!parsed.overallScore || !parsed.categoryScores || !parsed.recommendations) {
+        throw new Error('Invalid evaluation structure');
+      }
+      
+      return parsed;
+    } catch (error) {
+      console.error('Failed to parse evaluation response:', response);
+      console.error('Parse error:', error);
+      throw new Error('Failed to parse AI evaluation response');
+    }
+  }
+
+  async rewriteCampaign(
+    originalContent: string,
+    recommendations: string[],
+    campaignType: string,
+    model: string = 'claude-sonnet-4-20250514'
+  ): Promise<string> {
+    const prompt = `You are a marketing copywriter. Rewrite this ${campaignType} campaign to implement these recommendations:
+
+Original Content:
+${originalContent}
+
+Recommendations to implement:
+${recommendations.map((r, i) => `${i + 1}. ${r}`).join('\n')}
+
+Rewrite the campaign content implementing ALL recommendations. Return ONLY the improved campaign content, no explanations.`;
+
+    return this.generateContent(prompt, model);
+  }
 }
 
 export const aiProviderService = new AIProviderService();
