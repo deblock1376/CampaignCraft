@@ -136,36 +136,61 @@ class AIProviderService {
   }
 
   private buildCampaignPrompt(request: CampaignRequest): string {
+    const objectiveMap = {
+      subscription: 'subscriptions',
+      donation: 'donations', 
+      membership: 'memberships',
+      engagement: 'reader support'
+    };
+    
     return `
-You are an expert marketing campaign writer for nonprofit newsrooms. Generate a ${request.type} campaign with the following requirements:
+👤 Your Role
+You are a copywriter at BlueLena, tasked with drafting compelling, emotionally resonant, and urgent email campaigns for independent news organizations. These campaigns will feature a breaking news story and include an appeal for support.
 
+🧭 Campaign Goal
+Create a standalone audience engagement and reader revenue ${request.type} campaign that urges newsletter subscribers to support their local news outlet. The campaign must:
+- Highlight the impact of the breaking news story
+- Showcase the unique value of the publisher's journalism
+- Emphasize the role of readers in sustaining independent reporting
+
+📋 Campaign Context
+Publisher: ${request.newsroomName}
 Campaign Type: ${request.type}
-Primary Objective: ${request.objective}
-Context: ${request.context}
-Organization Name: ${request.newsroomName}
-
-IMPORTANT: Use "${request.newsroomName}" as the organization name throughout the campaign content. Do not use any other organization names.
+Primary Objective: ${request.objective} (${objectiveMap[request.objective as keyof typeof objectiveMap]})
+Breaking News Story/Context: ${request.context}
 
 Brand Voice & Tone:
 - Tone: ${request.brandStylesheet.tone}
 - Voice: ${request.brandStylesheet.voice}
 - Key Messages: ${request.brandStylesheet.keyMessages.join(', ')}
-- Guidelines: ${request.brandStylesheet.guidelines}
+- Additional Guidelines: ${request.brandStylesheet.guidelines}
 
-Requirements:
-1. Create compelling ${request.type === 'email' ? 'subject line and email' : request.type} content
-2. Focus on ${request.objective === 'subscription' ? 'driving subscriptions' : request.objective === 'donation' ? 'encouraging donations' : request.objective === 'membership' ? 'growing membership' : 'boosting engagement'}
-3. Include a strong call-to-action
-4. Maintain the specified brand voice and tone
-5. Provide 3-4 AI insights about the campaign effectiveness
-6. Estimate performance metrics (open rate, click rate, conversion rate as percentages)
+🧠 Tone & Messaging Requirements
+- Must reflect ${request.newsroomName}'s identity: the message should feel distinct, authentic, and mission-aligned
+- Use emotionally compelling language that emphasizes local relevance and community impact
+- Follow AP Style and avoid Oxford commas
+- Keep CTAs clear and action-oriented
+- Use a tone that is urgent, emotionally resonant, and grounded in local relevance
+- Avoid phrases like "keep journalism alive" unless explicitly requested
+- Focus on the reader's essential role in sustaining independent reporting
 
-Response must be in JSON format with these fields:
-- subject (if email campaign)
-- content (main campaign text)
-- cta (call-to-action text)
-- insights (array of 3-4 strings)
-- metrics (object with estimatedOpenRate, estimatedClickRate, estimatedConversion as numbers)
+✅ Required Output Format (JSON)
+Generate a complete email campaign with:
+
+1. **subject** (string, ≤ 50 characters): Compelling subject line that creates urgency
+2. **content** (string): FULL EMAIL MESSAGE BODY - This should be a complete, ready-to-send email with:
+   - Strong opening hook related to the breaking news
+   - Narrative storytelling that connects the story to local impact
+   - Clear explanation of how reader support enables this journalism
+   - Community-focused appeal that makes readers feel essential
+   - Complete paragraphs with proper structure (200-400 words typical)
+3. **cta** (string): Call-to-action in this exact format: [Button]Button text[/Button] (e.g., [Button]Support Local News[/Button])
+4. **insights** (array of 3-4 strings): Brief observations about campaign effectiveness
+5. **metrics** (object): Performance estimates with estimatedOpenRate, estimatedClickRate, estimatedConversion (as numbers)
+
+CRITICAL: The "content" field must contain a COMPLETE, FULL EMAIL MESSAGE - not just a summary or outline. Write the entire email body copy as it would appear in the subscriber's inbox, with multiple paragraphs, emotional resonance, and complete storytelling.
+
+Response must be valid JSON with all fields included.
 `;
   }
 
@@ -189,9 +214,9 @@ Response must be in JSON format with these fields:
     try {
       const response = await this.anthropic.messages.create({
         model: DEFAULT_ANTHROPIC_MODEL,
-        max_tokens: 2000,
+        max_tokens: 3000,
         temperature: 0.7,
-        system: "You are an expert marketing campaign writer for nonprofit newsrooms. Always respond with valid JSON.",
+        system: "You are a copywriter at BlueLena specializing in emotionally resonant, urgent email campaigns for independent news organizations. Always respond with valid JSON containing complete, full-length email copy.",
         messages: [{ role: 'user', content: prompt }],
       });
 
@@ -219,12 +244,13 @@ Response must be in JSON format with these fields:
       const response = await this.gemini.models.generateContent({
         model: "gemini-2.5-flash",
         config: {
-          systemInstruction: `You are an expert marketing campaign writer for nonprofit newsrooms. 
+          systemInstruction: `You are a copywriter at BlueLena specializing in emotionally resonant, urgent email campaigns for independent news organizations. 
+          Generate COMPLETE, FULL-LENGTH email copy with multiple paragraphs (200-400 words).
           Respond with JSON in this exact format: 
           {
-            "subject": "string",
-            "content": "string", 
-            "cta": "string",
+            "subject": "string (max 50 characters)",
+            "content": "FULL EMAIL MESSAGE BODY with complete paragraphs", 
+            "cta": "string in format [Button]Button text[/Button]",
             "insights": ["string1", "string2", "string3"],
             "metrics": {
               "estimatedOpenRate": number,
