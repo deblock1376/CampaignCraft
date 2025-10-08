@@ -61,6 +61,8 @@ export default function CampaignAssistantTest() {
       
       // If AI wants to generate campaign, trigger generation
       if (data.shouldGenerate && data.campaignParams) {
+        console.log('Triggering campaign generation with params:', data.campaignParams);
+        console.log('Available grounding guides:', groundingGuides);
         setCampaignParams(data.campaignParams);
         setTimeout(() => {
           generateCampaignMutation.mutate(data.campaignParams);
@@ -120,10 +122,11 @@ export default function CampaignAssistantTest() {
       };
       setMessages(prev => [...prev, campaignMessage]);
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Campaign generation error:', error);
       toast({
         title: "Error",
-        description: "Failed to generate campaign",
+        description: error instanceof Error ? error.message : "Failed to generate campaign",
         variant: "destructive",
       });
     },
