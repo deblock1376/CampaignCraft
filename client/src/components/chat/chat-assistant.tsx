@@ -4,24 +4,39 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Bot, User } from "lucide-react";
+import { CampaignMessageCard } from "./campaign-message-card";
 
 export interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  campaign?: {
+    subjectLine: string;
+    body: string;
+    cta: {
+      text: string;
+      url?: string;
+    };
+  };
 }
 
 interface ChatAssistantProps {
   messages: ChatMessage[];
   onSendMessage: (message: string) => void;
   isLoading?: boolean;
+  onSaveCampaign?: (campaign: ChatMessage["campaign"]) => void;
+  onExportCampaign?: (campaign: ChatMessage["campaign"]) => void;
+  onRegenerateCampaign?: () => void;
 }
 
 export default function ChatAssistant({ 
   messages, 
   onSendMessage, 
-  isLoading = false 
+  isLoading = false,
+  onSaveCampaign,
+  onExportCampaign,
+  onRegenerateCampaign 
 }: ChatAssistantProps) {
   const [input, setInput] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -82,14 +97,26 @@ export default function ChatAssistant({
                       <User className="w-4 h-4" />
                     )}
                   </div>
-                  <div
-                    className={`flex-1 rounded-lg p-3 ${
-                      message.role === "assistant"
-                        ? "bg-slate-100 text-slate-900"
-                        : "bg-primary text-white"
-                    }`}
-                  >
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  <div className="flex-1 space-y-2">
+                    {message.content && (
+                      <div
+                        className={`rounded-lg p-3 ${
+                          message.role === "assistant"
+                            ? "bg-slate-100 text-slate-900"
+                            : "bg-primary text-white"
+                        }`}
+                      >
+                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      </div>
+                    )}
+                    {message.campaign && message.role === "assistant" && (
+                      <CampaignMessageCard
+                        campaign={message.campaign}
+                        onSave={() => onSaveCampaign?.(message.campaign)}
+                        onExport={() => onExportCampaign?.(message.campaign)}
+                        onRegenerate={onRegenerateCampaign}
+                      />
+                    )}
                   </div>
                 </div>
               ))

@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import OpenAI from "openai";
 import { storage } from "./storage";
 import { aiProviderService } from "./services/ai-providers";
 import { insertBrandStylesheetSchema, insertCampaignSchema, insertCampaignTemplateSchema, insertUserSchema } from "@shared/schema";
@@ -746,18 +747,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Build system prompt for the assistant
       const systemPrompt = `You are a helpful campaign assistant for ${newsroom.name}, a newsroom. 
-Your role is to help users create effective marketing campaigns through conversation.
+Your role is to guide users through creating effective marketing campaigns via a structured workflow.
 
-Available grounding guides: ${groundingGuides.map(g => g.name).join(', ') || 'None available'}
+WORKFLOW STAGES:
+1. **Grounding Guides**: Help users select brand guides that define tone, voice, and messaging
+2. **Campaign Objective**: Determine the goal (subscription, donation, membership, or engagement)
+3. **Context & Details**: Gather information about the campaign (article, event, promotion, etc.)
+4. **Generation**: When all details are collected, suggest generating the campaign
 
-Guidelines:
-- Be conversational and helpful
-- Ask clarifying questions if needed
-- Suggest specific grounding guides when relevant
-- When users describe their campaign idea, help them think through objective, audience, and messaging
-- Provide actionable suggestions for improving campaigns
-- After campaigns are generated, suggest next steps like A/B testing, audience variations, or follow-up campaigns
-- Be concise but thorough`;
+AVAILABLE GROUNDING GUIDES: ${groundingGuides.map(g => g.name).join(', ') || 'None available yet - suggest creating one'}
+
+YOUR APPROACH:
+- Guide users step-by-step through the workflow above
+- Ask focused questions to gather necessary information
+- When users share campaign ideas, identify which grounding guide fits best
+- Recognize when the user has provided enough detail to generate a campaign
+- When user confirms they want to generate, respond with this EXACT format:
+  GENERATE_CAMPAIGN
+  Objective: [subscription/donation/membership/engagement]
+  Context: [brief context about the campaign]
+  BrandStylesheetId: [ID of the grounding guide, or null]
+- After generation, suggest A/B testing, audience variations, or follow-up campaigns
+- Be conversational but focused on moving toward campaign creation
+- Keep responses concise (2-3 sentences max unless explaining complex concepts)`;
 
       // Create messages array for OpenAI
       const messages = [
@@ -782,6 +794,28 @@ Guidelines:
       });
 
       const assistantMessage = response.choices[0].message.content || "I apologize, but I couldn't generate a response. Please try again.";
+
+      // Check if AI wants to trigger campaign generation
+      if (assistantMessage.includes("GENERATE_CAMPAIGN")) {
+        const lines = assistantMessage.split('\n');
+        const objectiveLine = lines.find(l => l.includes("Objective:"));
+        const contextLine = lines.find(l => l.includes("Context:"));
+        const brandStylesheetLine = lines.find(l => l.includes("BrandStylesheetId:"));
+        
+        const objective = objectiveLine?.split("Objective:")[1]?.trim() || "engagement";
+        const context = contextLine?.split("Context:")[1]?.trim() || "";
+        const brandStylesheetId = brandStylesheetLine?.split("BrandStylesheetId:")[1]?.trim();
+        
+        return res.json({
+          message: "Perfect! Let me generate your campaign now...",
+          shouldGenerate: true,
+          campaignParams: {
+            objective: objective as any,
+            context: context,
+            brandStylesheetId: brandStylesheetId && brandStylesheetId !== "null" ? parseInt(brandStylesheetId) : null,
+          }
+        });
+      }
 
       res.json({ message: assistantMessage });
     } catch (error) {
