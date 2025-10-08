@@ -368,61 +368,28 @@ export default function CampaignPreview({
           
           <TabsContent value="export" className="mt-6">
             <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <i className="fas fa-file-alt mr-2"></i>
-                      Export Formats
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Button variant="outline" className="w-full justify-start">
-                      <i className="fas fa-file-pdf mr-2"></i>
-                      Export as PDF
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <i className="fas fa-file-word mr-2"></i>
-                      Export as Word Doc
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <i className="fas fa-code mr-2"></i>
-                      Export as HTML
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <i className="fas fa-file-csv mr-2"></i>
-                      Export as CSV
-                    </Button>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <i className="fas fa-share mr-2"></i>
-                      Platform Integration
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Button variant="outline" className="w-full justify-start">
-                      <i className="fas fa-envelope mr-2"></i>
-                      Send to Email Platform
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <i className="fab fa-wordpress mr-2"></i>
-                      Publish to WordPress
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <i className="fab fa-mailchimp mr-2"></i>
-                      Send to Mailchimp
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <i className="fas fa-link mr-2"></i>
-                      Copy Shareable Link
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <i className="fas fa-file-alt mr-2"></i>
+                    Export Formats
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Button variant="outline" className="w-full justify-start">
+                    <i className="fab fa-google mr-2"></i>
+                    Export as Google Doc
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start">
+                    <i className="fas fa-code mr-2"></i>
+                    Export as Email HTML
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start">
+                    <i className="fas fa-file-alt mr-2"></i>
+                    Export as txt
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
         </Tabs>
