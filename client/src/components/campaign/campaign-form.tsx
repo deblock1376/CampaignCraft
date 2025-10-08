@@ -19,7 +19,7 @@ import DraftCarousel from "./draft-carousel";
 
 const formSchema = z.object({
   type: z.enum(['email', 'social']),
-  objective: z.enum(['subscription', 'donation', 'membership', 'engagement']),
+  objective: z.enum(['donation', 'membership', 'engagement']),
   context: z.string().min(10, "Please provide more context"),
   aiModel: z.string(),
   brandStylesheetId: z.string(),
@@ -59,7 +59,7 @@ export default function CampaignForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       type: 'email' as const,
-      objective: 'subscription' as const,
+      objective: 'donation' as const,
       context: '',
       aiModel: 'gpt-4o',
       brandStylesheetId: '1',

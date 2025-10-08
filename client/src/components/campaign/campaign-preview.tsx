@@ -194,10 +194,9 @@ export default function CampaignPreview({
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="subscription">Drive Subscriptions</SelectItem>
                               <SelectItem value="donation">Increase Donations</SelectItem>
-                              <SelectItem value="membership">Grow Membership</SelectItem>
-                              <SelectItem value="engagement">Boost Engagement</SelectItem>
+                              <SelectItem value="membership">Grow Members</SelectItem>
+                              <SelectItem value="engagement">Engage Users</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
