@@ -95,7 +95,7 @@ export default function Dashboard() {
                     </div>
                     <div className="flex items-center text-sm text-slate-600">
                       <Zap className="h-4 w-4 mr-2 text-emerald-600" />
-                      <span>One-click AI rewrites</span>
+                      <span>One-click rewrites</span>
                     </div>
                   </div>
                   <Link href="/campaigns/evaluate">
