@@ -4,7 +4,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FileText } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { FileText, Send } from "lucide-react";
 
 interface PromptBuilderProps {
   groundingGuides: any[];
@@ -17,6 +18,7 @@ interface PromptBuilderProps {
   recentCampaigns: any[];
   selectedCampaigns: number[];
   onCampaignSelect: (campaignIds: number[]) => void;
+  onSendToChat?: (message: string) => void;
 }
 
 const SEGMENT_OPTIONS = [
@@ -37,6 +39,7 @@ export function PromptBuilder({
   recentCampaigns,
   selectedCampaigns,
   onCampaignSelect,
+  onSendToChat,
 }: PromptBuilderProps) {
   const handleSegmentToggle = (segmentId: string) => {
     const newSegments = segments.includes(segmentId)
@@ -50,6 +53,41 @@ export function PromptBuilder({
       ? selectedCampaigns.filter(id => id !== campaignId)
       : [...selectedCampaigns, campaignId];
     onCampaignSelect(newSelection);
+  };
+
+  const handleSendToChat = () => {
+    if (!onSendToChat) return;
+
+    let message = "I'd like to create a campaign with the following context:\n\n";
+    
+    // Add grounding guide
+    const selectedGuide = groundingGuides.find(g => g.id === selectedGuideId);
+    if (selectedGuide) {
+      message += `📋 Grounding Guide: ${selectedGuide.name}\n`;
+    }
+    
+    // Add segments
+    if (segments.length > 0) {
+      const segmentLabels = segments.map(s => 
+        SEGMENT_OPTIONS.find(opt => opt.id === s)?.label || s
+      );
+      message += `👥 Target Segments: ${segmentLabels.join(', ')}\n`;
+    }
+    
+    // Add notes
+    if (notes.trim()) {
+      message += `📝 Notes: ${notes}\n`;
+    }
+    
+    // Add reference campaigns
+    if (selectedCampaigns.length > 0) {
+      const refCampaigns = recentCampaigns
+        .filter(c => selectedCampaigns.includes(c.id))
+        .map(c => c.title);
+      message += `🔗 Reference Campaigns: ${refCampaigns.join(', ')}\n`;
+    }
+
+    onSendToChat(message);
   };
 
   return (
@@ -144,6 +182,16 @@ export function PromptBuilder({
             )}
           </ScrollArea>
         </div>
+
+        {/* Send to Chat Button */}
+        <Button 
+          onClick={handleSendToChat} 
+          className="w-full"
+          size="lg"
+        >
+          <Send className="h-4 w-4 mr-2" />
+          Send Context to Chat
+        </Button>
       </CardContent>
     </Card>
   );

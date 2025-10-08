@@ -346,6 +346,7 @@ export default function CampaignAssistantTest() {
               recentCampaigns={recentCampaigns as any[]}
               selectedCampaigns={selectedRecentCampaigns}
               onCampaignSelect={setSelectedRecentCampaigns}
+              onSendToChat={handleSendMessage}
             />
           </div>
         </div>
