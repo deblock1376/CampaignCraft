@@ -7,13 +7,14 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function CampaignAssistantTest() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const newsroomId = user?.newsroomId || 1; // Default to newsroom 1 for admin/testing
   const { toast } = useToast();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   // Fetch grounding guides for the chat context
   const { data: groundingGuides = [] } = useQuery({
-    queryKey: [`/api/newsrooms/${user?.newsroomId}/brand-stylesheets`],
-    enabled: !!user?.newsroomId,
+    queryKey: [`/api/newsrooms/${newsroomId}/brand-stylesheets`],
+    enabled: !!newsroomId,
   });
 
   // Chat mutation
@@ -28,7 +29,7 @@ export default function CampaignAssistantTest() {
         body: JSON.stringify({
           message,
           conversationHistory: messages,
-          newsroomId: user?.newsroomId,
+          newsroomId: newsroomId,
           groundingGuides: groundingGuides.map((g: any) => ({
             id: g.id,
             name: g.name,
@@ -71,7 +72,7 @@ export default function CampaignAssistantTest() {
     chatMutation.mutate(message);
   };
 
-  if (!user?.newsroomId) {
+  if (!user?.id) {
     return (
       <div className="container mx-auto py-8">
         <Card className="p-8 text-center">
