@@ -11,6 +11,8 @@ interface PromptBuilderProps {
   groundingGuides: any[];
   selectedGuideId?: number;
   onGuideChange: (guideId: number) => void;
+  objective: string;
+  onObjectiveChange: (objective: string) => void;
   segments: string[];
   onSegmentChange: (segments: string[]) => void;
   notes: string;
@@ -28,10 +30,19 @@ const SEGMENT_OPTIONS = [
   { id: "disengaged", label: "Disengaged Users" },
 ];
 
+const OBJECTIVE_OPTIONS = [
+  { value: "subscription", label: "Subscription" },
+  { value: "donation", label: "Donation" },
+  { value: "membership", label: "Membership" },
+  { value: "engagement", label: "Engagement" },
+];
+
 export function PromptBuilder({
   groundingGuides,
   selectedGuideId,
   onGuideChange,
+  objective,
+  onObjectiveChange,
   segments,
   onSegmentChange,
   notes,
@@ -59,6 +70,10 @@ export function PromptBuilder({
     if (!onSendToChat) return;
 
     let message = "I'd like to create a campaign with the following context:\n\n";
+    
+    // Add objective
+    const objectiveLabel = OBJECTIVE_OPTIONS.find(opt => opt.value === objective)?.label || objective;
+    message += `🎯 Campaign Objective: ${objectiveLabel}\n`;
     
     // Add grounding guide
     const selectedGuide = groundingGuides.find(g => g.id === selectedGuideId);
@@ -96,6 +111,26 @@ export function PromptBuilder({
         <CardTitle className="text-lg">Prompt Builder</CardTitle>
       </CardHeader>
       <CardContent className="flex-1 overflow-auto p-6 space-y-6">
+        {/* Campaign Objective */}
+        <div className="space-y-2">
+          <Label>Campaign Objective</Label>
+          <Select 
+            value={objective} 
+            onValueChange={onObjectiveChange}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select campaign objective" />
+            </SelectTrigger>
+            <SelectContent>
+              {OBJECTIVE_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         {/* Grounding Guide Selector */}
         <div className="space-y-2">
           <Label>Grounding Guide</Label>

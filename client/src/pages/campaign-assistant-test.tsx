@@ -20,6 +20,7 @@ export default function CampaignAssistantTest() {
   });
 
   // Prompt Builder state
+  const [selectedObjective, setSelectedObjective] = useState("engagement");
   const [selectedGuideId, setSelectedGuideId] = useState<number | undefined>();
   const [selectedSegments, setSelectedSegments] = useState<string[]>([]);
   const [campaignNotes, setCampaignNotes] = useState("");
@@ -166,7 +167,7 @@ export default function CampaignAssistantTest() {
         },
         body: JSON.stringify({
           type: "email",
-          objective: params.objective,
+          objective: selectedObjective || params.objective,
           context: enrichedContext,
           brandStylesheetId: brandStylesheetId,
           newsroomId: newsroomId,
@@ -339,6 +340,8 @@ export default function CampaignAssistantTest() {
               groundingGuides={groundingGuides as any[]}
               selectedGuideId={selectedGuideId}
               onGuideChange={setSelectedGuideId}
+              objective={selectedObjective}
+              onObjectiveChange={setSelectedObjective}
               segments={selectedSegments}
               onSegmentChange={setSelectedSegments}
               notes={campaignNotes}
