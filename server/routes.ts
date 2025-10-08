@@ -490,7 +490,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Merge logic: combine best elements from selected drafts
       const mergedContent: any = {
         subject: (firstDraft.content as any)?.subject || "Merged Campaign",
-        body: drafts.map((d: any) => d.content?.body).filter(Boolean).join("\n\n"),
+        content: drafts.map((d: any) => d.content?.content).filter(Boolean).join("\n\n"),
         cta: (firstDraft.content as any)?.cta || "Learn More",
       };
 
