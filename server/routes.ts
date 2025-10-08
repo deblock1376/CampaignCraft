@@ -255,7 +255,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/campaigns/generate", async (req, res) => {
     try {
       const schema = z.object({
-        type: z.enum(['email', 'social', 'web']),
+        type: z.enum(['email', 'social', 'web']).optional().default('email'),
         objective: z.enum(['subscription', 'donation', 'membership', 'engagement']),
         context: z.string(),
         aiModel: z.string(),
@@ -323,7 +323,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/campaigns/generate-drafts", async (req, res) => {
     try {
       const schema = z.object({
-        type: z.enum(['email', 'social', 'web']),
+        type: z.enum(['email', 'social', 'web']).optional().default('email'),
         objective: z.enum(['subscription', 'donation', 'membership', 'engagement']),
         context: z.string(),
         aiModel: z.string(),

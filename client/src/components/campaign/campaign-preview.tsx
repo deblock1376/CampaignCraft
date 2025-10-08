@@ -124,33 +124,6 @@ export default function CampaignPreview({
 
                     <FormField
                       control={form.control}
-                      name="type"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Campaign Type</FormLabel>
-                          <p className="text-xs text-slate-500 mb-2">Select the format for your marketing campaign</p>
-                          <div className="grid grid-cols-2 gap-2">
-                            {(['email', 'social'] as const).map((type) => (
-                              <Button
-                                key={type}
-                                type="button"
-                                variant={field.value === type ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => field.onChange(type)}
-                                className="flex flex-col h-auto py-3"
-                              >
-                                <i className={`fas fa-${type === 'email' ? 'envelope' : 'share-alt'} mb-1`}></i>
-                                <span className="capitalize">{type}</span>
-                              </Button>
-                            ))}
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
                       name="brandStylesheetId"
                       render={({ field }) => (
                         <FormItem>

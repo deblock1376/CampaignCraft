@@ -18,7 +18,6 @@ import CampaignPreview from "./campaign-preview";
 import DraftCarousel from "./draft-carousel";
 
 const formSchema = z.object({
-  type: z.enum(['email', 'social']),
   objective: z.enum(['donation', 'membership', 'engagement']),
   context: z.string().min(10, "Please provide more context"),
   aiModel: z.string(),
@@ -58,7 +57,6 @@ export default function CampaignForm() {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      type: 'email' as const,
       objective: 'donation' as const,
       context: '',
       aiModel: 'gpt-4o',
