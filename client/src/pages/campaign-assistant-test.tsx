@@ -21,6 +21,17 @@ export default function CampaignAssistantTest() {
   // Fetch grounding guides for the chat context
   const { data: groundingGuides = [] } = useQuery({
     queryKey: [`/api/newsrooms/${newsroomId}/brand-stylesheets`],
+    queryFn: async () => {
+      const response = await fetch(`/api/newsrooms/${newsroomId}/brand-stylesheets`, {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch grounding guides");
+      }
+      return response.json();
+    },
     enabled: !!newsroomId,
   });
 
