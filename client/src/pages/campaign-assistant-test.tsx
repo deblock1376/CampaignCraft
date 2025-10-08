@@ -20,9 +20,9 @@ export default function CampaignAssistantTest() {
 
   // Fetch grounding guides for the chat context
   const { data: groundingGuides = [] } = useQuery({
-    queryKey: [`/api/newsrooms/${newsroomId}/brand-stylesheets`],
+    queryKey: [`/api/newsrooms/${newsroomId}/stylesheets`],
     queryFn: async () => {
-      const response = await fetch(`/api/newsrooms/${newsroomId}/brand-stylesheets`, {
+      const response = await fetch(`/api/newsrooms/${newsroomId}/stylesheets`, {
         headers: {
           "Authorization": `Bearer ${localStorage.getItem("token")}`,
         },
