@@ -795,16 +795,21 @@ YOUR APPROACH:
 
       const assistantMessage = response.choices[0].message.content || "I apologize, but I couldn't generate a response. Please try again.";
 
+      console.log('AI Response:', assistantMessage);
+
       // Check if AI wants to trigger campaign generation
       if (assistantMessage.includes("GENERATE_CAMPAIGN")) {
+        console.log('GENERATE_CAMPAIGN detected in AI response');
         const lines = assistantMessage.split('\n');
-        const objectiveLine = lines.find(l => l.includes("Objective:"));
-        const contextLine = lines.find(l => l.includes("Context:"));
-        const brandStylesheetLine = lines.find(l => l.includes("BrandStylesheetId:"));
+        const objectiveLine = lines.find((l: string) => l.includes("Objective:"));
+        const contextLine = lines.find((l: string) => l.includes("Context:"));
+        const brandStylesheetLine = lines.find((l: string) => l.includes("BrandStylesheetId:"));
         
         const objective = objectiveLine?.split("Objective:")[1]?.trim() || "engagement";
         const context = contextLine?.split("Context:")[1]?.trim() || "";
         const brandStylesheetId = brandStylesheetLine?.split("BrandStylesheetId:")[1]?.trim();
+        
+        console.log('Parsed params:', { objective, context, brandStylesheetId });
         
         return res.json({
           message: "Perfect! Let me generate your campaign now...",
