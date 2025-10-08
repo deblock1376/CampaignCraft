@@ -205,6 +205,12 @@ Changelog:
   - Frontend updated to display full email bodies with proper paragraph formatting
   - All AI providers (GPT-4o, Claude Sonnet 4, Gemini 2.5 Flash) use updated BlueLena prompts
   - End-to-end testing confirms proper generation with subject limits and full email copy
+- October 8, 2025: Campaign Type Field Removal
+  - Removed campaign type selection from campaign creation form
+  - Backend now defaults all campaigns to 'email' type when type is not specified
+  - Simplified campaign generation workflow by eliminating redundant type selection
+  - Both /api/campaigns/generate and /api/campaigns/generate-drafts endpoints support optional type parameter
+  - Demo account created: thecity@campaigncraft.com (The CITY newsroom)
 ```
 
 ## User Preferences
