@@ -4,8 +4,10 @@ import Header from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "wouter";
-import { Sparkles, Target, ArrowRight, FileText, Zap, Users } from "lucide-react";
+import { Sparkles, Target, ArrowRight, FileText, Zap, Users, Eye } from "lucide-react";
 
 export default function Dashboard() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -128,19 +130,108 @@ export default function Dashboard() {
                 <CardContent>
                   <div className="space-y-3">
                     {recentCampaigns.map((campaign: any) => (
-                      <Link key={campaign.id} href="/campaigns/history">
-                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer group" data-testid={`campaign-item-${campaign.id}`}>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-slate-900 group-hover:text-primary">{campaign.title}</p>
-                            <p className="text-xs text-slate-500">
-                              {new Date(campaign.createdAt).toLocaleDateString()} • {campaign.type}
-                            </p>
-                          </div>
+                      <div key={campaign.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors group" data-testid={`campaign-item-${campaign.id}`}>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-slate-900 group-hover:text-primary">{campaign.title}</p>
+                          <p className="text-xs text-slate-500">
+                            {new Date(campaign.createdAt).toLocaleDateString()} • {campaign.type}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-2">
                           <Badge variant={campaign.status === 'active' ? 'default' : 'secondary'}>
                             {campaign.status}
                           </Badge>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" size="sm">
+                                <Eye className="w-4 h-4 mr-1" />
+                                View
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                              <DialogHeader>
+                                <DialogTitle>{campaign.title}</DialogTitle>
+                              </DialogHeader>
+                              
+                              <Tabs defaultValue="content" className="w-full">
+                                <TabsList className="grid w-full grid-cols-2">
+                                  <TabsTrigger value="content">Content</TabsTrigger>
+                                  <TabsTrigger value="details">Details</TabsTrigger>
+                                </TabsList>
+                                
+                                <TabsContent value="content" className="space-y-4">
+                                  <div className="space-y-4">
+                                    {campaign.content?.subject && (
+                                      <div>
+                                        <h4 className="font-medium text-sm text-gray-700 mb-2">Subject Line</h4>
+                                        <p className="p-3 bg-gray-50 rounded-lg">{campaign.content.subject}</p>
+                                      </div>
+                                    )}
+                                    <div>
+                                      <h4 className="font-medium text-sm text-gray-700 mb-2">Content</h4>
+                                      <div className="p-4 bg-gray-50 rounded-lg text-sm max-h-60 overflow-y-auto">
+                                        <div className="whitespace-pre-line leading-relaxed">
+                                          {campaign.content?.content?.split('. ').join('.\n\n').replace(/\n{3,}/g, '\n\n')}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <h4 className="font-medium text-sm text-gray-700 mb-2">Call to Action</h4>
+                                      <p className="p-3 bg-emerald-50 rounded-lg font-medium text-emerald-800">
+                                        {campaign.content?.cta}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </TabsContent>
+                                
+                                <TabsContent value="details" className="space-y-4">
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                      <h4 className="font-medium text-sm text-gray-700 mb-2">Campaign Type</h4>
+                                      <p className="capitalize">{campaign.type}</p>
+                                    </div>
+                                    <div>
+                                      <h4 className="font-medium text-sm text-gray-700 mb-2">Objective</h4>
+                                      <p className="capitalize">{campaign.objective}</p>
+                                    </div>
+                                    <div>
+                                      <h4 className="font-medium text-sm text-gray-700 mb-2">AI Model</h4>
+                                      <p>{campaign.aiModel}</p>
+                                    </div>
+                                    <div>
+                                      <h4 className="font-medium text-sm text-gray-700 mb-2">Status</h4>
+                                      <Badge 
+                                        variant={
+                                          campaign.status === 'active' ? 'default' :
+                                          campaign.status === 'completed' ? 'secondary' :
+                                          campaign.status === 'draft' ? 'outline' : 'secondary'
+                                        }
+                                      >
+                                        {campaign.status}
+                                      </Badge>
+                                    </div>
+                                    <div>
+                                      <h4 className="font-medium text-sm text-gray-700 mb-2">Created</h4>
+                                      <p>{new Date(campaign.createdAt).toLocaleString()}</p>
+                                    </div>
+                                    <div>
+                                      <h4 className="font-medium text-sm text-gray-700 mb-2">Last Updated</h4>
+                                      <p>{new Date(campaign.updatedAt).toLocaleString()}</p>
+                                    </div>
+                                  </div>
+                                  
+                                  {campaign.context && (
+                                    <div>
+                                      <h4 className="font-medium text-sm text-gray-700 mb-2">Context</h4>
+                                      <p className="p-3 bg-gray-50 rounded-lg text-sm">{campaign.context}</p>
+                                    </div>
+                                  )}
+                                </TabsContent>
+                              </Tabs>
+                            </DialogContent>
+                          </Dialog>
                         </div>
-                      </Link>
+                      </div>
                     ))}
                   </div>
                 </CardContent>
