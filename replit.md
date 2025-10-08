@@ -211,6 +211,12 @@ Changelog:
   - Simplified campaign generation workflow by eliminating redundant type selection
   - Both /api/campaigns/generate and /api/campaigns/generate-drafts endpoints support optional type parameter
   - Demo account created: thecity@campaigncraft.com (The CITY newsroom)
+- October 8, 2025: AI Model Selection Removal
+  - Removed AI model selection dropdown from campaign generation form
+  - Removed "Compare AI Models" toggle feature
+  - Backend now defaults to GPT-4o model when no AI model is specified
+  - Simplified campaign workflow with single default AI model
+  - Multi-draft generation now creates 5 variations using the default model
 ```
 
 ## User Preferences
