@@ -262,6 +262,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         aiModel: z.string().optional().default('gpt-4o'),
         brandStylesheetId: z.number(),
         newsroomId: z.number(),
+        segments: z.array(z.string()).optional(),
+        notes: z.string().optional(),
+        referenceCampaigns: z.array(z.object({
+          id: z.number(),
+          title: z.string(),
+          objective: z.string(),
+          content: z.any().optional(),
+        })).optional(),
       });
 
       const validatedData = schema.parse(req.body);
@@ -290,6 +298,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           guidelines: brandStylesheet.guidelines || '',
         },
         newsroomName: brandStylesheet.name.includes("Style") ? newsroom.name : brandStylesheet.name,
+        ...(validatedData.segments && { segments: validatedData.segments }),
+        ...(validatedData.notes && { notes: validatedData.notes }),
+        ...(validatedData.referenceCampaigns && { referenceCampaigns: validatedData.referenceCampaigns }),
       };
 
       const generatedCampaign = await aiProviderService.generateCampaign(
@@ -332,6 +343,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         newsroomId: z.number(),
         draftCount: z.number().min(1).max(10).default(5),
         compareModels: z.boolean().optional().default(false),
+        segments: z.array(z.string()).optional(),
+        notes: z.string().optional(),
+        referenceCampaigns: z.array(z.object({
+          id: z.number(),
+          title: z.string(),
+          objective: z.string(),
+          content: z.any().optional(),
+        })).optional(),
       });
 
       const validatedData = schema.parse(req.body);
@@ -360,6 +379,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           guidelines: brandStylesheet.guidelines || '',
         },
         newsroomName: brandStylesheet.name.includes("Style") ? newsroom.name : brandStylesheet.name,
+        ...(validatedData.segments && { segments: validatedData.segments }),
+        ...(validatedData.notes && { notes: validatedData.notes }),
+        ...(validatedData.referenceCampaigns && { referenceCampaigns: validatedData.referenceCampaigns }),
       };
 
       // Generate multiple draft variations

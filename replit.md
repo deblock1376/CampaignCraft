@@ -34,6 +34,23 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### October 8, 2025: Enhanced BlueLena Prompt Structure with Prompt Builder Integration
+- **New Prompt Framework**: Updated campaign generation to use comprehensive BlueLena copywriting framework
+- **Preview Text**: Added 90-character preview text field to all generated campaigns (appears after subject in email clients)
+- **Prompt Builder Context Integration**: Campaign generation now incorporates Prompt Builder inputs:
+  - Target segments (e.g., "Donors", "Non-donors", "Highly engaged")
+  - Campaign notes for additional context
+  - Reference campaigns for tone/style consistency
+- **Conversational Follow-Up Suggestions**: AI provides engaging, question-based next steps:
+  - "Would you like me to create a version targeted at lapsed donors?"
+  - "Should I try another version with a stronger urgency angle?"
+  - Uses audience development expertise to guide users
+- **Tone Enhancements**: Updated messaging to emphasize:
+  - Varying length and tone across campaigns
+  - Narrative storytelling mixed with action-oriented appeals
+  - Local relevance and community impact
+  - CTA placement above fold for longer emails
+
 ### October 8, 2025: AI-Powered Merge Feature
 - Enhanced merge functionality to use AI generation instead of simple concatenation
 - When merging selected drafts, the system now:

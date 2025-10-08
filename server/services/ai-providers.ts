@@ -28,10 +28,19 @@ export interface CampaignRequest {
     guidelines: string;
   };
   newsroomName: string;
+  segments?: string[];
+  notes?: string;
+  referenceCampaigns?: Array<{
+    id: number;
+    title: string;
+    objective: string;
+    content?: any;
+  }>;
 }
 
 export interface CampaignResponse {
   subject?: string;
+  previewText?: string;
   content: string;
   cta: string;
   insights: string[];
@@ -170,6 +179,7 @@ class AIProviderService {
           Respond with JSON in this exact format: 
           {
             "subject": "string (max 50 characters)",
+            "previewText": "string (max 90 characters)",
             "content": "COMPLETE MERGED EMAIL BODY", 
             "cta": "string in format [Button]Button text[/Button]",
             "insights": ["string1", "string2", "string3"],
@@ -185,6 +195,7 @@ class AIProviderService {
             type: "object",
             properties: {
               subject: { type: "string" },
+              previewText: { type: "string" },
               content: { type: "string" },
               cta: { type: "string" },
               insights: {
@@ -201,7 +212,7 @@ class AIProviderService {
               },
               followUpSuggestion: { type: "string" }
             },
-            required: ["subject", "content", "cta", "insights", "metrics", "followUpSuggestion"]
+            required: ["subject", "previewText", "content", "cta", "insights", "metrics", "followUpSuggestion"]
           }
         },
         contents: prompt
@@ -297,11 +308,12 @@ ${draftsSummary}
 Generate the merged campaign with:
 
 1. **subject** (string, MAXIMUM 50 characters - HARD LIMIT): The best subject line from the drafts, or a new one that combines their strengths
-2. **content** (string): COMPLETE EMAIL MESSAGE BODY that combines the best elements from all drafts into one cohesive narrative (200-400 words)
-3. **cta** (string): The most effective CTA in format [Button]Button text[/Button]
-4. **insights** (array of 3-4 strings): Brief observations about what made each draft effective and how you combined them
-5. **metrics** (object): Performance estimates with estimatedOpenRate, estimatedClickRate, estimatedConversion (as numbers)
-6. **followUpSuggestion** (string): A conversational, question-based suggestion to keep the user engaged (e.g., "Would you like me to create another version with a different emotional hook?" or "Should I try segmenting this for different audience personas?" or "Can I help you develop a follow-up campaign to boost conversions?")
+2. **previewText** (string, MAXIMUM 90 characters): Compelling preview text for email clients
+3. **content** (string): COMPLETE EMAIL MESSAGE BODY that combines the best elements from all drafts into one cohesive narrative (200-400 words)
+4. **cta** (string): The most effective CTA in format [Button]Button text[/Button]
+5. **insights** (array of 3-4 strings): Brief observations about what made each draft effective and how you combined them
+6. **metrics** (object): Performance estimates with estimatedOpenRate, estimatedClickRate, estimatedConversion (as numbers)
+7. **followUpSuggestion** (string): A conversational, question-based suggestion to keep the user engaged (e.g., "Would you like me to create another version with a different emotional hook?" or "Should I try segmenting this for different audience personas?" or "Can I help you develop a follow-up campaign to boost conversions?")
 
 Response must be valid JSON with all fields included.
 `;
@@ -314,35 +326,51 @@ Response must be valid JSON with all fields included.
       membership: 'memberships',
       engagement: 'reader support'
     };
+
+    // Build context section with Prompt Builder inputs
+    let contextSection = `📋 Campaign Context
+Publisher: ${request.newsroomName}
+Campaign Type: ${request.type}
+Primary Objective: ${request.objective} (${objectiveMap[request.objective as keyof typeof objectiveMap]})
+Breaking News Story/Context: ${request.context}`;
+
+    if (request.segments && request.segments.length > 0) {
+      contextSection += `\nTarget Segments: ${request.segments.join(', ')}`;
+    }
+
+    if (request.notes) {
+      contextSection += `\nCampaign Notes: ${request.notes}`;
+    }
+
+    if (request.referenceCampaigns && request.referenceCampaigns.length > 0) {
+      contextSection += `\nReference Campaigns for Tone/Style: ${request.referenceCampaigns.map(c => `${c.title} (${c.objective})`).join(', ')}`;
+    }
+
+    contextSection += `
+
+Brand Voice & Tone:
+- Tone: ${request.brandStylesheet.tone}
+- Voice: ${request.brandStylesheet.voice}
+- Key Messages: ${request.brandStylesheet.keyMessages.join(', ')}
+- Additional Guidelines: ${request.brandStylesheet.guidelines}`;
     
     return `
 👤 Your Role
 You are a copywriter at BlueLena, tasked with drafting compelling, emotionally resonant, and urgent email campaigns for independent news organizations. These campaigns will feature a breaking news story and include an appeal for support.
 
 🧭 Campaign Goal
-Create a standalone audience engagement and reader revenue ${request.type} campaign that urges newsletter subscribers to support their local news outlet. The campaign must:
+Create a standalone audience engagement and reader revenue email campaign that urges newsletter subscribers to support their local news outlet. The campaign must:
 - Highlight the impact of the breaking news story
 - Showcase the unique value of the publisher's journalism
 - Emphasize the role of readers in sustaining independent reporting
 
-📋 Campaign Context
-Publisher: ${request.newsroomName}
-Campaign Type: ${request.type}
-Primary Objective: ${request.objective} (${objectiveMap[request.objective as keyof typeof objectiveMap]})
-Breaking News Story/Context: ${request.context}
+${contextSection}
 
-Brand Voice & Tone:
-- Tone: ${request.brandStylesheet.tone}
-- Voice: ${request.brandStylesheet.voice}
-- Key Messages: ${request.brandStylesheet.keyMessages.join(', ')}
-- Additional Guidelines: ${request.brandStylesheet.guidelines}
-
-🧠 Tone & Messaging Requirements
+🧠 Tone & Messaging
 - Must reflect ${request.newsroomName}'s identity: the message should feel distinct, authentic, and mission-aligned
-- Use emotionally compelling language that emphasizes local relevance and community impact
-- Follow AP Style and avoid Oxford commas
-- Keep CTAs clear and action-oriented
-- Use a tone that is urgent, emotionally resonant, and grounded in local relevance
+- Vary length and tone: mix narrative storytelling with clear, action-oriented appeals
+- Follow AP Style, avoid Oxford commas, and keep CTAs clear and action-oriented
+- Use a tone that is urgent, emotionally compelling, and grounded in local relevance
 - Avoid phrases like "keep journalism alive" unless explicitly requested
 - Focus on the reader's essential role in sustaining independent reporting
 
@@ -350,16 +378,18 @@ Brand Voice & Tone:
 Generate a complete email campaign with:
 
 1. **subject** (string, MAXIMUM 50 characters - HARD LIMIT): Compelling subject line that creates urgency. Count every character including spaces and punctuation. If your subject is longer than 50 characters, you MUST make it shorter. NO EXCEPTIONS.
-2. **content** (string): FULL EMAIL MESSAGE BODY - This should be a complete, ready-to-send email with:
+2. **previewText** (string, MAXIMUM 90 characters): Preview text that appears after the subject line in email clients
+3. **content** (string): FULL EMAIL MESSAGE BODY - This should be a complete, ready-to-send email with:
    - Strong opening hook related to the breaking news
    - Narrative storytelling that connects the story to local impact
    - Clear explanation of how reader support enables this journalism
    - Community-focused appeal that makes readers feel essential
+   - Clear CTA ideally above the fold for emails longer than 250 words
    - Complete paragraphs with proper structure (200-400 words typical)
-3. **cta** (string): Call-to-action in this exact format: [Button]Button text[/Button] (e.g., [Button]Support Local News[/Button])
-4. **insights** (array of 3-4 strings): Brief observations about campaign effectiveness
-5. **metrics** (object): Performance estimates with estimatedOpenRate, estimatedClickRate, estimatedConversion (as numbers)
-6. **followUpSuggestion** (string): A conversational, question-based suggestion to keep the user engaged and guide their next action. Frame as an invitation using audience development expertise (e.g., "Would you like me to create a version targeted at lapsed donors?" or "Should I try another version with a stronger urgency angle?" or "Can I help you create a follow-up campaign for non-openers?" or "Would you like me to segment this for highly engaged vs. new subscribers?")
+4. **cta** (string): Call-to-action in this exact format: [Button]Button text[/Button] (e.g., [Button]Support Local News[/Button])
+5. **insights** (array of 3-4 strings): Brief observations about campaign effectiveness
+6. **metrics** (object): Performance estimates with estimatedOpenRate, estimatedClickRate, estimatedConversion (as numbers)
+7. **followUpSuggestion** (string): A conversational, question-based suggestion to keep the user engaged and guide their next action. Frame as an invitation using audience development expertise (e.g., "Would you like me to create a version targeted at lapsed donors?" or "Should I try another version with a stronger urgency angle?" or "Can I help you create a follow-up campaign for non-openers?" or "Would you like me to segment this for highly engaged vs. new subscribers?")
 
 CRITICAL: The "content" field must contain a COMPLETE, FULL EMAIL MESSAGE - not just a summary or outline. Write the entire email body copy as it would appear in the subscriber's inbox, with multiple paragraphs, emotional resonance, and complete storytelling.
 
@@ -422,6 +452,7 @@ Response must be valid JSON with all fields included.
           Respond with JSON in this exact format: 
           {
             "subject": "string (max 50 characters)",
+            "previewText": "string (max 90 characters)",
             "content": "FULL EMAIL MESSAGE BODY with complete paragraphs", 
             "cta": "string in format [Button]Button text[/Button]",
             "insights": ["string1", "string2", "string3"],
@@ -437,6 +468,7 @@ Response must be valid JSON with all fields included.
             type: "object",
             properties: {
               subject: { type: "string" },
+              previewText: { type: "string" },
               content: { type: "string" },
               cta: { type: "string" },
               insights: {
@@ -453,7 +485,7 @@ Response must be valid JSON with all fields included.
               },
               followUpSuggestion: { type: "string" }
             },
-            required: ["subject", "content", "cta", "insights", "metrics", "followUpSuggestion"]
+            required: ["subject", "previewText", "content", "cta", "insights", "metrics", "followUpSuggestion"]
           }
         },
         contents: prompt
@@ -472,9 +504,16 @@ Response must be valid JSON with all fields included.
     if (subject.length > 50) {
       subject = subject.substring(0, 47) + '...';
     }
+
+    // Enforce 90 character limit on preview text
+    let previewText = result.previewText || '';
+    if (previewText.length > 90) {
+      previewText = previewText.substring(0, 87) + '...';
+    }
     
     return {
       subject,
+      previewText: previewText || undefined,
       content: result.content || '',
       cta: result.cta || '',
       insights: Array.isArray(result.insights) ? result.insights : [],
