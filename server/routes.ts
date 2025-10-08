@@ -736,16 +736,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: z.number(),
           name: z.string(),
         })).optional(),
+        promptContext: z.object({
+          segments: z.array(z.string()).optional(),
+          notes: z.string().optional(),
+          referenceCampaigns: z.array(z.object({
+            id: z.number(),
+            title: z.string(),
+            objective: z.string(),
+          })).optional(),
+        }).optional(),
       });
 
-      const { message, conversationHistory = [], newsroomId, groundingGuides = [] } = schema.parse(req.body);
+      const { message, conversationHistory = [], newsroomId, groundingGuides = [], promptContext } = schema.parse(req.body);
 
       const newsroom = await storage.getNewsroom(newsroomId);
       if (!newsroom) {
         return res.status(404).json({ message: "Newsroom not found" });
       }
 
-      // Build system prompt for the assistant
+      // Build enriched system prompt with Prompt Builder context
+      let contextInfo = '';
+      
+      if (promptContext) {
+        if (promptContext.segments && promptContext.segments.length > 0) {
+          contextInfo += `\nTARGET SEGMENTS: ${promptContext.segments.join(', ')}`;
+        }
+        if (promptContext.notes) {
+          contextInfo += `\nCAMPAIGN NOTES: ${promptContext.notes}`;
+        }
+        if (promptContext.referenceCampaigns && promptContext.referenceCampaigns.length > 0) {
+          contextInfo += `\nREFERENCE CAMPAIGNS: ${promptContext.referenceCampaigns.map(c => `${c.title} (${c.objective})`).join(', ')}`;
+        }
+      }
+
       const systemPrompt = `You are a helpful campaign assistant for ${newsroom.name}, a newsroom. 
 Your role is to guide users through creating effective marketing campaigns via a structured workflow.
 
@@ -756,12 +779,14 @@ WORKFLOW STAGES:
 4. **Generation**: When all details are collected, suggest generating the campaign
 
 AVAILABLE GROUNDING GUIDES: ${groundingGuides.map(g => g.name).join(', ') || 'None available yet - suggest creating one'}
+${contextInfo}
 
 YOUR APPROACH:
 - Guide users step-by-step through the workflow above
 - Ask focused questions to gather necessary information
 - When users share campaign ideas, identify which grounding guide fits best
 - Recognize when the user has provided enough detail to generate a campaign
+- Consider the target segments, notes, and reference campaigns provided in the context above
 - When user confirms they want to generate, respond with this EXACT format:
   GENERATE_CAMPAIGN
   Objective: [subscription/donation/membership/engagement]

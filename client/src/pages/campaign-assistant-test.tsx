@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import ChatAssistant, { ChatMessage } from "@/components/chat/chat-assistant";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { PromptBuilder } from "@/components/campaign/prompt-builder";
 
 export default function CampaignAssistantTest() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -17,6 +18,12 @@ export default function CampaignAssistantTest() {
     objective: "engagement",
     context: "",
   });
+
+  // Prompt Builder state
+  const [selectedGuideId, setSelectedGuideId] = useState<number | undefined>();
+  const [selectedSegments, setSelectedSegments] = useState<string[]>([]);
+  const [campaignNotes, setCampaignNotes] = useState("");
+  const [selectedRecentCampaigns, setSelectedRecentCampaigns] = useState<number[]>([]);
 
   // Fetch grounding guides for the chat context
   const { data: groundingGuides = [] } = useQuery({
@@ -35,9 +42,41 @@ export default function CampaignAssistantTest() {
     enabled: !!newsroomId,
   });
 
+  // Fetch recent campaigns for reference
+  const { data: recentCampaigns = [] } = useQuery({
+    queryKey: [`/api/newsrooms/${newsroomId}/campaigns`, "recent"],
+    queryFn: async () => {
+      const response = await fetch(`/api/newsrooms/${newsroomId}/campaigns?limit=10`, {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch recent campaigns");
+      }
+      return response.json();
+    },
+    enabled: !!newsroomId,
+  });
+
   // Chat mutation
   const chatMutation = useMutation({
     mutationFn: async (message: string) => {
+      // Build enriched context from Prompt Builder
+      const enrichedContext = {
+        segments: selectedSegments.length > 0 ? selectedSegments : undefined,
+        notes: campaignNotes.trim() || undefined,
+        referenceCampaigns: selectedRecentCampaigns.length > 0 
+          ? (recentCampaigns as any[])
+              .filter((c: any) => selectedRecentCampaigns.includes(c.id))
+              .map((c: any) => ({
+                id: c.id,
+                title: c.title,
+                objective: c.objective,
+              }))
+          : undefined,
+      };
+
       const response = await fetch("/api/campaigns/chat", {
         method: "POST",
         headers: {
@@ -52,6 +91,7 @@ export default function CampaignAssistantTest() {
             id: g.id,
             name: g.name,
           })),
+          promptContext: enrichedContext,
         }),
       });
 
@@ -92,11 +132,30 @@ export default function CampaignAssistantTest() {
   // Campaign generation mutation
   const generateCampaignMutation = useMutation({
     mutationFn: async (params: { objective: string; context: string; brandStylesheetId?: number }) => {
-      // Get the first available grounding guide if not specified
-      const brandStylesheetId = params.brandStylesheetId || (groundingGuides as any[])[0]?.id;
+      // Use selected guide from Prompt Builder, fallback to first available
+      const brandStylesheetId = selectedGuideId || params.brandStylesheetId || (groundingGuides as any[])[0]?.id;
       
       if (!brandStylesheetId) {
-        throw new Error("No grounding guide available. Please create one first.");
+        throw new Error("No grounding guide available. Please select one in the Prompt Builder.");
+      }
+
+      // Build enriched context for generation
+      let enrichedContext = params.context;
+      
+      if (campaignNotes.trim()) {
+        enrichedContext += `\n\nAdditional Notes: ${campaignNotes}`;
+      }
+      
+      if (selectedSegments.length > 0) {
+        enrichedContext += `\n\nTarget Segments: ${selectedSegments.join(', ')}`;
+      }
+      
+      if (selectedRecentCampaigns.length > 0) {
+        const refCampaigns = (recentCampaigns as any[])
+          .filter((c: any) => selectedRecentCampaigns.includes(c.id))
+          .map((c: any) => c.title)
+          .join(', ');
+        enrichedContext += `\n\nReference similar campaigns: ${refCampaigns}`;
       }
       
       const response = await fetch(`/api/campaigns/generate`, {
@@ -108,7 +167,7 @@ export default function CampaignAssistantTest() {
         body: JSON.stringify({
           type: "email",
           objective: params.objective,
-          context: params.context,
+          context: enrichedContext,
           brandStylesheetId: brandStylesheetId,
           newsroomId: newsroomId,
           aiModel: "gpt-4o",
@@ -250,7 +309,7 @@ export default function CampaignAssistantTest() {
   return (
     <div className="h-screen flex flex-col bg-slate-50">
       <div className="border-b bg-white shadow-sm p-4">
-        <div className="container mx-auto max-w-4xl">
+        <div className="container mx-auto">
           <h1 className="text-2xl font-bold">Campaign Assistant</h1>
           <p className="text-sm text-muted-foreground">
             Chat with AI to create your campaign
@@ -258,16 +317,37 @@ export default function CampaignAssistantTest() {
         </div>
       </div>
       
-      <div className="flex-1 overflow-auto">
-        <div className="container mx-auto max-w-4xl h-full py-6">
-          <ChatAssistant
-            messages={messages}
-            onSendMessage={handleSendMessage}
-            isLoading={chatMutation.isPending || generateCampaignMutation.isPending}
-            onSaveCampaign={handleSaveCampaign}
-            onExportCampaign={handleExportCampaign}
-            onRegenerateCampaign={handleRegenerateCampaign}
-          />
+      <div className="flex-1 overflow-hidden flex">
+        {/* Chat Column - Left (60%) */}
+        <div className="w-3/5 border-r overflow-auto">
+          <div className="h-full py-6 px-4">
+            <ChatAssistant
+              messages={messages}
+              onSendMessage={handleSendMessage}
+              isLoading={chatMutation.isPending || generateCampaignMutation.isPending}
+              onSaveCampaign={handleSaveCampaign}
+              onExportCampaign={handleExportCampaign}
+              onRegenerateCampaign={handleRegenerateCampaign}
+            />
+          </div>
+        </div>
+
+        {/* Prompt Builder Column - Right (40%) */}
+        <div className="w-2/5 overflow-auto bg-white">
+          <div className="h-full p-4">
+            <PromptBuilder
+              groundingGuides={groundingGuides as any[]}
+              selectedGuideId={selectedGuideId}
+              onGuideChange={setSelectedGuideId}
+              segments={selectedSegments}
+              onSegmentChange={setSelectedSegments}
+              notes={campaignNotes}
+              onNotesChange={setCampaignNotes}
+              recentCampaigns={recentCampaigns as any[]}
+              selectedCampaigns={selectedRecentCampaigns}
+              onCampaignSelect={setSelectedRecentCampaigns}
+            />
+          </div>
         </div>
       </div>
     </div>
