@@ -32,6 +32,18 @@ Preferred communication style: Simple, everyday language.
 - **Production**: Optimized React bundle and bundled Express server for deployment.
 - **Environment Configuration**: Utilizes environment variables for sensitive information like database URLs and API keys.
 
+## Recent Changes
+
+### October 8, 2025: AI-Powered Merge Feature
+- Enhanced merge functionality to use AI generation instead of simple concatenation
+- When merging selected drafts, the system now:
+  - Analyzes strengths of each draft
+  - Creates an intelligent prompt asking AI to combine best elements
+  - Generates a cohesive, unified campaign using GPT-4o
+  - Produces optimized subject line, body, and CTA from combined drafts
+- Merge prompt instructs AI to remove redundancies and ensure smooth narrative flow
+- Follows BlueLena copywriting best practices in merged output
+
 ## External Dependencies
 
 - **Database**:
