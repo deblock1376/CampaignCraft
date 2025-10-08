@@ -89,7 +89,7 @@ export default function Dashboard() {
                     </div>
                     <div className="flex items-center text-sm text-slate-600">
                       <Sparkles className="h-4 w-4 mr-2 text-emerald-600" />
-                      <span>Get AI improvement suggestions</span>
+                      <span>Get improvement suggestions</span>
                     </div>
                     <div className="flex items-center text-sm text-slate-600">
                       <Zap className="h-4 w-4 mr-2 text-emerald-600" />
