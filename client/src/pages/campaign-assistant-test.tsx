@@ -258,7 +258,7 @@ export default function CampaignAssistantTest() {
         </div>
       </div>
       
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-auto">
         <div className="container mx-auto max-w-4xl h-full py-6">
           <ChatAssistant
             messages={messages}
