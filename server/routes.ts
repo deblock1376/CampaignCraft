@@ -258,7 +258,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         type: z.enum(['email', 'social', 'web']).optional().default('email'),
         objective: z.enum(['subscription', 'donation', 'membership', 'engagement']),
         context: z.string(),
-        aiModel: z.string(),
+        aiModel: z.string().optional().default('gpt-4o'),
         brandStylesheetId: z.number(),
         newsroomId: z.number(),
       });
@@ -326,7 +326,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         type: z.enum(['email', 'social', 'web']).optional().default('email'),
         objective: z.enum(['subscription', 'donation', 'membership', 'engagement']),
         context: z.string(),
-        aiModel: z.string(),
+        aiModel: z.string().optional().default('gpt-4o'),
         brandStylesheetId: z.number(),
         newsroomId: z.number(),
         draftCount: z.number().min(1).max(10).default(5),

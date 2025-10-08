@@ -98,32 +98,6 @@ export default function CampaignPreview({
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     <FormField
                       control={form.control}
-                      name="aiModel"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>AI Model</FormLabel>
-                          <p className="text-xs text-slate-500 mb-2">Choose the AI engine to generate your campaign content</p>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select AI model" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="gpt-4o">OpenAI GPT-4o (Creative)</SelectItem>
-                              <SelectItem value="gemini-2.5-flash">Google Gemini 2.5 Flash (Fast & Balanced)</SelectItem>
-                              <SelectItem value="claude-sonnet-4-20250514" disabled className="text-gray-400">
-                                Anthropic Claude Sonnet 4 (coming soon)
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
                       name="brandStylesheetId"
                       render={({ field }) => (
                         <FormItem>

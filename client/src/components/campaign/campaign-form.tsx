@@ -20,7 +20,6 @@ import DraftCarousel from "./draft-carousel";
 const formSchema = z.object({
   objective: z.enum(['donation', 'membership', 'engagement']),
   context: z.string().min(10, "Please provide more context"),
-  aiModel: z.string(),
   brandStylesheetId: z.string(),
 });
 
@@ -29,7 +28,6 @@ export default function CampaignForm() {
   const [generatedCampaign, setGeneratedCampaign] = useState(null);
   const [generatedDrafts, setGeneratedDrafts] = useState<any[]>([]);
   const [useMultiDraft, setUseMultiDraft] = useState(true);
-  const [compareModels, setCompareModels] = useState(false);
   const [activeTab, setActiveTab] = useState('content');
   const [isConfigOpen, setIsConfigOpen] = useState(true);
   const { toast } = useToast();
@@ -59,7 +57,6 @@ export default function CampaignForm() {
     defaultValues: {
       objective: 'donation' as const,
       context: '',
-      aiModel: 'gpt-4o',
       brandStylesheetId: '1',
     },
   });
@@ -71,8 +68,7 @@ export default function CampaignForm() {
         ...data,
         brandStylesheetId: parseInt(data.brandStylesheetId),
         newsroomId: newsroomId,
-        draftCount: compareModels ? 3 : 5,
-        compareModels: compareModels,
+        draftCount: 5,
       });
       return response.json();
     },
@@ -129,38 +125,16 @@ export default function CampaignForm() {
                 Generate Multiple Variations
               </Label>
               <p className="text-sm text-slate-500">
-                Create {compareModels ? '3 AI model' : '5 AI-powered'} draft variations to review and merge
+                Create 5 AI-powered draft variations to review and merge
               </p>
             </div>
             <Switch
               id="multi-draft"
               checked={useMultiDraft}
-              onCheckedChange={(checked) => {
-                setUseMultiDraft(checked);
-                if (!checked) setCompareModels(false);
-              }}
+              onCheckedChange={setUseMultiDraft}
               data-testid="switch-multi-draft"
             />
           </div>
-          
-          {useMultiDraft && (
-            <div className="flex items-center justify-between pl-4 border-l-2 border-slate-200">
-              <div className="space-y-0.5">
-                <Label htmlFor="compare-models" className="text-sm">
-                  Compare AI Models
-                </Label>
-                <p className="text-xs text-slate-500">
-                  Generate one draft from each AI model (GPT-4o, Claude, Gemini)
-                </p>
-              </div>
-              <Switch
-                id="compare-models"
-                checked={compareModels}
-                onCheckedChange={setCompareModels}
-                data-testid="switch-compare-models"
-              />
-            </div>
-          )}
         </CardContent>
       </Card>
 
