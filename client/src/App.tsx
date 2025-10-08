@@ -16,6 +16,7 @@ import GuidedAssistant from "@/pages/guided-assistant";
 import Admin from "@/pages/admin";
 import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
+import CampaignAssistantTest from "@/pages/campaign-assistant-test";
 
 function Router() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -41,6 +42,7 @@ function Router() {
       <Route path="/" component={Dashboard} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/campaigns/new" component={NewCampaign} />
+      <Route path="/campaigns/assistant-test" component={CampaignAssistantTest} />
       <Route path="/campaigns/evaluate" component={CampaignEvaluate} />
       <Route path="/campaigns/history" component={CampaignHistory} />
       <Route path="/assistant" component={GuidedAssistant} />
