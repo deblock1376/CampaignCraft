@@ -38,7 +38,6 @@ export default function Dashboard() {
                     <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                       <Sparkles className="h-6 w-6 text-primary" />
                     </div>
-                    <Badge variant="outline" className="text-xs">Path 1</Badge>
                   </div>
                   <CardTitle className="text-2xl">Create Campaign</CardTitle>
                   <CardDescription className="text-base">
@@ -78,7 +77,6 @@ export default function Dashboard() {
                     <div className="h-12 w-12 rounded-lg bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500/20 transition-colors">
                       <Target className="h-6 w-6 text-emerald-600" />
                     </div>
-                    <Badge variant="outline" className="text-xs border-emerald-500/30 text-emerald-700">Path 2</Badge>
                   </div>
                   <CardTitle className="text-2xl">Get Feedback</CardTitle>
                   <CardDescription className="text-base">Evaluate existing campaigns against BlueLena best practices</CardDescription>
@@ -98,16 +96,18 @@ export default function Dashboard() {
                       <span>One-click rewrites</span>
                     </div>
                   </div>
-                  <Link href="/campaigns/evaluate">
-                    <Button 
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 group-hover:shadow-md transition-shadow" 
-                      size="lg"
-                      data-testid="button-start-evaluate"
-                    >
-                      Evaluate Campaign
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
+                  <div className="pt-2">
+                    <Link href="/campaigns/evaluate">
+                      <Button 
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 group-hover:shadow-md transition-shadow" 
+                        size="lg"
+                        data-testid="button-start-evaluate"
+                      >
+                        Evaluate Campaign
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
                 </CardContent>
               </Card>
             </div>
