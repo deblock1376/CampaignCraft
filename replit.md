@@ -217,6 +217,9 @@ Changelog:
   - Backend now defaults to GPT-4o model when no AI model is specified
   - Simplified campaign workflow with single default AI model
   - Multi-draft generation now creates 5 variations using the default model
+  - Updated homepage Create Campaign box description to emphasize brand grounding
+  - Replaced "Compare AI models side-by-side" bullet with "Ground campaigns in your news brand"
+  - Improved button padding for better visual spacing
 ```
 
 ## User Preferences
