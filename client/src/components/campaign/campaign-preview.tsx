@@ -21,6 +21,9 @@ interface CampaignPreviewProps {
   stylesheets?: any[];
   isConfigOpen?: boolean;
   setIsConfigOpen?: (open: boolean) => void;
+  onRegenerate?: () => void;
+  onSaveDraft?: () => void;
+  onExport?: () => void;
 }
 
 export default function CampaignPreview({ 
@@ -33,7 +36,10 @@ export default function CampaignPreview({
   generateMutation, 
   stylesheets, 
   isConfigOpen, 
-  setIsConfigOpen 
+  setIsConfigOpen,
+  onRegenerate,
+  onSaveDraft,
+  onExport
 }: CampaignPreviewProps) {
   const { toast } = useToast();
 
@@ -327,17 +333,32 @@ export default function CampaignPreview({
                   <i className="fas fa-edit mr-2"></i>
                   Edit Content
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={onRegenerate}
+                  disabled={!onRegenerate}
+                >
                   <i className="fas fa-redo mr-2"></i>
                   Regenerate
                 </Button>
               </div>
               <div className="flex items-center space-x-2">
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={onSaveDraft}
+                  disabled={!onSaveDraft}
+                >
                   <i className="fas fa-save mr-2"></i>
                   Save Draft
                 </Button>
-                <Button size="sm" className="bg-accent hover:bg-emerald-600">
+                <Button 
+                  size="sm" 
+                  className="bg-accent hover:bg-emerald-600"
+                  onClick={onExport}
+                  disabled={!onExport}
+                >
                   <i className="fas fa-download mr-2"></i>
                   Export Campaign
                 </Button>

@@ -112,6 +112,60 @@ export default function CampaignForm() {
     setGeneratedDrafts([]);
   };
 
+  const handleRegenerate = () => {
+    form.handleSubmit(onSubmit)();
+  };
+
+  const saveDraftMutation = useMutation({
+    mutationFn: async () => {
+      if (!generatedCampaign) return;
+      const response = await apiRequest("PUT", `/api/campaigns/${generatedCampaign.id}`, {
+        status: 'draft'
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Draft Saved!",
+        description: "Your campaign has been saved as a draft.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/newsrooms", newsroomId, "campaigns"] });
+    },
+    onError: () => {
+      toast({
+        title: "Save Failed",
+        description: "Unable to save draft. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSaveDraft = () => {
+    saveDraftMutation.mutate();
+  };
+
+  const handleExport = () => {
+    if (!generatedCampaign) return;
+    
+    const content = generatedCampaign.content;
+    const fullCampaign = `Subject: ${content?.subject || ''}\n\n${content?.content?.replace(/<[^>]*>/g, '') || ''}\n\nCall to Action: ${content?.cta || ''}`;
+    
+    const blob = new Blob([fullCampaign], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${generatedCampaign.title || 'campaign'}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Campaign Exported!",
+      description: "Your campaign has been downloaded as a text file.",
+    });
+  };
+
   const recentCampaigns = Array.isArray(campaigns) ? campaigns.slice(0, 2) : [];
 
   return (
@@ -151,6 +205,9 @@ export default function CampaignForm() {
           stylesheets={stylesheets}
           isConfigOpen={isConfigOpen}
           setIsConfigOpen={setIsConfigOpen}
+          onRegenerate={handleRegenerate}
+          onSaveDraft={handleSaveDraft}
+          onExport={handleExport}
         />
       </div>
 
