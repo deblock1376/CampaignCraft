@@ -721,6 +721,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Campaign Assistant Chat
+  app.post("/api/campaigns/chat", authenticateToken, async (req: any, res) => {
+    try {
+      const schema = z.object({
+        message: z.string().min(1),
+        conversationHistory: z.array(z.object({
+          role: z.enum(['user', 'assistant']),
+          content: z.string(),
+        })).optional(),
+        newsroomId: z.number(),
+        groundingGuides: z.array(z.object({
+          id: z.number(),
+          name: z.string(),
+        })).optional(),
+      });
+
+      const { message, conversationHistory = [], newsroomId, groundingGuides = [] } = schema.parse(req.body);
+
+      const newsroom = await storage.getNewsroom(newsroomId);
+      if (!newsroom) {
+        return res.status(404).json({ message: "Newsroom not found" });
+      }
+
+      // Build system prompt for the assistant
+      const systemPrompt = `You are a helpful campaign assistant for ${newsroom.name}, a newsroom. 
+Your role is to help users create effective marketing campaigns through conversation.
+
+Available grounding guides: ${groundingGuides.map(g => g.name).join(', ') || 'None available'}
+
+Guidelines:
+- Be conversational and helpful
+- Ask clarifying questions if needed
+- Suggest specific grounding guides when relevant
+- When users describe their campaign idea, help them think through objective, audience, and messaging
+- Provide actionable suggestions for improving campaigns
+- After campaigns are generated, suggest next steps like A/B testing, audience variations, or follow-up campaigns
+- Be concise but thorough`;
+
+      // Create messages array for OpenAI
+      const messages = [
+        { role: "system" as const, content: systemPrompt },
+        ...conversationHistory.map(msg => ({
+          role: msg.role as "user" | "assistant",
+          content: msg.content
+        })),
+        { role: "user" as const, content: message }
+      ];
+
+      // Generate response using OpenAI
+      const openai = new OpenAI({ 
+        apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR || "default_key"
+      });
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: messages,
+        temperature: 0.8,
+        max_tokens: 500,
+      });
+
+      const assistantMessage = response.choices[0].message.content || "I apologize, but I couldn't generate a response. Please try again.";
+
+      res.json({ message: assistantMessage });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error('Chat error:', error);
+      res.status(500).json({ message: "Failed to process chat", error: String(error) });
+    }
+  });
+
   // Quick Start Tools
   app.post("/api/quickstart/rapid-response", authenticateToken, async (req: any, res) => {
     try {
