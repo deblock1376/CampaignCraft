@@ -83,33 +83,23 @@ export default function CampaignAssistantTest() {
   }
 
   return (
-    <div className="h-screen flex flex-col">
-      <div className="border-b bg-background p-4">
-        <div className="container mx-auto">
-          <h1 className="text-2xl font-bold">Campaign Assistant (Test)</h1>
+    <div className="h-screen flex flex-col bg-slate-50">
+      <div className="border-b bg-white shadow-sm p-4">
+        <div className="container mx-auto max-w-4xl">
+          <h1 className="text-2xl font-bold">Campaign Assistant</h1>
           <p className="text-sm text-muted-foreground">
-            Conversational campaign creation with AI guidance
+            Chat with AI to create your campaign
           </p>
         </div>
       </div>
       
       <div className="flex-1 overflow-hidden">
-        <div className="container mx-auto h-full py-6">
-          <div className="grid grid-cols-2 gap-6 h-full">
-            {/* Chat Assistant - Left Side */}
-            <div className="h-full">
-              <ChatAssistant
-                messages={messages}
-                onSendMessage={handleSendMessage}
-                isLoading={chatMutation.isPending}
-              />
-            </div>
-
-            {/* Campaign Workspace - Right Side */}
-            <div className="h-full overflow-auto">
-              <CampaignForm />
-            </div>
-          </div>
+        <div className="container mx-auto max-w-4xl h-full py-6">
+          <ChatAssistant
+            messages={messages}
+            onSendMessage={handleSendMessage}
+            isLoading={chatMutation.isPending}
+          />
         </div>
       </div>
     </div>

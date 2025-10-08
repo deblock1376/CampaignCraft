@@ -49,21 +49,16 @@ export default function ChatAssistant({
   };
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="border-b">
-        <CardTitle className="flex items-center gap-2">
-          <Bot className="w-5 h-5 text-primary" />
-          Campaign Assistant
-        </CardTitle>
-      </CardHeader>
+    <Card className="h-full flex flex-col bg-white shadow-lg">
       <CardContent className="flex-1 flex flex-col p-0">
         <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
           <div className="space-y-4">
             {messages.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Bot className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
-                <p className="text-sm">
-                  Hi! I'm your campaign assistant. Tell me about the campaign you'd like to create.
+              <div className="text-center py-12 px-4">
+                <Bot className="w-16 h-16 mx-auto mb-4 text-primary" />
+                <h3 className="text-lg font-semibold mb-2">Welcome to Campaign Assistant</h3>
+                <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                  I'll help you create an effective marketing campaign through conversation. Just tell me what you have in mind, and I'll guide you through the process.
                 </p>
               </div>
             ) : (
