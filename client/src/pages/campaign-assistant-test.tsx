@@ -198,6 +198,7 @@ export default function CampaignAssistantTest() {
           cta: {
             text: generatedCampaign.cta || "Learn More",
           },
+          followUpSuggestion: generatedCampaign.followUpSuggestion,
         },
       };
       setMessages(prev => [...prev, campaignMessage]);

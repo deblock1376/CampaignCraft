@@ -40,6 +40,7 @@ export interface CampaignResponse {
     estimatedClickRate?: number;
     estimatedConversion?: number;
   };
+  followUpSuggestion?: string;
 }
 
 class AIProviderService {
@@ -355,6 +356,7 @@ Generate a complete email campaign with:
 3. **cta** (string): Call-to-action in this exact format: [Button]Button text[/Button] (e.g., [Button]Support Local News[/Button])
 4. **insights** (array of 3-4 strings): Brief observations about campaign effectiveness
 5. **metrics** (object): Performance estimates with estimatedOpenRate, estimatedClickRate, estimatedConversion (as numbers)
+6. **followUpSuggestion** (string): A helpful, actionable next step or optimization tip for the user (e.g., "Try A/B testing this subject line against a question-based variant" or "Consider sending this campaign on Tuesday morning for peak engagement" or "Add a matching social media post to amplify reach")
 
 CRITICAL: The "content" field must contain a COMPLETE, FULL EMAIL MESSAGE - not just a summary or outline. Write the entire email body copy as it would appear in the subscriber's inbox, with multiple paragraphs, emotional resonance, and complete storytelling.
 

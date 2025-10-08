@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Save, Download, RefreshCw, Mail } from "lucide-react";
+import { Save, Download, RefreshCw, Mail, Lightbulb } from "lucide-react";
 
 interface CampaignMessageCardProps {
   campaign: {
@@ -11,6 +11,7 @@ interface CampaignMessageCardProps {
       text: string;
       url?: string;
     };
+    followUpSuggestion?: string;
   };
   onSave?: () => void;
   onExport?: () => void;
@@ -65,6 +66,19 @@ export function CampaignMessageCard({
             )}
           </div>
         </div>
+
+        {/* Follow-up Suggestion */}
+        {campaign.followUpSuggestion && (
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+            <div className="flex items-start gap-2">
+              <Lightbulb className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-xs font-semibold text-blue-900 mb-1">Next Step</p>
+                <p className="text-sm text-blue-700">{campaign.followUpSuggestion}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-2 pt-2 border-t">

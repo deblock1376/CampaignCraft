@@ -18,6 +18,7 @@ export interface ChatMessage {
       text: string;
       url?: string;
     };
+    followUpSuggestion?: string;
   };
 }
 
