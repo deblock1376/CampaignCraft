@@ -487,21 +487,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const firstDraft = drafts[0];
 
-      // Merge logic: combine best elements from selected drafts
-      const mergedContent: any = {
-        subject: (firstDraft.content as any)?.subject || "Merged Campaign",
-        content: drafts.map((d: any) => d.content?.content).filter(Boolean).join("\n\n"),
-        cta: (firstDraft.content as any)?.cta || "Learn More",
-      };
+      // Get newsroom info for context
+      const newsroom = await storage.getNewsroom(newsroomId);
+      if (!newsroom) {
+        return res.status(400).json({ message: "Newsroom not found" });
+      }
 
-      // Create merged campaign
+      // Extract draft content for AI merging
+      const draftContents = drafts.map((d: any) => ({
+        subject: d.content?.subject || '',
+        content: d.content?.content || '',
+        cta: d.content?.cta || '',
+      }));
+
+      // Use AI to intelligently merge drafts
+      const aiModel = firstDraft.aiModel || 'gpt-4o';
+      const mergedContent = await aiProviderService.mergeDrafts(
+        draftContents,
+        newsroom.name,
+        firstDraft.objective,
+        firstDraft.type,
+        aiModel
+      );
+
+      // Create merged campaign with AI-generated content
       const mergedCampaign = await storage.createCampaign({
         newsroomId,
         title: `Merged: ${firstDraft.title}`,
         type: firstDraft.type,
         objective: firstDraft.objective,
         context: firstDraft.context || "",
-        aiModel: firstDraft.aiModel,
+        aiModel,
         brandStylesheetId: firstDraft.brandStylesheetId || null,
         status: 'draft',
         content: mergedContent,

@@ -93,6 +93,124 @@ class AIProviderService {
     }
   }
 
+  async mergeDrafts(
+    drafts: Array<{ subject?: string; content: string; cta: string }>,
+    newsroomName: string,
+    objective: string,
+    type: string,
+    model: string = 'gpt-4o'
+  ): Promise<CampaignResponse> {
+    const prompt = this.buildMergePrompt(drafts, newsroomName, objective, type);
+    
+    switch (model) {
+      case 'gpt-4o':
+        return this.generateMergeWithOpenAI(prompt);
+      case 'claude-sonnet-4':
+      case 'claude-sonnet-4-20250514':
+        return this.generateMergeWithAnthropic(prompt);
+      case 'gemini-pro':
+      case 'gemini-2.5-flash':
+        return this.generateMergeWithGemini(prompt);
+      default:
+        return this.generateMergeWithOpenAI(prompt);
+    }
+  }
+
+  private async generateMergeWithOpenAI(prompt: string): Promise<CampaignResponse> {
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: DEFAULT_OPENAI_MODEL,
+        messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" },
+        temperature: 0.7,
+      });
+
+      const result = JSON.parse(response.choices[0].message.content || '{}');
+      return this.formatCampaignResponse(result);
+    } catch (error) {
+      throw new Error(`OpenAI API error: ${(error as any).message}`);
+    }
+  }
+
+  private async generateMergeWithAnthropic(prompt: string): Promise<CampaignResponse> {
+    try {
+      const response = await this.anthropic.messages.create({
+        model: DEFAULT_ANTHROPIC_MODEL,
+        max_tokens: 3000,
+        temperature: 0.7,
+        system: "You are a copywriter at BlueLena specializing in intelligently merging campaign drafts. Always respond with valid JSON containing the merged campaign.",
+        messages: [{ role: 'user', content: prompt }],
+      });
+
+      const content = response.content[0];
+      if (content.type !== 'text') {
+        throw new Error('Unexpected response type from Claude');
+      }
+      
+      let jsonText = content.text;
+      const jsonMatch = jsonText.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
+      if (jsonMatch) {
+        jsonText = jsonMatch[1];
+      }
+      
+      const result = JSON.parse(jsonText);
+      return this.formatCampaignResponse(result);
+    } catch (error) {
+      throw new Error(`Anthropic API error: ${(error as any).message}`);
+    }
+  }
+
+  private async generateMergeWithGemini(prompt: string): Promise<CampaignResponse> {
+    try {
+      const response = await this.gemini.models.generateContent({
+        model: "gemini-2.5-flash",
+        config: {
+          systemInstruction: `You are a copywriter at BlueLena specializing in intelligently merging campaign drafts.
+          Respond with JSON in this exact format: 
+          {
+            "subject": "string (max 50 characters)",
+            "content": "COMPLETE MERGED EMAIL BODY", 
+            "cta": "string in format [Button]Button text[/Button]",
+            "insights": ["string1", "string2", "string3"],
+            "metrics": {
+              "estimatedOpenRate": number,
+              "estimatedClickRate": number, 
+              "estimatedConversion": number
+            }
+          }`,
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "object",
+            properties: {
+              subject: { type: "string" },
+              content: { type: "string" },
+              cta: { type: "string" },
+              insights: {
+                type: "array",
+                items: { type: "string" }
+              },
+              metrics: {
+                type: "object",
+                properties: {
+                  estimatedOpenRate: { type: "number" },
+                  estimatedClickRate: { type: "number" },
+                  estimatedConversion: { type: "number" }
+                }
+              }
+            },
+            required: ["subject", "content", "cta", "insights", "metrics"]
+          }
+        },
+        contents: prompt
+      });
+
+      const result = JSON.parse(response.text || '{}');
+      return this.formatCampaignResponse(result);
+    } catch (error) {
+      throw new Error(`Gemini API error: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
   private async generateSimpleWithOpenAI(prompt: string): Promise<string> {
     try {
       const response = await this.openai.chat.completions.create({
@@ -133,6 +251,56 @@ class AIProviderService {
     } catch (error) {
       throw new Error(`Gemini API error: ${error instanceof Error ? error.message : String(error)}`);
     }
+  }
+
+  private buildMergePrompt(drafts: Array<{ subject?: string; content: string; cta: string }>, newsroomName: string, objective: string, type: string): string {
+    const draftsSummary = drafts.map((draft, index) => `
+Draft ${index + 1}:
+Subject: ${draft.subject || 'No subject'}
+Content: ${draft.content}
+CTA: ${draft.cta}
+    `).join('\n---\n');
+
+    return `
+👤 Your Role
+You are a copywriter at BlueLena, tasked with intelligently merging multiple campaign drafts into one cohesive, high-performing email campaign.
+
+🎯 Merge Objective
+You have ${drafts.length} different campaign drafts below. Your task is to:
+- Analyze the strengths of each draft
+- Select or create the most compelling subject line (combining elements if needed)
+- Craft a unified email body that incorporates the best content, messaging, and storytelling from all drafts
+- Choose or refine the most effective call-to-action
+- Ensure the final result is cohesive, emotionally resonant, and more effective than any single draft
+
+📋 Context
+Publisher: ${newsroomName}
+Campaign Type: ${type}
+Primary Objective: ${objective}
+
+🧩 Drafts to Merge:
+${draftsSummary}
+
+🧠 Merge Guidelines
+- DO NOT just concatenate the drafts - intelligently combine their best elements
+- Remove redundancies and contradictions
+- Ensure smooth narrative flow from opening to CTA
+- Maintain emotional resonance and urgency throughout
+- Keep subject line under 50 characters (HARD LIMIT)
+- Follow AP Style and BlueLena best practices
+- The merged campaign should feel like a single, polished piece, not a patchwork
+
+✅ Required Output Format (JSON)
+Generate the merged campaign with:
+
+1. **subject** (string, MAXIMUM 50 characters - HARD LIMIT): The best subject line from the drafts, or a new one that combines their strengths
+2. **content** (string): COMPLETE EMAIL MESSAGE BODY that combines the best elements from all drafts into one cohesive narrative (200-400 words)
+3. **cta** (string): The most effective CTA in format [Button]Button text[/Button]
+4. **insights** (array of 3-4 strings): Brief observations about what made each draft effective and how you combined them
+5. **metrics** (object): Performance estimates with estimatedOpenRate, estimatedClickRate, estimatedConversion (as numbers)
+
+Response must be valid JSON with all fields included.
+`;
   }
 
   private buildCampaignPrompt(request: CampaignRequest): string {
