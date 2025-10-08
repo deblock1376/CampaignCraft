@@ -124,12 +124,21 @@ export default function CampaignAssistantTest() {
     onSuccess: (data) => {
       // Add campaign to messages
       // The API returns a campaign object with content field containing the generated campaign
+      const generatedCampaign = typeof data.content === 'string' ? JSON.parse(data.content) : data.content;
+      
+      // Transform to match CampaignMessageCard expected format
       const campaignMessage: ChatMessage = {
         id: Date.now().toString(),
         role: "assistant",
         content: "Here's your generated campaign:",
         timestamp: new Date(),
-        campaign: typeof data.content === 'string' ? JSON.parse(data.content) : data.content,
+        campaign: {
+          subjectLine: generatedCampaign.subject || "Campaign Subject",
+          body: generatedCampaign.content || "",
+          cta: {
+            text: generatedCampaign.cta || "Learn More",
+          },
+        },
       };
       setMessages(prev => [...prev, campaignMessage]);
     },
