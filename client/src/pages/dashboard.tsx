@@ -42,7 +42,7 @@ export default function Dashboard() {
                   </div>
                   <CardTitle className="text-2xl">Create Campaign</CardTitle>
                   <CardDescription className="text-base">
-                    Generate AI-powered marketing campaigns with multiple variations, LLM comparison, and audience targeting
+                    Generate AI-powered marketing campaigns grounded in your news brand
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -53,19 +53,21 @@ export default function Dashboard() {
                     </div>
                     <div className="flex items-center text-sm text-slate-600">
                       <FileText className="h-4 w-4 mr-2 text-primary" />
-                      <span>Compare AI models side-by-side</span>
+                      <span>Ground campaigns in your news brand</span>
                     </div>
                     <div className="flex items-center text-sm text-slate-600">
                       <Users className="h-4 w-4 mr-2 text-primary" />
                       <span>Tailor content for specific segments</span>
                     </div>
                   </div>
-                  <Link href="/campaigns/new">
-                    <Button className="w-full group-hover:shadow-md transition-shadow" size="lg" data-testid="button-start-create">
-                      Start Creating
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
+                  <div className="pt-2">
+                    <Link href="/campaigns/new">
+                      <Button className="w-full group-hover:shadow-md transition-shadow" size="lg" data-testid="button-start-create">
+                        Start Creating
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
                 </CardContent>
               </Card>
 
