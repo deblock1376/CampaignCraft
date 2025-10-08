@@ -81,9 +81,7 @@ export default function Dashboard() {
                     <Badge variant="outline" className="text-xs border-emerald-500/30 text-emerald-700">Path 2</Badge>
                   </div>
                   <CardTitle className="text-2xl">Get Feedback</CardTitle>
-                  <CardDescription className="text-base">
-                    Evaluate existing campaigns against BlueLena best practices and get AI-powered recommendations
-                  </CardDescription>
+                  <CardDescription className="text-base">Evaluate existing campaigns against BlueLena best practices</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
