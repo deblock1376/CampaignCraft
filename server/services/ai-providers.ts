@@ -177,7 +177,8 @@ class AIProviderService {
               "estimatedOpenRate": number,
               "estimatedClickRate": number, 
               "estimatedConversion": number
-            }
+            },
+            "followUpSuggestion": "string with actionable next step tip"
           }`,
           responseMimeType: "application/json",
           responseSchema: {
@@ -197,9 +198,10 @@ class AIProviderService {
                   estimatedClickRate: { type: "number" },
                   estimatedConversion: { type: "number" }
                 }
-              }
+              },
+              followUpSuggestion: { type: "string" }
             },
-            required: ["subject", "content", "cta", "insights", "metrics"]
+            required: ["subject", "content", "cta", "insights", "metrics", "followUpSuggestion"]
           }
         },
         contents: prompt
@@ -299,6 +301,7 @@ Generate the merged campaign with:
 3. **cta** (string): The most effective CTA in format [Button]Button text[/Button]
 4. **insights** (array of 3-4 strings): Brief observations about what made each draft effective and how you combined them
 5. **metrics** (object): Performance estimates with estimatedOpenRate, estimatedClickRate, estimatedConversion (as numbers)
+6. **followUpSuggestion** (string): A helpful, actionable next step or optimization tip (e.g., "Try A/B testing against a different headline variant" or "Consider segmenting this campaign by reader engagement level")
 
 Response must be valid JSON with all fields included.
 `;
@@ -426,7 +429,8 @@ Response must be valid JSON with all fields included.
               "estimatedOpenRate": number,
               "estimatedClickRate": number, 
               "estimatedConversion": number
-            }
+            },
+            "followUpSuggestion": "string with actionable next step tip"
           }`,
           responseMimeType: "application/json",
           responseSchema: {
@@ -446,9 +450,10 @@ Response must be valid JSON with all fields included.
                   estimatedClickRate: { type: "number" },
                   estimatedConversion: { type: "number" }
                 }
-              }
+              },
+              followUpSuggestion: { type: "string" }
             },
-            required: ["subject", "content", "cta", "insights", "metrics"]
+            required: ["subject", "content", "cta", "insights", "metrics", "followUpSuggestion"]
           }
         },
         contents: prompt
@@ -478,6 +483,7 @@ Response must be valid JSON with all fields included.
         estimatedClickRate: typeof result.metrics?.estimatedClickRate === 'number' ? result.metrics.estimatedClickRate : 4,
         estimatedConversion: typeof result.metrics?.estimatedConversion === 'number' ? result.metrics.estimatedConversion : 1,
       },
+      followUpSuggestion: result.followUpSuggestion || undefined,
     };
   }
   async evaluateCampaign(
