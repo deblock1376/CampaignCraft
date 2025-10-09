@@ -86,7 +86,7 @@ export default function CampaignEvaluate() {
         newsroomId,
         objective: 'engagement',
         context: `Evaluated and rewritten campaign using ${framework} framework`,
-        aiModel: 'claude-sonnet-4-20250514',
+        aiModel: 'gpt-4o',
       });
       return response.json();
     },
