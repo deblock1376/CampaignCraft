@@ -269,29 +269,28 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
     },
     {
       id: 'brand-setup',
-      title: 'Build Brand Guidelines',
-      description: 'Create comprehensive brand guidelines for consistent messaging',
+      title: 'Build Grounding Library',
+      description: 'Create a comprehensive grounding library with brand voice, style guides, and reference materials',
       icon: BookOpen,
       category: 'setup',
       estimatedTime: '5-7 minutes',
       steps: [
         {
           id: 'gather-info',
-          title: 'Enter Newsroom Information',
-          description: 'Provide details about your newsroom, mission, and audience',
+          title: 'Define Brand Voice & Mission',
+          description: 'Provide details about your newsroom, mission, values, and target audience',
           completed: false
         },
         {
           id: 'collect-content',
-          title: 'Add Existing Content (Optional)',
-          description: 'Share samples of your existing content for style analysis',
-          optional: true,
+          title: 'Add Reference Materials',
+          description: 'Upload or paste examples of your best content, style guides, and messaging',
           completed: false
         },
         {
           id: 'generate-guidelines',
-          title: 'Generate & Review Guidelines',
-          description: 'Create comprehensive brand guidelines using AI analysis',
+          title: 'Generate Grounding Library',
+          description: 'Create your comprehensive grounding library for consistent brand messaging',
           completed: false
         }
       ]
@@ -373,7 +372,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
       case 'brand-setup':
         const brandState = state as typeof wizardState.brandSetup;
         if (stepId === 'gather-info') return brandState.newsroomInfo.length > 0;
-        if (stepId === 'collect-content') return true; // Optional step
+        if (stepId === 'collect-content') return brandState.existingContent.length > 0;
         if (stepId === 'generate-guidelines') return true;
         break;
     }
@@ -766,12 +765,12 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
         if (stepId === 'gather-info') {
           return (
             <div>
-              <Label htmlFor="newsroomInfo">About Your Newsroom *</Label>
+              <Label htmlFor="newsroomInfo">Brand Voice & Mission *</Label>
               <Textarea
                 id="newsroomInfo"
                 value={brandState.newsroomInfo}
                 onChange={(e) => updateWizardState(stateKey, { newsroomInfo: e.target.value })}
-                placeholder="Tell us about your newsroom, mission, and audience..."
+                placeholder="Describe your newsroom's mission, values, target audience, and brand voice..."
                 rows={4}
                 data-testid="textarea-newsroom-info"
               />
@@ -782,12 +781,12 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
         if (stepId === 'collect-content') {
           return (
             <div>
-              <Label htmlFor="existingContent">Existing Content (Optional)</Label>
+              <Label htmlFor="existingContent">Reference Materials *</Label>
               <Textarea
                 id="existingContent"
                 value={brandState.existingContent}
                 onChange={(e) => updateWizardState(stateKey, { existingContent: e.target.value })}
-                placeholder="Paste some existing content for AI to analyze your style..."
+                placeholder="Paste your best content examples, style guides, messaging frameworks, or upload reference documents..."
                 rows={4}
                 data-testid="textarea-existing-content"
               />
@@ -798,13 +797,14 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
         if (stepId === 'generate-guidelines') {
           return (
             <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
-              <h4 className="font-medium">Ready to Generate Brand Guidelines</h4>
+              <h4 className="font-medium">Ready to Create Your Grounding Library</h4>
               <div className="text-sm space-y-1">
-                <p><span className="font-medium">Newsroom Info:</span> Provided</p>
+                <p><span className="font-medium">Brand Voice & Mission:</span> Defined</p>
                 {brandState.existingContent && (
-                  <p><span className="font-medium">Existing Content:</span> Provided for analysis</p>
+                  <p><span className="font-medium">Reference Materials:</span> Provided for analysis</p>
                 )}
               </div>
+              <p className="text-sm text-gray-600 mt-2">Your grounding library will help ensure consistent brand messaging across all campaigns.</p>
             </div>
           );
         }
