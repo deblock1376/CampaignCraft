@@ -36,6 +36,7 @@ export const brandStylesheets = pgTable("brand_stylesheets", {
   typography: jsonb("typography"),
   guidelines: text("guidelines"),
   documentPaths: text("document_paths").array().default([]),
+  materials: jsonb("materials"),
   isDefault: boolean("is_default").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

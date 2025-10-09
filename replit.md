@@ -34,6 +34,26 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### October 9, 2025: Comprehensive Grounding Library Builder in Marketing Assistant
+- **Categorized Material Collection**: Implemented comprehensive 10-material type grounding library form organized into 4 categories:
+  - Brand Foundation (3 types): Strategy Playbook, Brand Style Guide, About Us Content
+  - Campaign Examples (3 types): Past Campaigns, Impact News Stories, Reader Testimonials
+  - Audience Intelligence (3 types): Audience Segments, Survey Responses, Key Local Dates
+  - Performance Data (2 types): Survey & Research Data, Performance Metrics & Analytics
+- **Flexible Input Methods**: Each material type supports both text paste and file upload via URL
+- **Visual Progress Indicators**: Category progress badges show material count and completeness
+- **Accordion UI**: Collapsible sections for easy navigation across material categories
+- **Marketing Assistant Integration**: Updated "Build Grounding Library" workflow to use new form:
+  - Step 1: Define brand voice and mission
+  - Step 2: Add reference materials using comprehensive grounding library form
+  - Step 3: Generate grounding library with all collected materials
+- **Backend Support**: Updated `/api/quickstart/grounding-library` endpoint to:
+  - Accept new `materials` parameter (replaces legacy `existingContent`)
+  - Parse materials across all 4 categories for AI context
+  - Store materials in brand stylesheet's materials JSONB field
+  - Use GPT-4o (default) for grounding library generation
+- **Database Integration**: Materials persisted to `brandStylesheets.materials` column for future reuse
+
 ### October 9, 2025: Enhanced Campaign Evaluation Framework
 - **Audience Value Proposition Framework**: Updated with comprehensive scoring criteria (0-12 scale):
   - Audience benefit clarity (0-2): Specific outcomes vs. abstract slogans

@@ -1115,7 +1115,7 @@ Please respond with just the summary text, no additional formatting or explanati
 
   app.post("/api/quickstart/grounding-library", authenticateToken, async (req: any, res) => {
     try {
-      const { newsroomId, newsroomInfo, existingContent } = req.body;
+      const { newsroomId, newsroomInfo, materials } = req.body;
       
       if (!newsroomId) {
         return res.status(400).json({ message: "Newsroom ID is required" });
@@ -1126,10 +1126,58 @@ Please respond with just the summary text, no additional formatting or explanati
         return res.status(404).json({ message: "Newsroom not found" });
       }
 
+      // Build comprehensive materials summary for prompt
+      let materialsContext = '';
+      if (materials) {
+        const materialsSummary: string[] = [];
+        
+        // Brand Foundation materials
+        if (materials.brandFoundation) {
+          Object.entries(materials.brandFoundation).forEach(([key, value]: [string, any]) => {
+            if (value?.text || value?.fileUrl) {
+              materialsSummary.push(`${key.replace(/([A-Z])/g, ' $1').trim()}: ${value.text || `File: ${value.fileUrl}`}`);
+            }
+          });
+        }
+        
+        // Campaign Examples
+        if (materials.campaignExamples) {
+          Object.entries(materials.campaignExamples).forEach(([key, value]: [string, any]) => {
+            if (value?.text || value?.fileUrl) {
+              materialsSummary.push(`${key.replace(/([A-Z])/g, ' $1').trim()}: ${value.text || `File: ${value.fileUrl}`}`);
+            }
+          });
+        }
+        
+        // Audience Intelligence
+        if (materials.audienceIntelligence) {
+          Object.entries(materials.audienceIntelligence).forEach(([key, value]: [string, any]) => {
+            if (value?.text || value?.fileUrl) {
+              materialsSummary.push(`${key.replace(/([A-Z])/g, ' $1').trim()}: ${value.text || `File: ${value.fileUrl}`}`);
+            }
+          });
+        }
+        
+        // Performance Data
+        if (materials.performanceData) {
+          Object.entries(materials.performanceData).forEach(([key, value]: [string, any]) => {
+            if (value?.text || value?.fileUrl) {
+              materialsSummary.push(`${key.replace(/([A-Z])/g, ' $1').trim()}: ${value.text || `File: ${value.fileUrl}`}`);
+            }
+          });
+        }
+        
+        materialsContext = materialsSummary.length > 0 
+          ? materialsSummary.join('\n\n') 
+          : 'No reference materials provided';
+      }
+
       const prompt = `Create a comprehensive brand grounding guide for ${newsroom.name}. 
       
       Newsroom Information: ${newsroomInfo || newsroom.description || 'Local news organization'}
-      Existing Content to Analyze: ${existingContent || 'No existing content provided'}
+      
+      Reference Materials:
+      ${materialsContext || 'No existing content provided'}
       
       Generate:
       1. Brand tone (2-3 descriptive words)
@@ -1139,7 +1187,7 @@ Please respond with just the summary text, no additional formatting or explanati
       
       Return as JSON with keys: tone, voice, keyMessages (array), guidelines`;
 
-      const response = await aiProviderService.generateContent(prompt, 'claude-sonnet-4-20250514');
+      const response = await aiProviderService.generateContent(prompt, 'gpt-4o');
       
       let brandGuide;
       try {
@@ -1166,6 +1214,7 @@ Please respond with just the summary text, no additional formatting or explanati
         voice: brandGuide.voice,
         keyMessages: brandGuide.keyMessages,
         guidelines: brandGuide.guidelines,
+        materials: materials || null,
         isDefault: false,
       });
 

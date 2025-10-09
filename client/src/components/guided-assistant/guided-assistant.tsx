@@ -23,6 +23,7 @@ import {
   MessageSquare,
   Settings
 } from "lucide-react";
+import GroundingLibraryForm, { GroundingLibraryMaterials } from "@/components/grounding-library/grounding-library-form";
 
 export interface AssistantStep {
   id: string;
@@ -65,7 +66,7 @@ interface WizardState {
   };
   brandSetup: {
     newsroomInfo: string;
-    existingContent: string;
+    materials: GroundingLibraryMaterials;
   };
 }
 
@@ -77,7 +78,15 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
     breakingNews: { fullArticle: '', aiModel: 'claude-sonnet-4', generatedSummary: '', urgency: 'high', brandStylesheetId: '' },
     audienceTargeting: { campaignId: '', segments: [{ name: '', description: '' }] },
     emailOptimization: { context: '', campaignType: 'email', objective: 'engagement' },
-    brandSetup: { newsroomInfo: '', existingContent: '' }
+    brandSetup: { 
+      newsroomInfo: '', 
+      materials: {
+        brandFoundation: {},
+        campaignExamples: {},
+        audienceIntelligence: {},
+        performanceData: {}
+      }
+    }
   });
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -312,7 +321,15 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
       breakingNews: { fullArticle: '', aiModel: 'claude-sonnet-4', generatedSummary: '', urgency: 'high', brandStylesheetId: '' },
       audienceTargeting: { campaignId: '', segments: [{ name: '', description: '' }] },
       emailOptimization: { context: '', campaignType: 'email', objective: 'engagement' },
-      brandSetup: { newsroomInfo: '', existingContent: '' }
+      brandSetup: { 
+        newsroomInfo: '', 
+        materials: {
+          brandFoundation: {},
+          campaignExamples: {},
+          audienceIntelligence: {},
+          performanceData: {}
+        }
+      }
     });
   };
 
@@ -372,14 +389,21 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
       case 'brand-setup':
         const brandState = state as typeof wizardState.brandSetup;
         if (stepId === 'gather-info') return brandState.newsroomInfo.length > 0;
-        if (stepId === 'collect-content') return brandState.existingContent.length > 0;
+        if (stepId === 'collect-content') {
+          // Check if any materials have been added
+          const materials = brandState.materials;
+          const hasAnyMaterial = Object.values(materials).some(category => 
+            Object.values(category).some((material: any) => material?.text || material?.fileUrl)
+          );
+          return hasAnyMaterial;
+        }
         if (stepId === 'generate-guidelines') return true;
         break;
     }
     return false;
   };
 
-  const executeCurrentStep = () => {
+  const executeCurrentStep = async () => {
     if (selectedGoal) {
       const step = selectedGoal.steps[currentStep];
       
@@ -404,6 +428,51 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
         };
         
         generateCampaignMutation.mutate(campaignData);
+        }
+      }
+      
+      // Handle Brand Setup workflow steps
+      if (selectedGoal.id === 'brand-setup') {
+        if (step.id === 'generate-guidelines') {
+          const brandState = wizardState.brandSetup;
+          const token = localStorage.getItem("token");
+          
+          try {
+            const response = await fetch('/api/quickstart/grounding-library', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                newsroomId,
+                newsroomInfo: brandState.newsroomInfo,
+                materials: brandState.materials
+              }),
+            });
+            
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({}));
+              throw new Error(errorData.message || `Request failed: ${response.status}`);
+            }
+            
+            const stylesheet = await response.json();
+            
+            toast({
+              title: "Grounding Library Created!",
+              description: `"${stylesheet.name}" has been created successfully.`,
+            });
+            
+            // Invalidate brand stylesheets cache to refresh the list
+            queryClient.invalidateQueries({ queryKey: ["/api/brand-stylesheets"] });
+          } catch (error: any) {
+            toast({
+              title: "Generation Failed",
+              description: error.message || "Failed to generate grounding library. Please try again.",
+              variant: "destructive",
+            });
+            return; // Don't mark as completed if it failed
+          }
         }
       }
       
@@ -781,27 +850,26 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
         if (stepId === 'collect-content') {
           return (
             <div>
-              <Label htmlFor="existingContent">Reference Materials *</Label>
-              <Textarea
-                id="existingContent"
-                value={brandState.existingContent}
-                onChange={(e) => updateWizardState(stateKey, { existingContent: e.target.value })}
-                placeholder="Paste your best content examples, style guides, messaging frameworks, or upload reference documents..."
-                rows={4}
-                data-testid="textarea-existing-content"
+              <GroundingLibraryForm
+                materials={brandState.materials}
+                onChange={(newMaterials) => updateWizardState(stateKey, { materials: newMaterials })}
               />
             </div>
           );
         }
 
         if (stepId === 'generate-guidelines') {
+          const materialsCount = Object.values(brandState.materials).reduce((count, category) => 
+            count + Object.values(category).filter((material: any) => material?.text || material?.fileUrl).length, 
+            0
+          );
           return (
             <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
               <h4 className="font-medium">Ready to Create Your Grounding Library</h4>
               <div className="text-sm space-y-1">
                 <p><span className="font-medium">Brand Voice & Mission:</span> Defined</p>
-                {brandState.existingContent && (
-                  <p><span className="font-medium">Reference Materials:</span> Provided for analysis</p>
+                {materialsCount > 0 && (
+                  <p><span className="font-medium">Reference Materials:</span> {materialsCount} items added</p>
                 )}
               </div>
               <p className="text-sm text-gray-600 mt-2">Your grounding library will help ensure consistent brand messaging across all campaigns.</p>
