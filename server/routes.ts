@@ -651,7 +651,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         campaignContent,
         campaignType,
         framework,
-        aiModel || 'claude-sonnet-4-20250514'
+        aiModel || 'gpt-4o'
       );
 
       res.json(evaluation);
@@ -681,7 +681,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         originalContent,
         recommendations,
         campaignType,
-        aiModel || 'claude-sonnet-4-20250514'
+        aiModel || 'gpt-4o'
       );
 
       res.json({ rewrittenContent });
