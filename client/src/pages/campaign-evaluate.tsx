@@ -210,7 +210,7 @@ export default function CampaignEvaluate() {
                     placeholder="Paste your email subject line, body text, social post, or web content here..."
                     value={campaignContent}
                     onChange={(e) => setCampaignContent(e.target.value)}
-                    className="min-h-[200px] font-mono text-sm"
+                    className="min-h-[200px] text-sm"
                   />
                 </div>
                 <Button 
