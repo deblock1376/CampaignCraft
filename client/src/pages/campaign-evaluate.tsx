@@ -120,16 +120,24 @@ export default function CampaignEvaluate() {
     }
   };
 
-  const getCategoryColor = (score: number) => {
-    if (score >= 80) return "text-green-600";
-    if (score >= 60) return "text-yellow-600";
+  const getCategoryColor = (score: number, maxScore: number = 100) => {
+    const percentage = (score / maxScore) * 100;
+    if (percentage >= 80) return "text-green-600";
+    if (percentage >= 60) return "text-yellow-600";
     return "text-red-600";
   };
 
   const getOverallColor = (score: number) => {
-    if (score >= 80) return "bg-green-500";
-    if (score >= 60) return "bg-yellow-500";
+    if (score >= 85) return "bg-green-500";
+    if (score >= 70) return "bg-yellow-500";
     return "bg-red-500";
+  };
+
+  const getRatingBadge = (rating?: string) => {
+    if (!rating) return null;
+    if (rating === "Excellent") return "🟢 Excellent";
+    if (rating === "Good") return "🟡 Good";
+    return "🔴 Needs Revision";
   };
 
   return (
@@ -223,11 +231,18 @@ export default function CampaignEvaluate() {
                   <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center">
                       <CheckCircle2 className="h-5 w-5 mr-2 text-green-600" />
-                      Evaluation Results
+                      {framework === "bluelena" ? "BlueLena Best Practices Score" : "Evaluation Results"}
                     </CardTitle>
-                    <Badge className={`${getOverallColor(evaluation.overallScore)} text-white`}>
-                      Score: {evaluation.overallScore}/100
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      {evaluation.rating && (
+                        <Badge variant="outline" className="text-sm">
+                          {getRatingBadge(evaluation.rating)}
+                        </Badge>
+                      )}
+                      <Badge className={`${getOverallColor(evaluation.overallScore)} text-white`}>
+                        {evaluation.overallScore}/100
+                      </Badge>
+                    </div>
                   </div>
                   <CardDescription>
                     {framework === "bluelena" ? "BlueLena Framework Analysis" : "Audience Value Proposition Analysis"}
@@ -249,16 +264,28 @@ export default function CampaignEvaluate() {
                   {/* Category Scores */}
                   {evaluation.categoryScores && (
                     <div className="space-y-4">
-                      <h4 className="font-semibold text-sm">Category Breakdown</h4>
-                      {Object.entries(evaluation.categoryScores).map(([category, score]: [string, any]) => (
-                        <div key={category} className="space-y-2">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="capitalize">{category.replace(/_/g, ' ')}</span>
-                            <span className={getCategoryColor(score)}>{score}/100</span>
+                      <h4 className="font-semibold text-sm">Score Breakdown</h4>
+                      {Object.entries(evaluation.categoryScores).map(([category, score]: [string, any]) => {
+                        const maxScore = framework === "bluelena" ? 20 : 100;
+                        const percentage = (score / maxScore) * 100;
+                        return (
+                          <div key={category} className="space-y-2">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="capitalize">{category.replace(/_/g, ' ')}</span>
+                              <span className={getCategoryColor(score, maxScore)}>{score}/{maxScore}</span>
+                            </div>
+                            <Progress value={percentage} className="h-2" />
                           </div>
-                          <Progress value={score} className="h-2" />
-                        </div>
-                      ))}
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Explanation (BlueLena only) */}
+                  {evaluation.explanation && framework === "bluelena" && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
+                      <h4 className="font-semibold text-sm text-blue-900">Analysis</h4>
+                      <p className="text-sm text-blue-800 whitespace-pre-line">{evaluation.explanation}</p>
                     </div>
                   )}
 
@@ -277,6 +304,13 @@ export default function CampaignEvaluate() {
                           </li>
                         ))}
                       </ul>
+                    </div>
+                  )}
+
+                  {/* Rewrite Offer (BlueLena only) */}
+                  {evaluation.rewriteOffer && framework === "bluelena" && (
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                      <p className="text-sm text-emerald-800">{evaluation.rewriteOffer}</p>
                     </div>
                   )}
 

@@ -534,14 +534,40 @@ Response must be valid JSON with all fields included.
     overallScore: number;
     categoryScores: Record<string, number>;
     recommendations: string[];
+    explanation?: string;
+    rewriteOffer?: string;
+    rating?: string;
   }> {
     const frameworkGuidelines = framework === 'bluelena' 
-      ? `BlueLena Best Practices:
-        - Subject Line: Clear, compelling, under 50 characters, creates urgency
-        - Content Structure: Scannable, logical flow, clear hierarchy
-        - Audience Alignment: Speaks to target audience needs and pain points
-        - Brand Consistency: Aligns with brand voice and messaging
-        - Mobile Optimization: Works on mobile devices, short paragraphs`
+      ? `BlueLena Best Practices Scoring (0-100 total):
+
+⚙️ Evaluation Criteria - Score across five weighted dimensions (each 0–20 points):
+
+1. Audience Value (0–20)
+   - Does the campaign clearly express what the reader gains from this journalism (e.g., knowledge, confidence, connection, action)?
+   - Avoids mission-only framing like "support our work" without reader benefit.
+
+2. Emotional Resonance (0–20)
+   - Does it use human stories, urgency, or relatable emotion (e.g., pride, outrage, hope)?
+   - Is the tone authentic and appropriate for the community and moment?
+
+3. Journalistic Impact (0–20)
+   - Does it connect the ask to specific, tangible reporting outcomes or recent stories?
+   - Does it demonstrate why this newsroom's work matters uniquely?
+
+4. Clarity & Readability (0–20)
+   - Is the message easy to skim and emotionally clear within the first few sentences?
+   - Does it use concise, AP-style language and avoid jargon?
+
+5. Conversion Design (0–20)
+   - Is there a clear, compelling CTA with urgency and emotional intent?
+   - Is the CTA aligned with the newsroom's revenue model (donation, membership, subscription)?
+   - Does the message include preview text and subject line effectiveness cues?
+
+Rating System:
+- 🟢 Excellent (85–100)
+- 🟡 Good (70–84)
+- 🔴 Needs Revision (≤69)`
       : `Audience Value Proposition Framework:
         - Value Clarity: Clear benefit statement for the audience
         - Relevance: Addresses specific audience needs
@@ -549,7 +575,30 @@ Response must be valid JSON with all fields included.
         - Proof: Credible evidence or social proof
         - Action: Clear next step for the audience`;
 
-    const prompt = `You are a marketing evaluation expert. Evaluate this ${campaignType} campaign using the ${framework === 'bluelena' ? 'BlueLena' : 'Audience Value Proposition'} framework.
+    const prompt = framework === 'bluelena' 
+      ? `You are an audience development strategist at BlueLena, evaluating a newsletter campaign designed to convert readers into supporters. Your task is to analyze the provided campaign text and generate a BlueLena Best Practices Score (0–100) based on how well it aligns with proven strategies for engagement and reader revenue.
+
+Campaign Content:
+${campaignContent}
+
+${frameworkGuidelines}
+
+Provide your evaluation in this exact JSON format:
+{
+  "overallScore": <number 0-100>,
+  "rating": "<Excellent|Good|Needs Revision>",
+  "categoryScores": {
+    "audience_value": <number 0-20>,
+    "emotional_resonance": <number 0-20>,
+    "journalistic_impact": <number 0-20>,
+    "clarity_readability": <number 0-20>,
+    "conversion_design": <number 0-20>
+  },
+  "explanation": "<2-3 paragraph narrative analysis explaining why it earned this score, which audience psychology principles or BlueLena benchmarks it meets or misses, and where this campaign could better align with BlueLena's audience-first philosophy>",
+  "rewriteOffer": "Would you like me to rewrite this campaign to improve its BlueLena Best Practices Score? I can increase audience value language, tighten narrative flow, and strengthen the CTA for clarity and urgency.",
+  "recommendations": ["<specific actionable recommendation>", ...]
+}`
+      : `You are a marketing evaluation expert. Evaluate this ${campaignType} campaign using the Audience Value Proposition framework.
 
 Campaign Content:
 ${campaignContent}
@@ -560,10 +609,7 @@ Provide your evaluation in this exact JSON format:
 {
   "overallScore": <number 0-100>,
   "categoryScores": {
-    ${framework === 'bluelena' 
-      ? '"subject_line": <number>, "content_structure": <number>, "audience_alignment": <number>, "brand_consistency": <number>, "mobile_optimization": <number>'
-      : '"value_clarity": <number>, "relevance": <number>, "differentiation": <number>, "proof": <number>, "action": <number>'
-    }
+    "value_clarity": <number>, "relevance": <number>, "differentiation": <number>, "proof": <number>, "action": <number>
   },
   "recommendations": ["<specific actionable recommendation>", ...]
 }`;
@@ -592,7 +638,14 @@ Provide your evaluation in this exact JSON format:
         throw new Error('Invalid evaluation structure');
       }
       
-      return parsed;
+      return {
+        overallScore: parsed.overallScore,
+        categoryScores: parsed.categoryScores,
+        recommendations: parsed.recommendations,
+        explanation: parsed.explanation,
+        rewriteOffer: parsed.rewriteOffer,
+        rating: parsed.rating,
+      };
     } catch (error) {
       console.error('Failed to parse evaluation response:', response);
       console.error('Parse error:', error);
