@@ -263,7 +263,7 @@ export default function CampaignHistory() {
                                       <h4 className="font-medium text-sm text-gray-700 mb-2">Content</h4>
                                       <div className="p-4 bg-gray-50 rounded-lg text-sm max-h-60 overflow-y-auto">
                                         <div className="whitespace-pre-line leading-relaxed">
-                                          {campaign.content?.content?.split('. ').join('.\n\n').replace(/\n{3,}/g, '\n\n')}
+                                          {(campaign.content?.body || campaign.content?.content)?.split('. ').join('.\n\n').replace(/\n{3,}/g, '\n\n')}
                                         </div>
                                       </div>
                                     </div>
