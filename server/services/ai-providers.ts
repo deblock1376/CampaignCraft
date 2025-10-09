@@ -568,12 +568,26 @@ Rating System:
 - 🟢 Excellent (85–100)
 - 🟡 Good (70–84)
 - 🔴 Needs Revision (≤69)`
-      : `Audience Value Proposition Framework:
-        - Value Clarity: Clear benefit statement for the audience
-        - Relevance: Addresses specific audience needs
-        - Differentiation: Shows why this matters uniquely
-        - Proof: Credible evidence or social proof
-        - Action: Clear next step for the audience`;
+      : `Audience Value Proposition Framework (0-12 scoring):
+
+⚙️ Evaluation Criteria - Score each criterion from 0 (not present) to 2 (strongly present):
+
+1. Audience benefit clarity (0-2): Does the message clearly state what the reader/viewer gains? Look for specific outcomes (saving time, gaining knowledge, making decisions easier) rather than abstract slogans.
+
+2. Pain points addressed (0-2): Does it identify a problem the audience has and explain how the offering solves it?
+
+3. Voice and pronouns (0-2): Are "you" and "your" used to speak directly to the audience, or does the copy lean on "we," "us," and "our" in a way that centers the organization?
+
+4. Mission vs. value (0-2): Does the appeal rely on civic duty, "support us," or "save journalism/democracy" messaging? That can be part of a balanced appeal but should not be the only justification.
+
+5. Evidence and credibility (0-2): Does the message provide proof of impact, testimonials, or examples that show the product or service works for people like the audience?
+
+6. Call to action (0-2): Is the action requested (subscribe, donate, join) tied to a clear personal benefit or experience?
+
+Scoring Scale:
+- 0–3: Mostly organization-centric — appeals primarily to mission/financial need with little benefit to the audience
+- 4–7: Mixed — some audience benefits mentioned but still leans on civic duty or internal needs
+- 8–12: Strongly audience-centric — clearly communicates personal benefits, addresses pain points, and uses direct audience language`;
 
     const prompt = framework === 'bluelena' 
       ? `You are an audience development strategist at BlueLena, evaluating a newsletter campaign designed to convert readers into supporters. Your task is to analyze the provided campaign text and generate a BlueLena Best Practices Score (0–100) based on how well it aligns with proven strategies for engagement and reader revenue.
@@ -598,20 +612,37 @@ Provide your evaluation in this exact JSON format:
   "rewriteOffer": "Would you like me to rewrite this campaign to improve its BlueLena Best Practices Score? I can increase audience value language, tighten narrative flow, and strengthen the CTA for clarity and urgency.",
   "recommendations": ["<specific actionable recommendation>", ...]
 }`
-      : `You are a marketing evaluation expert. Evaluate this ${campaignType} campaign using the Audience Value Proposition framework.
+      : `You are a tool for publishers and marketers. Your role is to review marketing or membership appeal copy and assess whether it focuses on the needs and benefits of the audience, or primarily appeals to the organization's mission or financial needs.
 
 Campaign Content:
 ${campaignContent}
 
 ${frameworkGuidelines}
 
+Your task:
+1. Begin with a brief assessment summarizing whether the copy is audience-centric, mission-centric, or a mix of both.
+2. Score each of the 6 criteria (0-2 points each, max 12 total).
+3. Identify which criteria are met or missing, with examples from the submitted copy.
+4. Offer practical suggestions for refocusing the copy on the audience.
+5. Where appropriate, provide a short rewrite of one or two sentences to illustrate a more audience-centric approach.
+6. Maintain a constructive, professional tone. The goal is to help publishers improve, not to criticize.
+
 Provide your evaluation in this exact JSON format:
 {
-  "overallScore": <number 0-100>,
+  "overallScore": <number 0-100, calculated as (rawScore/12)*100>,
+  "rawScore": <number 0-12, sum of all category scores>,
+  "rating": "<Strongly Audience-Centric|Mixed|Organization-Centric>",
   "categoryScores": {
-    "value_clarity": <number>, "relevance": <number>, "differentiation": <number>, "proof": <number>, "action": <number>
+    "audience_benefit_clarity": <number 0-2>,
+    "pain_points_addressed": <number 0-2>,
+    "voice_and_pronouns": <number 0-2>,
+    "mission_vs_value": <number 0-2>,
+    "evidence_and_credibility": <number 0-2>,
+    "call_to_action": <number 0-2>
   },
-  "recommendations": ["<specific actionable recommendation>", ...]
+  "explanation": "<Brief assessment of whether the copy is audience-centric, mission-centric, or mixed. Identify which criteria are met or missing with specific examples from the copy. Explain the score in context.>",
+  "rewriteOffer": "Would you like me to rewrite this to make it more audience-centric? I can refocus the language on reader benefits, address pain points directly, and strengthen the personal value proposition.",
+  "recommendations": ["<specific actionable recommendation with example rewrite if appropriate>", ...]
 }`;
 
     const response = await this.generateContent(prompt, model);

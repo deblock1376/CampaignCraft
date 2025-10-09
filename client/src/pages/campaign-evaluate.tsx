@@ -135,9 +135,20 @@ export default function CampaignEvaluate() {
 
   const getRatingBadge = (rating?: string) => {
     if (!rating) return null;
-    if (rating === "Excellent") return "🟢 Excellent";
-    if (rating === "Good") return "🟡 Good";
-    return "🔴 Needs Revision";
+    
+    const normalizedRating = rating.trim().toLowerCase();
+    
+    // BlueLena ratings
+    if (normalizedRating === "excellent") return "🟢 Excellent";
+    if (normalizedRating === "good") return "🟡 Good";
+    if (normalizedRating === "needs revision") return "🔴 Needs Revision";
+    
+    // Audience Value Proposition ratings
+    if (normalizedRating.includes("strongly audience")) return "🟢 Strongly Audience-Centric";
+    if (normalizedRating === "mixed") return "🟡 Mixed";
+    if (normalizedRating.includes("organization")) return "🔴 Organization-Centric";
+    
+    return rating; // Fallback to show the rating as-is
   };
 
   return (
@@ -266,7 +277,7 @@ export default function CampaignEvaluate() {
                     <div className="space-y-4">
                       <h4 className="font-semibold text-sm">Score Breakdown</h4>
                       {Object.entries(evaluation.categoryScores).map(([category, score]: [string, any]) => {
-                        const maxScore = framework === "bluelena" ? 20 : 100;
+                        const maxScore = framework === "bluelena" ? 20 : 2;
                         const percentage = (score / maxScore) * 100;
                         return (
                           <div key={category} className="space-y-2">
@@ -281,8 +292,8 @@ export default function CampaignEvaluate() {
                     </div>
                   )}
 
-                  {/* Explanation (BlueLena only) */}
-                  {evaluation.explanation && framework === "bluelena" && (
+                  {/* Explanation */}
+                  {evaluation.explanation && (
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
                       <h4 className="font-semibold text-sm text-blue-900">Analysis</h4>
                       <p className="text-sm text-blue-800 whitespace-pre-line">{evaluation.explanation}</p>
@@ -307,8 +318,8 @@ export default function CampaignEvaluate() {
                     </div>
                   )}
 
-                  {/* Rewrite Offer (BlueLena only) */}
-                  {evaluation.rewriteOffer && framework === "bluelena" && (
+                  {/* Rewrite Offer */}
+                  {evaluation.rewriteOffer && (
                     <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
                       <p className="text-sm text-emerald-800">{evaluation.rewriteOffer}</p>
                     </div>

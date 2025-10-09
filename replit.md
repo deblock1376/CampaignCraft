@@ -34,6 +34,18 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### October 9, 2025: Enhanced Campaign Evaluation Framework
+- **Audience Value Proposition Framework**: Updated with comprehensive scoring criteria (0-12 scale):
+  - Audience benefit clarity (0-2): Specific outcomes vs. abstract slogans
+  - Pain points addressed (0-2): Problem identification and solutions
+  - Voice and pronouns (0-2): Direct audience language ("you/your") vs. organization-centric
+  - Mission vs. value (0-2): Balance of civic duty and personal benefits
+  - Evidence and credibility (0-2): Proof of impact and testimonials
+  - Call to action (0-2): Personal benefit tied to action
+- **Rating System**: Organization-centric (0-3), Mixed (4-7), Strongly Audience-centric (8-12)
+- **Enhanced UI Display**: Shows rating badges, analysis panels, and rewrite offers for both frameworks
+- **Default AI Model**: Changed evaluation and rewrite defaults from Claude to GPT-4o
+
 ### October 8, 2025: Enhanced BlueLena Prompt Structure with Prompt Builder Integration
 - **New Prompt Framework**: Updated campaign generation to use comprehensive BlueLena copywriting framework
 - **Preview Text**: Added 90-character preview text field to all generated campaigns (appears after subject in email clients)

@@ -508,7 +508,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid draft selection" });
       }
 
-      const firstDraft = drafts[0];
+      const firstDraft = drafts[0]!; // Safe because we checked drafts.length > 0
 
       // Get newsroom info for context
       const newsroom = await storage.getNewsroom(newsroomId);
@@ -710,7 +710,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = schema.parse(req.body);
 
       // Parse the content if it's a string
-      let parsedContent = validatedData.content;
+      let parsedContent: any = validatedData.content;
       try {
         parsedContent = JSON.parse(validatedData.content);
       } catch {
