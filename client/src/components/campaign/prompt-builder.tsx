@@ -3,9 +3,11 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { FileText, Send } from "lucide-react";
+import { FileText, Send, Plus } from "lucide-react";
+import { useLocation } from "wouter";
 
 interface PromptBuilderProps {
   groundingGuides: any[];
@@ -52,6 +54,8 @@ export function PromptBuilder({
   onCampaignSelect,
   onSendToChat,
 }: PromptBuilderProps) {
+  const [, setLocation] = useLocation();
+
   const handleSegmentToggle = (segmentId: string) => {
     const newSegments = segments.includes(segmentId)
       ? segments.filter(s => s !== segmentId)
@@ -75,10 +79,10 @@ export function PromptBuilder({
     const objectiveLabel = OBJECTIVE_OPTIONS.find(opt => opt.value === objective)?.label || objective;
     message += `🎯 Campaign Objective: ${objectiveLabel}\n`;
     
-    // Add grounding guide
+    // Add grounding library
     const selectedGuide = groundingGuides.find(g => g.id === selectedGuideId);
     if (selectedGuide) {
-      message += `📋 Grounding Guide: ${selectedGuide.name}\n`;
+      message += `📋 Grounding Library: ${selectedGuide.name}\n`;
     }
     
     // Add segments
@@ -131,15 +135,15 @@ export function PromptBuilder({
           </Select>
         </div>
 
-        {/* Grounding Guide Selector */}
+        {/* Grounding Library Selector */}
         <div className="space-y-2">
-          <Label>Grounding Guide</Label>
+          <Label>Grounding Library</Label>
           <Select 
             value={selectedGuideId?.toString()} 
             onValueChange={(value) => onGuideChange(Number(value))}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select a grounding guide" />
+              <SelectValue placeholder="Select a grounding library" />
             </SelectTrigger>
             <SelectContent>
               {groundingGuides.map((guide) => (
@@ -147,6 +151,17 @@ export function PromptBuilder({
                   {guide.name}
                 </SelectItem>
               ))}
+              <Separator className="my-2" />
+              <div
+                className="relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground transition-colors text-primary font-medium"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setLocation('/assistant');
+                }}
+              >
+                <Plus className="h-4 w-4 mr-2 absolute left-2" />
+                Create a new grounding library
+              </div>
             </SelectContent>
           </Select>
         </div>
