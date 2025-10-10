@@ -23,7 +23,8 @@ import {
   Target,
   MessageSquare,
   Settings,
-  Bot
+  Bot,
+  Sparkles
 } from "lucide-react";
 import GroundingLibraryForm, { GroundingLibraryMaterials } from "@/components/grounding-library/grounding-library-form";
 
@@ -877,37 +878,40 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
 
     return (
       <div className="space-y-6">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Marketing Assistant</h2>
-          <p className="text-gray-600">Let's walk through creating your marketing content step by step. What would you like to create today?</p>
-        </div>
-
-        {/* Campaign Assistant - Full Width */}
+        {/* Campaign Assistant - Featured Card with Gradient */}
         {campaignAssistant && (() => {
           const Icon = campaignAssistant.icon;
           return (
-            <Card key={campaignAssistant.id} className="cursor-pointer hover:shadow-md transition-shadow group">
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    campaignAssistant.category === 'campaign' ? 'bg-blue-100 text-blue-600' :
-                    campaignAssistant.category === 'content' ? 'bg-green-100 text-green-600' :
-                    'bg-orange-100 text-orange-600'
-                  }`}>
-                    <Icon className="w-5 h-5" />
+            <Card key={campaignAssistant.id} className="relative overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 group border-2 border-primary/20">
+              {/* Gradient Background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-blue-500/5 to-purple-500/10" />
+              
+              {/* Recommended Badge */}
+              <div className="absolute top-4 right-4 z-10">
+                <Badge className="bg-gradient-to-r from-primary to-blue-600 text-white border-0 shadow-md">
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  Recommended
+                </Badge>
+              </div>
+
+              <CardHeader className="relative pb-3">
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                    <Icon className="w-7 h-7 text-white" />
                   </div>
                   <div className="flex-1">
-                    <CardTitle className="text-lg group-hover:text-primary transition-colors">{campaignAssistant.title}</CardTitle>
-                    <Badge variant="outline" className="text-xs mt-1">
+                    <CardTitle className="text-xl font-bold group-hover:text-primary transition-colors">{campaignAssistant.title}</CardTitle>
+                    <Badge variant="outline" className="text-xs mt-1.5 bg-white/50">
                       {campaignAssistant.estimatedTime}
                     </Badge>
                   </div>
                 </div>
-                <p className="text-sm text-gray-600">{campaignAssistant.description}</p>
+                <p className="text-sm text-gray-700 leading-relaxed">{campaignAssistant.description}</p>
               </CardHeader>
-              <CardContent className="pt-0">
+              <CardContent className="relative pt-0">
                 <Button 
-                  className="w-full" 
+                  className="w-full bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-white shadow-md group-hover:shadow-lg transition-all" 
+                  size="lg"
                   onClick={() => {
                     if (campaignAssistant.directLink) {
                       setLocation(campaignAssistant.directLink);
@@ -918,7 +922,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
                   data-testid={`goal-${campaignAssistant.id}`}
                 >
                   {campaignAssistant.directLink ? 'Open Assistant' : 'Start Guide'}
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </CardContent>
             </Card>
