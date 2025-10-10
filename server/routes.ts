@@ -793,7 +793,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const schema = z.object({
         newsroomId: z.number(),
-        title: z.string().min(1),
         text: z.string().optional(),
         url: z.string().url().optional(),
         aiModel: z.string().optional(),
@@ -801,15 +800,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Either text or url must be provided",
       });
 
-      const { newsroomId, title, text, url, aiModel } = schema.parse(req.body);
+      const { newsroomId, text, url, aiModel } = schema.parse(req.body);
 
       let contentToSummarize = text || '';
+      let title = '';
 
       // If URL is provided, fetch content
       if (url && !text) {
         try {
           const response = await fetch(url);
           const html = await response.text();
+          
+          // Extract title from HTML
+          const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+          title = titleMatch ? titleMatch[1].trim() : url.split('/').pop()?.substring(0, 100) || 'Story Summary';
           
           // Simple HTML to text extraction (basic approach)
           contentToSummarize = html
@@ -824,6 +828,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } catch (fetchError) {
           return res.status(400).json({ message: "Failed to fetch URL content", error: String(fetchError) });
         }
+      } else if (text) {
+        // Generate title from first 50 characters of text
+        title = text.trim().substring(0, 50).trim() + (text.length > 50 ? '...' : '');
       }
 
       if (!contentToSummarize) {

@@ -80,7 +80,7 @@ export default function CampaignAssistantTest() {
 
   // Story summary creation mutation
   const summarizeMutation = useMutation({
-    mutationFn: async (data: { title: string; text?: string; url?: string }) => {
+    mutationFn: async (data: { text?: string; url?: string }) => {
       const response = await fetch("/api/story-summaries", {
         method: "POST",
         headers: {
@@ -89,7 +89,6 @@ export default function CampaignAssistantTest() {
         },
         body: JSON.stringify({
           newsroomId,
-          title: data.title,
           text: data.text,
           url: data.url,
           aiModel: "gpt-4o",

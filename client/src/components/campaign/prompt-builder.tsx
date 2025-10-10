@@ -28,7 +28,7 @@ interface PromptBuilderProps {
   storySummaries?: any[];
   selectedSummaries?: number[];
   onSummarySelect?: (summaryIds: number[]) => void;
-  onSummarize?: (data: { title: string; text?: string; url?: string }) => Promise<void>;
+  onSummarize?: (data: { text?: string; url?: string }) => Promise<void>;
   onSendToChat?: (message: string) => void;
 }
 
@@ -95,17 +95,15 @@ export function PromptBuilder({
   };
 
   const handleSummarizeStory = async () => {
-    if (!onSummarize || !storyTitle.trim()) return;
+    if (!onSummarize) return;
     
     setIsSummarizing(true);
     try {
       await onSummarize({
-        title: storyTitle,
         text: storyInputType === "text" ? storyText : undefined,
         url: storyInputType === "url" ? storyUrl : undefined,
       });
       // Clear form after successful summarization
-      setStoryTitle("");
       setStoryText("");
       setStoryUrl("");
     } finally {
@@ -300,26 +298,16 @@ export function PromptBuilder({
               <TabsTrigger value="url">URL</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="text" className="space-y-3 mt-3">
-              <Input
-                placeholder="Story title..."
-                value={storyTitle}
-                onChange={(e) => setStoryTitle(e.target.value)}
-              />
+            <TabsContent value="text" className="mt-3">
               <Textarea
                 placeholder="Paste full story text here..."
                 value={storyText}
                 onChange={(e) => setStoryText(e.target.value)}
-                className="min-h-[100px] resize-none"
+                className="min-h-[120px] resize-none"
               />
             </TabsContent>
             
-            <TabsContent value="url" className="space-y-3 mt-3">
-              <Input
-                placeholder="Story title..."
-                value={storyTitle}
-                onChange={(e) => setStoryTitle(e.target.value)}
-              />
+            <TabsContent value="url" className="mt-3">
               <Input
                 type="url"
                 placeholder="https://example.com/article"
@@ -331,7 +319,7 @@ export function PromptBuilder({
           
           <Button
             onClick={handleSummarizeStory}
-            disabled={!storyTitle.trim() || (!storyText.trim() && !storyUrl.trim()) || isSummarizing}
+            disabled={(!storyText.trim() && !storyUrl.trim()) || isSummarizing}
             className="w-full"
             variant="outline"
           >
