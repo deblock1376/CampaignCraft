@@ -159,7 +159,7 @@ export default function BrandStylesheets() {
           title="Grounding Library" 
           subtitle="Manage your newsroom's brand voice and messaging guidelines"
           action={
-            <Button onClick={() => setLocation("/marketing-assistant")} className="flex items-center justify-center">
+            <Button onClick={() => setLocation("/assistant")} className="flex items-center justify-center">
               <i className="fas fa-plus mr-2"></i>
               Build New Library
             </Button>
@@ -485,7 +485,7 @@ export default function BrandStylesheets() {
                 <i className="fas fa-palette text-4xl text-slate-300 mb-4"></i>
                 <h3 className="text-lg font-medium text-slate-900 mb-2">No Grounding Libraries Yet</h3>
                 <p className="text-sm text-slate-600 mb-4">Build your first grounding library using the Marketing Assistant's guided workflow</p>
-                <Button onClick={() => setLocation("/marketing-assistant")}>
+                <Button onClick={() => setLocation("/assistant")}>
                   <i className="fas fa-wand-magic-sparkles mr-2"></i>
                   Go to Marketing Assistant
                 </Button>
