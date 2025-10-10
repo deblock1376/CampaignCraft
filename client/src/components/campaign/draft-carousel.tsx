@@ -143,16 +143,37 @@ export default function DraftCarousel({ drafts, onMerge }: DraftCarouselProps) {
               Select Variation {currentDraft.draftNumber}
             </label>
           </div>
-          <Badge variant={selectedDrafts.includes(currentDraft.id) ? "default" : "outline"}>
-            {selectedDrafts.includes(currentDraft.id) ? (
-              <>
-                <Check className="h-3 w-3 mr-1" />
-                Selected
-              </>
-            ) : (
-              "Not Selected"
-            )}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSaveDraft(currentDraft.id)}
+              disabled={saveDraftMutation.isPending || savedDrafts.includes(currentDraft.id)}
+              data-testid={`button-save-draft-${currentIndex + 1}`}
+            >
+              {savedDrafts.includes(currentDraft.id) ? (
+                <>
+                  <Check className="h-4 w-4 mr-1" />
+                  Saved
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-1" />
+                  Save to Campaigns
+                </>
+              )}
+            </Button>
+            <Badge variant={selectedDrafts.includes(currentDraft.id) ? "default" : "outline"}>
+              {selectedDrafts.includes(currentDraft.id) ? (
+                <>
+                  <Check className="h-3 w-3 mr-1" />
+                  Selected
+                </>
+              ) : (
+                "Not Selected"
+              )}
+            </Badge>
+          </div>
         </div>
 
         {/* Draft Content */}
