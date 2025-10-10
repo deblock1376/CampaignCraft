@@ -429,6 +429,11 @@ Brand Voice & Tone:
 - Voice: ${request.brandStylesheet.voice}
 - Key Messages: ${request.brandStylesheet.keyMessages.join(', ')}
 - Additional Guidelines: ${request.brandStylesheet.guidelines}`;
+
+    // Add materials context if available
+    const materialsContext = request.brandStylesheet.materials 
+      ? this.buildMaterialsContext(request.brandStylesheet.materials)
+      : '';
     
     return `
 👤 Your Role
@@ -441,6 +446,7 @@ Create a standalone audience engagement and reader revenue email campaign that u
 - Emphasize the role of readers in sustaining independent reporting
 
 ${contextSection}
+${materialsContext}
 
 🧠 Tone & Messaging
 - Must reflect ${request.newsroomName}'s identity: the message should feel distinct, authentic, and mission-aligned
