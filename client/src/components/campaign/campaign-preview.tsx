@@ -7,8 +7,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Copy } from "lucide-react";
+import { Copy, Plus } from "lucide-react";
+import { useLocation } from "wouter";
 
 interface CampaignPreviewProps {
   campaign: any;
@@ -42,6 +44,7 @@ export default function CampaignPreview({
   onExport
 }: CampaignPreviewProps) {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   const copyToClipboard = async (text: string, type: string) => {
     try {
@@ -122,6 +125,17 @@ export default function CampaignPreview({
                                     {stylesheet.name}
                                   </SelectItem>
                                 )) : null}
+                                <Separator className="my-2" />
+                                <div
+                                  className="relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground transition-colors text-primary font-medium"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setLocation('/assistant');
+                                  }}
+                                >
+                                  <Plus className="h-4 w-4 mr-2 absolute left-2" />
+                                  Create a new grounding library
+                                </div>
                               </SelectContent>
                             </Select>
                             <Button type="button" variant="outline" size="sm">
