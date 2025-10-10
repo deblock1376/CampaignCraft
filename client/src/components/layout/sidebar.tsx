@@ -31,15 +31,13 @@ export default function Sidebar() {
   return (
     <aside className="w-64 bg-white border-r border-slate-200 flex flex-col">
       <div className="p-6 border-b border-slate-200">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <i className="fas fa-magic text-white text-sm"></i>
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold text-slate-900">CampaignCraft</h1>
-            <p className="text-xs text-slate-500">AI Marketing Assistant</p>
-          </div>
-        </div>
+        <Link href="/">
+          <img 
+            src="/attached_assets/BlueLena_Horizontal (1)_1760125433183.png" 
+            alt="BlueLena" 
+            className="h-8 w-auto cursor-pointer"
+          />
+        </Link>
       </div>
       
       <nav className="flex-1 p-4 space-y-2">

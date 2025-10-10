@@ -160,7 +160,8 @@ export function PromptBuilder({
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="border-b">
-        <CardTitle className="text-lg">Prompt Builder</CardTitle>
+        <CardTitle className="text-lg">Campaign Builder</CardTitle>
+        <p className="text-sm text-muted-foreground mt-1">Set your goals and audience</p>
       </CardHeader>
       <CardContent className="flex-1 overflow-auto p-6 space-y-6">
         {/* Campaign Objective */}

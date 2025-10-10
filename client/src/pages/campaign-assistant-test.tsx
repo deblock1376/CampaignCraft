@@ -19,7 +19,7 @@ export default function CampaignAssistantTest() {
     context: "",
   });
 
-  // Prompt Builder state
+  // Campaign Builder state
   const [selectedObjective, setSelectedObjective] = useState("donation");
   const [selectedGuideId, setSelectedGuideId] = useState<number | undefined>();
   const [selectedSegments, setSelectedSegments] = useState<string[]>([]);
@@ -121,7 +121,7 @@ export default function CampaignAssistantTest() {
   // Chat mutation
   const chatMutation = useMutation({
     mutationFn: async (message: string) => {
-      // Build enriched context from Prompt Builder
+      // Build enriched context from Campaign Builder
       const enrichedContext = {
         segments: selectedSegments.length > 0 ? selectedSegments : undefined,
         notes: campaignNotes.trim() || undefined,

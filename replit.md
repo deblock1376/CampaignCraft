@@ -12,8 +12,10 @@ Preferred communication style: Simple, everyday language.
 - **Framework**: React 18 with TypeScript.
 - **Components**: Shadcn/UI with Radix UI primitives.
 - **Styling**: Tailwind CSS for utility-first styling and theme management.
+- **Branding**: BlueLena logo displayed in sidebar navigation across all authenticated pages.
 - **Design Philosophy**: Clean, intuitive interface featuring interactive forms, a multi-draft carousel, and clear visual indicators.
-- **Key UI Features**: Dashboard, Campaign Generator, Template Library, Grounding Library, Campaign History, Guided Marketing Assistant, Segment Management, and a unified history view.
+- **Key UI Features**: Dashboard, Campaign Generator (with Campaign Builder for goals/audience setup), Template Library, Grounding Library, Campaign History, Guided Marketing Assistant, Segment Management, and a unified history view.
+- **Campaign Builder**: Right-side panel in Campaign Assistant with subtitle "Set your goals and audience" - allows users to configure objectives, segments, grounding guides, notes, and reference materials.
 
 ### Technical Implementations
 - **Frontend**: React with Wouter for routing, TanStack React Query for server state management, and Vite for building.
