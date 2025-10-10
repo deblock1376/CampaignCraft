@@ -1,12 +1,9 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { ChevronDown } from "lucide-react";
 
 export default function Sidebar() {
   const [location] = useLocation();
   
-  // Auto-expand Grounding Library dropdown when on related pages
-  const isGroundingLibraryActive = location === "/stylesheets" || location === "/assistant";
   
   // Check if current user is admin
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
@@ -17,7 +14,7 @@ export default function Sidebar() {
     { href: "/", icon: "fas fa-home", label: "Dashboard" },
     { href: "/campaigns/assistant-test", icon: "fas fa-comments", label: "Campaign Builder" },
     { href: "/campaigns/history", icon: "fas fa-history", label: "Campaign History" },
-    { href: "/stylesheets", icon: "fas fa-palette", label: "Grounding Library", hasDropdown: true },
+    { href: "/stylesheets", icon: "fas fa-palette", label: "Grounding Library" },
     { href: "/segments", icon: "fas fa-users", label: "Audience Segments" },
     { href: "/story-summaries", icon: "fas fa-newspaper", label: "Story Summaries" },
     { href: "/settings", icon: "fas fa-cog", label: "Settings" },
@@ -38,70 +35,19 @@ export default function Sidebar() {
       
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {/* Main Navigation Items */}
-        {navItems.map((item) => {
-          // Handle Grounding Library with dropdown separately
-          if (item.hasDropdown) {
-            return (
-              <div key={item.href} className="space-y-1">
-                <Link href={item.href}>
-                  <div className={cn(
-                    "flex items-center justify-between px-3 py-2 rounded-lg font-medium transition-colors cursor-pointer",
-                    isGroundingLibraryActive
-                      ? "bg-primary text-white" 
-                      : "text-slate-600 hover:bg-slate-100"
-                  )}>
-                    <div className="flex items-center space-x-3">
-                      <i className={`${item.icon} w-4`}></i>
-                      <span>{item.label}</span>
-                    </div>
-                    {isGroundingLibraryActive && (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
-                  </div>
-                </Link>
-                
-                {isGroundingLibraryActive && (
-                  <div className="ml-7 space-y-1">
-                    <Link href="/stylesheets">
-                      <div className={cn(
-                        "px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer",
-                        location === "/stylesheets"
-                          ? "bg-primary/10 text-primary font-medium"
-                          : "text-slate-600 hover:bg-slate-100"
-                      )}>
-                        View Libraries
-                      </div>
-                    </Link>
-                    <Link href="/assistant">
-                      <div className={cn(
-                        "px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer",
-                        location === "/assistant"
-                          ? "bg-primary/10 text-primary font-medium"
-                          : "text-slate-600 hover:bg-slate-100"
-                      )}>
-                        Create a Grounding Library
-                      </div>
-                    </Link>
-                  </div>
-                )}
-              </div>
-            );
-          }
-
-          return (
-            <Link key={item.href} href={item.href}>
-              <div className={cn(
-                "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors cursor-pointer",
-                location === item.href 
-                  ? "bg-primary text-white" 
-                  : "text-slate-600 hover:bg-slate-100"
-              )}>
-                <i className={`${item.icon} w-4`}></i>
-                <span>{item.label}</span>
-              </div>
-            </Link>
-          );
-        })}
+        {navItems.map((item) => (
+          <Link key={item.href} href={item.href}>
+            <div className={cn(
+              "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors cursor-pointer",
+              location === item.href 
+                ? "bg-primary text-white" 
+                : "text-slate-600 hover:bg-slate-100"
+            )}>
+              <i className={`${item.icon} w-4`}></i>
+              <span>{item.label}</span>
+            </div>
+          </Link>
+        ))}
 
         {/* Admin Control (if admin) */}
         {isAdmin && (

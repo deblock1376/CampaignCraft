@@ -20,7 +20,7 @@ Preferred communication style: Simple, everyday language.
   1. Dashboard (top)
   2. Campaign Builder (conversational AI campaign creation)
   3. Campaign History
-  4. Grounding Library (with dropdown for View Libraries and Create)
+  4. Grounding Library
   5. Audience Segments
   6. Story Summaries
   7. Settings
