@@ -34,6 +34,27 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### October 10, 2025: Materials-Enhanced Campaign Generation
+- **Full Materials Integration**: Campaign generation now uses ALL 11 material types from grounding libraries
+- **Enhanced AI Prompts**: AI receives complete context including:
+  - Brand Voice & Mission (detailed, not just summary)
+  - Past Successful Campaigns (to match style and tone)
+  - Impact Stories (for content references)
+  - Reader Testimonials (for social proof)
+  - Audience Segments (for targeted messaging)
+  - Survey Responses (for audience insights)
+  - Performance Metrics (to optimize CTAs and subject lines)
+  - All other materials from the 4 categories
+- **Conversational Context**: Campaign Assistant now shows materials preview when guide is selected
+- **Backend Updates**: Updated all campaign generation endpoints:
+  - `/api/campaigns/generate` - Single campaign generation
+  - `/api/campaigns/generate-drafts` - Multi-draft generation
+  - `/api/campaigns/chat` - Conversational assistant
+  - `/api/quickstart/rapid-response` - Breaking news campaigns
+  - `/api/quickstart/rewrite-segments` - Segment-specific campaigns
+- **Data Flow**: Materials pass through complete pipeline: database → API → AI prompt → generated campaign
+- **Quality Improvement**: AI can now reference actual past campaigns, testimonials, and data for more authentic, grounded content
+
 ### October 10, 2025: Streamlined Grounding Library Creation
 - **Single Creation Path**: Marketing Assistant is now the only way to create new grounding libraries
 - **Removed Duplicate Form**: Eliminated the simple create dialog from Grounding Library page to avoid confusion
