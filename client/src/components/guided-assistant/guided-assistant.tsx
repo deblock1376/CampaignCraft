@@ -285,15 +285,9 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
       estimatedTime: '5-7 minutes',
       steps: [
         {
-          id: 'gather-info',
-          title: 'Define Brand Voice & Mission',
-          description: 'Provide details about your newsroom, mission, values, and target audience',
-          completed: false
-        },
-        {
           id: 'collect-content',
           title: 'Add Reference Materials',
-          description: 'Upload or paste examples of your best content, style guides, and messaging',
+          description: 'Add your brand voice, mission, style guides, and other reference materials',
           completed: false
         },
         {
@@ -388,7 +382,6 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
         break;
       case 'brand-setup':
         const brandState = state as typeof wizardState.brandSetup;
-        if (stepId === 'gather-info') return brandState.newsroomInfo.length > 0;
         if (stepId === 'collect-content') {
           // Check if any materials have been added
           const materials = brandState.materials;
@@ -446,7 +439,6 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
               },
               body: JSON.stringify({
                 newsroomId,
-                newsroomInfo: brandState.newsroomInfo,
                 materials: brandState.materials
               }),
             });
@@ -831,22 +823,6 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
       case 'brand-setup':
         const brandState = state as typeof wizardState.brandSetup;
         
-        if (stepId === 'gather-info') {
-          return (
-            <div>
-              <Label htmlFor="newsroomInfo">Brand Voice & Mission *</Label>
-              <Textarea
-                id="newsroomInfo"
-                value={brandState.newsroomInfo}
-                onChange={(e) => updateWizardState(stateKey, { newsroomInfo: e.target.value })}
-                placeholder="Describe your newsroom's mission, values, target audience, and brand voice..."
-                rows={4}
-                data-testid="textarea-newsroom-info"
-              />
-            </div>
-          );
-        }
-
         if (stepId === 'collect-content') {
           return (
             <div>
@@ -867,7 +843,6 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
             <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
               <h4 className="font-medium">Ready to Create Your Grounding Library</h4>
               <div className="text-sm space-y-1">
-                <p><span className="font-medium">Brand Voice & Mission:</span> Defined</p>
                 {materialsCount > 0 && (
                   <p><span className="font-medium">Reference Materials:</span> {materialsCount} items added</p>
                 )}

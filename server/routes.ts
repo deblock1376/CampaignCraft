@@ -1115,7 +1115,7 @@ Please respond with just the summary text, no additional formatting or explanati
 
   app.post("/api/quickstart/grounding-library", authenticateToken, async (req: any, res) => {
     try {
-      const { newsroomId, newsroomInfo, materials } = req.body;
+      const { newsroomId, materials } = req.body;
       
       if (!newsroomId) {
         return res.status(400).json({ message: "Newsroom ID is required" });
@@ -1172,14 +1172,12 @@ Please respond with just the summary text, no additional formatting or explanati
           : 'No reference materials provided';
       }
 
-      const prompt = `Create a comprehensive brand grounding guide for ${newsroom.name}. 
-      
-      Newsroom Information: ${newsroomInfo || newsroom.description || 'Local news organization'}
+      const prompt = `Create a comprehensive brand grounding guide for ${newsroom.name} based on the reference materials provided below. 
       
       Reference Materials:
-      ${materialsContext || 'No existing content provided'}
+      ${materialsContext || 'No reference materials provided. Use newsroom name and general best practices for news organizations.'}
       
-      Generate:
+      Analyze these materials and generate:
       1. Brand tone (2-3 descriptive words)
       2. Brand voice (1-2 sentences describing personality)
       3. 3-5 key messages

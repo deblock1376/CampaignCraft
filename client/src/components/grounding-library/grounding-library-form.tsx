@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 
 export interface GroundingLibraryMaterials {
   brandFoundation: {
+    brandVoice?: { text?: string; fileUrl?: string };
     strategyPlaybook?: { text?: string; fileUrl?: string };
     styleGuide?: { text?: string; fileUrl?: string };
     aboutUs?: { text?: string; fileUrl?: string };
@@ -168,11 +169,17 @@ export default function GroundingLibraryForm({ materials, onChange, onFileUpload
                 <span className="text-base font-semibold">📋 Brand Foundation</span>
               </div>
               <Badge variant="secondary" className="text-xs">
-                {getCategoryProgress('brandFoundation', 3)} of 3 added
+                {getCategoryProgress('brandFoundation', 4)} of 4 added
               </Badge>
             </div>
           </AccordionTrigger>
           <AccordionContent className="space-y-4 pt-4">
+            <MaterialInput
+              category="brandFoundation"
+              field="brandVoice"
+              label="Brand Voice & Mission"
+              placeholder="Describe your newsroom's mission, values, target audience, and brand voice. Include details about what makes your organization unique and how you communicate with your community..."
+            />
             <MaterialInput
               category="brandFoundation"
               field="strategyPlaybook"
@@ -182,8 +189,8 @@ export default function GroundingLibraryForm({ materials, onChange, onFileUpload
             <MaterialInput
               category="brandFoundation"
               field="styleGuide"
-              label="Brand/Style Guide or Mission Statement"
-              placeholder="Paste your brand guidelines, style guide, or mission statement..."
+              label="Brand/Style Guide"
+              placeholder="Paste your brand guidelines, style guide, or writing standards..."
             />
             <MaterialInput
               category="brandFoundation"
