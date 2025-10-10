@@ -92,6 +92,7 @@ export default function CampaignAssistantTest() {
             id: g.id,
             name: g.name,
           })),
+          selectedGuideId: selectedGuideId,
           promptContext: enrichedContext,
         }),
       });

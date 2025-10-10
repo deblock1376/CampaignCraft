@@ -760,6 +760,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: z.number(),
           name: z.string(),
         })).optional(),
+        selectedGuideId: z.number().optional(),
         promptContext: z.object({
           segments: z.array(z.string()).optional(),
           notes: z.string().optional(),
@@ -771,11 +772,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }).optional(),
       });
 
-      const { message, conversationHistory = [], newsroomId, groundingGuides = [], promptContext } = schema.parse(req.body);
+      const { message, conversationHistory = [], newsroomId, groundingGuides = [], selectedGuideId, promptContext } = schema.parse(req.body);
 
       const newsroom = await storage.getNewsroom(newsroomId);
       if (!newsroom) {
         return res.status(404).json({ message: "Newsroom not found" });
+      }
+
+      // Fetch selected guide with materials if provided
+      let selectedGuide = null;
+      let materialsPreview = '';
+      
+      if (selectedGuideId) {
+        selectedGuide = await storage.getBrandStylesheet(selectedGuideId);
+        if (selectedGuide?.materials) {
+          const materials = selectedGuide.materials as any;
+          const availableMaterials: string[] = [];
+          
+          // Build materials preview
+          if (materials.brandFoundation) {
+            const foundationItems = Object.keys(materials.brandFoundation).filter(k => materials.brandFoundation[k]?.text || materials.brandFoundation[k]?.fileUrl);
+            if (foundationItems.length > 0) {
+              availableMaterials.push(`Brand Foundation (${foundationItems.length} items)`);
+            }
+          }
+          if (materials.campaignExamples) {
+            const exampleItems = Object.keys(materials.campaignExamples).filter(k => materials.campaignExamples[k]?.text || materials.campaignExamples[k]?.fileUrl);
+            if (exampleItems.length > 0) {
+              availableMaterials.push(`Campaign Examples (${exampleItems.length} items)`);
+            }
+          }
+          if (materials.audienceIntelligence) {
+            const audienceItems = Object.keys(materials.audienceIntelligence).filter(k => materials.audienceIntelligence[k]?.text || materials.audienceIntelligence[k]?.fileUrl);
+            if (audienceItems.length > 0) {
+              availableMaterials.push(`Audience Intelligence (${audienceItems.length} items)`);
+            }
+          }
+          if (materials.performanceData) {
+            const perfItems = Object.keys(materials.performanceData).filter(k => materials.performanceData[k]?.text || materials.performanceData[k]?.fileUrl);
+            if (perfItems.length > 0) {
+              availableMaterials.push(`Performance Data (${perfItems.length} items)`);
+            }
+          }
+          
+          if (availableMaterials.length > 0) {
+            materialsPreview = `\n\nSELECTED GUIDE MATERIALS: ${availableMaterials.join(', ')}`;
+          }
+        }
       }
 
       // Build enriched system prompt with Prompt Builder context
@@ -803,6 +846,7 @@ WORKFLOW STAGES:
 4. **Generation**: When all details are collected, suggest generating the campaign
 
 AVAILABLE GROUNDING GUIDES: ${groundingGuides.map(g => g.name).join(', ') || 'None available yet - suggest creating one'}
+${selectedGuide ? `\nSELECTED GUIDE: ${selectedGuide.name}${materialsPreview}` : ''}
 ${contextInfo}
 
 YOUR APPROACH:
@@ -913,12 +957,14 @@ YOUR APPROACH:
           voice: brandStylesheet.voice,
           keyMessages: brandStylesheet.keyMessages || [],
           guidelines: brandStylesheet.guidelines || '',
+          materials: brandStylesheet.materials || null,
         } : {
           name: 'Default',
           tone: 'Professional, authoritative',
           voice: 'Clear and informative',
           keyMessages: ['Breaking news coverage', 'Community information'],
           guidelines: 'Focus on facts and urgency',
+          materials: null,
         },
         newsroomName: newsroom.name,
       };
@@ -982,12 +1028,14 @@ YOUR APPROACH:
             voice: brandStylesheet.voice,
             keyMessages: brandStylesheet.keyMessages || [],
             guidelines: brandStylesheet.guidelines || '',
+            materials: brandStylesheet.materials || null,
           } : {
             name: 'Default',
             tone: 'Professional, targeted',
             voice: 'Audience-specific messaging',
             keyMessages: ['Segment-focused content'],
             guidelines: 'Tailor to audience segment',
+            materials: null,
           },
           newsroomName: newsroom?.name || '',
         };
