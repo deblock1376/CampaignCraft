@@ -25,6 +25,7 @@ export default function CampaignAssistantTest() {
   const [selectedSegments, setSelectedSegments] = useState<string[]>([]);
   const [campaignNotes, setCampaignNotes] = useState("");
   const [selectedRecentCampaigns, setSelectedRecentCampaigns] = useState<number[]>([]);
+  const [selectedStorySummaries, setSelectedStorySummaries] = useState<number[]>([]);
 
   // Fetch grounding guides for the chat context
   const { data: groundingGuides = [] } = useQuery({
@@ -60,6 +61,64 @@ export default function CampaignAssistantTest() {
     enabled: !!newsroomId,
   });
 
+  // Fetch story summaries
+  const { data: storySummaries = [], refetch: refetchStorySummaries } = useQuery({
+    queryKey: [`/api/newsrooms/${newsroomId}/story-summaries`],
+    queryFn: async () => {
+      const response = await fetch(`/api/newsrooms/${newsroomId}/story-summaries`, {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch story summaries");
+      }
+      return response.json();
+    },
+    enabled: !!newsroomId,
+  });
+
+  // Story summary creation mutation
+  const summarizeMutation = useMutation({
+    mutationFn: async (data: { title: string; text?: string; url?: string }) => {
+      const response = await fetch("/api/story-summaries", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          newsroomId,
+          title: data.title,
+          text: data.text,
+          url: data.url,
+          aiModel: "gpt-4o",
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to summarize story");
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Story summarized and saved successfully",
+      });
+      refetchStorySummaries();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to summarize story",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Chat mutation
   const chatMutation = useMutation({
     mutationFn: async (message: string) => {
@@ -74,6 +133,15 @@ export default function CampaignAssistantTest() {
                 id: c.id,
                 title: c.title,
                 objective: c.objective,
+              }))
+          : undefined,
+        storySummaries: selectedStorySummaries.length > 0
+          ? (storySummaries as any[])
+              .filter((s: any) => selectedStorySummaries.includes(s.id))
+              .map((s: any) => ({
+                id: s.id,
+                title: s.title,
+                summary: s.summary,
               }))
           : undefined,
       };
@@ -351,6 +419,10 @@ export default function CampaignAssistantTest() {
               recentCampaigns={recentCampaigns as any[]}
               selectedCampaigns={selectedRecentCampaigns}
               onCampaignSelect={setSelectedRecentCampaigns}
+              storySummaries={storySummaries as any[]}
+              selectedSummaries={selectedStorySummaries}
+              onSummarySelect={setSelectedStorySummaries}
+              onSummarize={summarizeMutation.mutateAsync}
               onSendToChat={handleSendMessage}
             />
           </div>
