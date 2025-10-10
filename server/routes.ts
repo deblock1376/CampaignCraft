@@ -888,6 +888,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             title: z.string(),
             objective: z.string(),
           })).optional(),
+          storySummaries: z.array(z.object({
+            id: z.number(),
+            title: z.string(),
+            summary: z.string(),
+          })).optional(),
         }).optional(),
       });
 
@@ -952,6 +957,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         if (promptContext.referenceCampaigns && promptContext.referenceCampaigns.length > 0) {
           contextInfo += `\nREFERENCE CAMPAIGNS: ${promptContext.referenceCampaigns.map(c => `${c.title} (${c.objective})`).join(', ')}`;
+        }
+        if (promptContext.storySummaries && promptContext.storySummaries.length > 0) {
+          contextInfo += `\n\nSTORY CONTEXT:`;
+          promptContext.storySummaries.forEach(story => {
+            contextInfo += `\n- ${story.title}: ${story.summary}`;
+          });
         }
       }
 
