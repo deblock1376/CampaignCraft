@@ -33,7 +33,7 @@ export default function Sidebar() {
       <div className="p-6 border-b border-slate-200">
         <Link href="/">
           <img 
-            src="/attached_assets/BlueLena_Horizontal (1)_1760125433183.png" 
+            src="/bluelena-logo.png" 
             alt="BlueLena" 
             className="h-8 w-auto cursor-pointer"
           />
