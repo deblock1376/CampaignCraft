@@ -62,7 +62,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="pt-2">
-                    <Link href="/campaigns/new">
+                    <Link href="/campaigns/assistant-test">
                       <Button className="w-full group-hover:shadow-md transition-shadow" size="lg" data-testid="button-start-create">
                         Start Creating
                         <ArrowRight className="ml-2 h-4 w-4" />

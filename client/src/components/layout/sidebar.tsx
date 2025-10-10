@@ -67,7 +67,7 @@ export default function Sidebar() {
       
       {/* Marketing Assistant Box at Bottom */}
       <div className="p-4 border-t border-slate-200 bg-slate-50">
-        <Link href="/guided-assistant">
+        <Link href="/assistant">
           <div className="bg-gradient-to-r from-primary to-blue-600 text-white rounded-lg p-4 cursor-pointer hover:shadow-lg transition-all group">
             <div className="flex items-center gap-3 mb-2">
               <i className="fas fa-user-friends text-lg"></i>
