@@ -42,9 +42,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <CardTitle className="text-2xl">Create Campaign</CardTitle>
-                  <CardDescription className="text-base">
-                    Generate AI-powered marketing campaigns grounded in your news brand
-                  </CardDescription>
+                  <CardDescription className="text-base">Create marketing campaigns grounded in your news brand</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
