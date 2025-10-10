@@ -22,7 +22,8 @@ import {
   BookOpen,
   Target,
   MessageSquare,
-  Settings
+  Settings,
+  Bot
 } from "lucide-react";
 import GroundingLibraryForm, { GroundingLibraryMaterials } from "@/components/grounding-library/grounding-library-form";
 
@@ -186,7 +187,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
       id: 'campaign-assistant',
       title: 'Campaign Assistant',
       description: 'Chat with AI to create campaigns step-by-step with personalized guidance',
-      icon: MessageSquare,
+      icon: Bot,
       category: 'campaign',
       estimatedTime: '5-10 minutes',
       directLink: '/campaigns/assistant-test',
