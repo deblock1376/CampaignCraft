@@ -41,7 +41,7 @@ export function CampaignMessageCard({
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
             Subject Line
           </label>
-          <p className="text-sm font-medium leading-relaxed">{campaign.subjectLine}</p>
+          <p className="text-sm font-medium leading-relaxed break-words">{campaign.subjectLine}</p>
         </div>
 
         {/* Body */}
@@ -49,7 +49,7 @@ export function CampaignMessageCard({
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
             Email Body
           </label>
-          <div className="text-sm leading-relaxed whitespace-pre-wrap bg-muted/50 p-3 rounded-md">
+          <div className="text-sm leading-relaxed whitespace-pre-wrap break-words bg-muted/50 p-3 rounded-md overflow-hidden">
             {campaign.body}
           </div>
         </div>
@@ -59,10 +59,10 @@ export function CampaignMessageCard({
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
             Call to Action
           </label>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">{campaign.cta.text}</span>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <span className="text-sm font-medium break-words">{campaign.cta.text}</span>
             {campaign.cta.url && (
-              <span className="text-xs text-muted-foreground">→ {campaign.cta.url}</span>
+              <span className="text-xs text-muted-foreground break-all">→ {campaign.cta.url}</span>
             )}
           </div>
         </div>
@@ -72,9 +72,9 @@ export function CampaignMessageCard({
           <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
             <div className="flex items-start gap-2">
               <Lightbulb className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold text-blue-900 mb-1">Next Step</p>
-                <p className="text-sm text-blue-700">{campaign.followUpSuggestion}</p>
+                <p className="text-sm text-blue-700 break-words">{campaign.followUpSuggestion}</p>
               </div>
             </div>
           </div>
