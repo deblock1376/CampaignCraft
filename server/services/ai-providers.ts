@@ -395,6 +395,56 @@ IMPORTANT: Use these reference materials to:
 `;
   }
 
+  private buildSegmentInstructions(segments?: string[]): string {
+    // If no segments selected, target all users
+    if (!segments || segments.length === 0) {
+      return `
+🎯 Target Audience: All Users
+Write the campaign message to appeal to your full subscriber base, balancing gratitude for existing supporters with invitations for new donors.
+`;
+    }
+
+    // Build segment-specific instructions
+    const segmentMap: { [key: string]: string } = {
+      'donors': `**Donors:**
+- Express gratitude and show how their past support made an impact
+- Connect today's story or campaign to continued community benefit
+- Use inclusive "we" language that reinforces belonging and trust`,
+
+      'non-donors': `**Non-Donors:**
+- Focus on the tangible community value of your journalism
+- Make the act of donating feel like joining something meaningful
+- Use clear, specific impact language ("Your support helps publish more stories like this one")`,
+
+      'highly-engaged': `**Highly Engaged Users:**
+- Acknowledge their loyalty and participation ("You read, share, and care")
+- Encourage the next meaningful step — becoming a donor or member
+- Emphasize momentum: "People like you are growing this movement"`,
+
+      'disengaged': `**Disengaged Users:**
+- Reintroduce your newsroom's relevance to their daily life
+- Lead with utility and local benefit ("Here's what helps you this week")
+- End with a low-barrier action (subscribe, share, follow)`
+    };
+
+    const selectedInstructions = segments
+      .map(seg => segmentMap[seg])
+      .filter(Boolean);
+
+    if (selectedInstructions.length === 0) {
+      return '';
+    }
+
+    return `
+🎯 Target Segment Messaging Guidelines
+Based on the selected segment${segments.length > 1 ? 's' : ''}: ${segments.join(', ')}
+
+${selectedInstructions.join('\n\n')}
+
+Apply these segment-specific principles to craft your campaign message, ensuring it resonates with the target audience's relationship to the newsroom.
+`;
+  }
+
   private buildCampaignPrompt(request: CampaignRequest): string {
     const objectiveMap = {
       subscription: 'subscriptions',
@@ -435,6 +485,9 @@ Brand Voice & Tone:
       ? this.buildMaterialsContext(request.brandStylesheet.materials)
       : '';
     
+    // Build segment-specific messaging instructions
+    const segmentInstructions = this.buildSegmentInstructions(request.segments);
+    
     return `
 👤 Your Role
 You are a copywriter at BlueLena, tasked with drafting compelling, emotionally resonant, and urgent email campaigns for independent news organizations. These campaigns will feature a breaking news story and include an appeal for support.
@@ -447,6 +500,7 @@ Create a standalone audience engagement and reader revenue email campaign that u
 
 ${contextSection}
 ${materialsContext}
+${segmentInstructions}
 
 🧠 Tone & Messaging
 - Must reflect ${request.newsroomName}'s identity: the message should feel distinct, authentic, and mission-aligned

@@ -15,12 +15,12 @@ export default function CampaignAssistantTest() {
     context: string;
     brandStylesheetId?: number;
   }>({
-    objective: "engagement",
+    objective: "donation",
     context: "",
   });
 
   // Prompt Builder state
-  const [selectedObjective, setSelectedObjective] = useState("engagement");
+  const [selectedObjective, setSelectedObjective] = useState("donation");
   const [selectedGuideId, setSelectedGuideId] = useState<number | undefined>();
   const [selectedSegments, setSelectedSegments] = useState<string[]>([]);
   const [campaignNotes, setCampaignNotes] = useState("");

@@ -40,7 +40,6 @@ const SEGMENT_OPTIONS = [
 ];
 
 const OBJECTIVE_OPTIONS = [
-  { value: "subscription", label: "Subscription" },
   { value: "donation", label: "Donation" },
   { value: "membership", label: "Membership" },
   { value: "engagement", label: "Engagement" },
