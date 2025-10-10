@@ -13,6 +13,7 @@ export default function Sidebar() {
   const isAdmin = currentUser.email === 'admin@campaigncraft.com';
 
   const baseNavItems = [
+    { href: "/campaigns/assistant-test", icon: "fas fa-comments", label: "Campaign Assistant" },
     { href: "/", icon: "fas fa-home", label: "Dashboard" },
     { href: "/campaigns/new", icon: "fas fa-plus-circle", label: "New Campaign" },
     { href: "/campaigns/history", icon: "fas fa-history", label: "Campaign History" },
