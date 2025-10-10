@@ -1,8 +1,11 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 export default function Sidebar() {
   const [location] = useLocation();
+  const [groundingLibraryOpen, setGroundingLibraryOpen] = useState(false);
   
   // Check if current user is admin
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
@@ -13,7 +16,6 @@ export default function Sidebar() {
     { href: "/campaigns/new", icon: "fas fa-plus-circle", label: "New Campaign" },
     { href: "/campaigns/history", icon: "fas fa-history", label: "Campaign History" },
     { href: "/assistant", icon: "fas fa-user-friends", label: "Marketing Assistant" },
-    { href: "/stylesheets", icon: "fas fa-palette", label: "Grounding Library" },
     { href: "/segments", icon: "fas fa-users", label: "Audience Segments" },
     { href: "/email-optimizer", icon: "fas fa-envelope", label: "Email Optimizer" },
     { href: "/settings", icon: "fas fa-cog", label: "Settings" },
@@ -52,6 +54,54 @@ export default function Sidebar() {
             </div>
           </Link>
         ))}
+        
+        {/* Grounding Library Dropdown */}
+        <div className="space-y-1">
+          <div 
+            onClick={() => setGroundingLibraryOpen(!groundingLibraryOpen)}
+            className={cn(
+              "flex items-center justify-between px-3 py-2 rounded-lg font-medium transition-colors cursor-pointer",
+              location === "/stylesheets" || location === "/assistant"
+                ? "bg-primary text-white" 
+                : "text-slate-600 hover:bg-slate-100"
+            )}
+          >
+            <div className="flex items-center space-x-3">
+              <i className="fas fa-palette w-4"></i>
+              <span>Grounding Library</span>
+            </div>
+            {groundingLibraryOpen ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
+          </div>
+          
+          {groundingLibraryOpen && (
+            <div className="ml-7 space-y-1">
+              <Link href="/stylesheets">
+                <div className={cn(
+                  "px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer",
+                  location === "/stylesheets"
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "text-slate-600 hover:bg-slate-100"
+                )}>
+                  View Libraries
+                </div>
+              </Link>
+              <Link href="/assistant">
+                <div className={cn(
+                  "px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer",
+                  location === "/assistant"
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "text-slate-600 hover:bg-slate-100"
+                )}>
+                  Create a Grounding Library
+                </div>
+              </Link>
+            </div>
+          )}
+        </div>
       </nav>
       
       <div className="p-4 border-t border-slate-200">
