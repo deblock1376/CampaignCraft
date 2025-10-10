@@ -566,6 +566,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Save Draft as Standalone Campaign
+  app.post("/api/campaigns/save-draft", async (req, res) => {
+    try {
+      const schema = z.object({
+        draftId: z.number(),
+        newsroomId: z.number(),
+      });
+
+      const { draftId, newsroomId } = schema.parse(req.body);
+
+      // Fetch the draft campaign
+      const draft = await storage.getCampaign(draftId);
+      if (!draft || draft.newsroomId !== newsroomId) {
+        return res.status(404).json({ message: "Draft not found" });
+      }
+
+      // Create a new standalone campaign from the draft
+      const savedCampaign = await storage.createCampaign({
+        newsroomId,
+        title: draft.title.replace(/^Draft \d+: /, ''), // Remove draft prefix if exists
+        type: draft.type,
+        objective: draft.objective,
+        context: draft.context || "",
+        aiModel: draft.aiModel,
+        brandStylesheetId: draft.brandStylesheetId || null,
+        status: 'draft',
+        content: draft.content,
+        parentCampaignId: draft.parentCampaignId || null,
+        draftNumber: null, // No draft number for saved campaigns
+        selectedForMerge: false,
+      });
+
+      res.json(savedCampaign);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error('Save draft error:', error);
+      res.status(500).json({ message: "Failed to save draft", error: String(error) });
+    }
+  });
+
   // Segment Management Routes
   app.get("/api/newsrooms/:newsroomId/segments", async (req, res) => {
     try {
