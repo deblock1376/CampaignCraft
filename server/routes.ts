@@ -830,8 +830,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "No content available to summarize" });
       }
 
-      // Generate summary using AI
-      const summaryPrompt = `Summarize the following news story in 2-3 concise paragraphs optimized for marketing campaign creation. Focus on key facts, impact, and emotional elements that would be useful for creating compelling campaign content:\n\n${contentToSummarize}`;
+      // Generate summary using AI with nonprofit newsroom copywriting approach
+      const summaryPrompt = `System / Role Prompt:
+You are a copywriter for a nonprofit newsroom. Your goal is to write a clear, engaging article summary that helps readers understand why this reporting matters — both in their daily lives and for the strength of their community. The tone should balance practical value with a sense of mission and public service.
+
+User Prompt:
+Summarize the following article for use in a fundraising email or campaign.
+
+Instructions:
+- Write one cohesive paragraph, up to 250 words.
+- Explain what the article helps readers understand, decide, or do in their everyday lives.
+- Reflect the newsroom's role in providing accurate, independent, and community-centered information.
+- Keep the tone factual, calm, and trustworthy — avoid advocacy or exaggerated language.
+- Conclude naturally with a light invitation to stay informed or support this kind of reporting.
+
+Output Format:
+A single paragraph suitable for use in a fundraising or engagement email.
+
+Tone Guide:
+Informative, steady, and civic-minded — showing both how the reporting serves readers and why this newsroom's work matters to the community.
+
+Article to summarize:
+${contentToSummarize}`;
       
       const summary = await aiProviderService.generateContent(summaryPrompt, aiModel || 'gpt-4o');
 
