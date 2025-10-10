@@ -5,7 +5,8 @@ import Header from "@/components/layout/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,6 +30,7 @@ const formSchema = insertBrandStylesheetSchema.extend({
 export default function BrandStylesheets() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingStylesheet, setEditingStylesheet] = useState<any>(null);
+  const [deletingStylesheet, setDeletingStylesheet] = useState<any>(null);
   const { toast } = useToast();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const newsroomId = user.newsroomId || 1;
@@ -85,6 +87,28 @@ export default function BrandStylesheets() {
       toast({
         title: "Error",
         description: error.message || "Failed to update grounding guide",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest("DELETE", `/api/stylesheets/${id}`);
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/newsrooms", newsroomId, "stylesheets"] });
+      setDeletingStylesheet(null);
+      toast({
+        title: "Success",
+        description: "Grounding library deleted successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete grounding library",
         variant: "destructive",
       });
     },
@@ -472,9 +496,13 @@ export default function BrandStylesheets() {
                             <i className="fas fa-edit mr-1"></i>
                             Edit
                           </Button>
-                          <Button variant="outline" size="sm">
-                            <i className="fas fa-copy mr-1"></i>
-                            Duplicate
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setDeletingStylesheet(stylesheet)}
+                          >
+                            <i className="fas fa-trash mr-1"></i>
+                            Delete
                           </Button>
                         </div>
                       </div>
@@ -496,6 +524,27 @@ export default function BrandStylesheets() {
           </div>
         </div>
       </main>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deletingStylesheet} onOpenChange={(isOpen) => !isOpen && setDeletingStylesheet(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Grounding Library?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{deletingStylesheet?.name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteMutation.mutate(deletingStylesheet.id)}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

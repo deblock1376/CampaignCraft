@@ -34,6 +34,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### October 10, 2025: Delete Grounding Libraries Feature
+- **Delete Functionality**: Added ability to delete grounding libraries from the Grounding Library page
+- **Confirmation Dialog**: Implemented AlertDialog component for delete confirmation to prevent accidental deletions
+- **User Feedback**: Success and error toast notifications for delete operations
+- **UI Updates**: Delete button added alongside Edit button on each grounding library card
+- **Backend Integration**: Utilizes existing DELETE /api/stylesheets/:id endpoint
+- **State Management**: Proper cleanup and cache invalidation after successful deletion
+
 ### October 9, 2025: Comprehensive Grounding Library Builder in Marketing Assistant
 - **Categorized Material Collection**: Implemented comprehensive 10-material type grounding library form organized into 4 categories:
   - Brand Foundation (3 types): Strategy Playbook, Brand Style Guide, About Us Content
