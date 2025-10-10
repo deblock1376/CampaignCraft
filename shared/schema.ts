@@ -91,6 +91,16 @@ export const campaignEvaluations = pgTable("campaign_evaluations", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const storySummaries = pgTable("story_summaries", {
+  id: serial("id").primaryKey(),
+  newsroomId: integer("newsroom_id").notNull(),
+  title: text("title").notNull(),
+  originalText: text("original_text"),
+  originalUrl: text("original_url"),
+  summary: text("summary").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertNewsroomSchema = createInsertSchema(newsrooms).omit({
   id: true,
   createdAt: true,
@@ -123,6 +133,11 @@ export const insertCampaignEvaluationSchema = createInsertSchema(campaignEvaluat
   createdAt: true,
 });
 
+export const insertStorySummarySchema = createInsertSchema(storySummaries).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -136,6 +151,7 @@ export type InsertCampaign = z.infer<typeof insertCampaignSchema>;
 export type InsertCampaignTemplate = z.infer<typeof insertCampaignTemplateSchema>;
 export type InsertSegment = z.infer<typeof insertSegmentSchema>;
 export type InsertCampaignEvaluation = z.infer<typeof insertCampaignEvaluationSchema>;
+export type InsertStorySummary = z.infer<typeof insertStorySummarySchema>;
 
 export type User = typeof users.$inferSelect;
 export type Newsroom = typeof newsrooms.$inferSelect;
@@ -144,3 +160,4 @@ export type Campaign = typeof campaigns.$inferSelect;
 export type CampaignTemplate = typeof campaignTemplates.$inferSelect;
 export type Segment = typeof segments.$inferSelect;
 export type CampaignEvaluation = typeof campaignEvaluations.$inferSelect;
+export type StorySummary = typeof storySummaries.$inferSelect;
