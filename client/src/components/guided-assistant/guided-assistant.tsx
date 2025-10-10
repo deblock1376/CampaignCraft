@@ -185,8 +185,8 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
 
   const goals: AssistantGoal[] = [
     {
-      id: 'campaign-assistant',
-      title: 'Campaign Assistant',
+      id: 'campaign-builder',
+      title: 'Campaign Builder',
       description: 'Chat with AI to create campaigns step-by-step with personalized guidance',
       icon: Bot,
       category: 'campaign',
@@ -873,16 +873,16 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
   };
 
   if (!currentGoal) {
-    const campaignAssistant = goals.find(g => g.id === 'campaign-assistant');
-    const otherGoals = goals.filter(g => g.id !== 'campaign-assistant');
+    const campaignBuilder = goals.find(g => g.id === 'campaign-builder');
+    const otherGoals = goals.filter(g => g.id !== 'campaign-builder');
 
     return (
       <div className="space-y-6">
-        {/* Campaign Assistant - Featured Card with Gradient */}
-        {campaignAssistant && (() => {
-          const Icon = campaignAssistant.icon;
+        {/* Campaign Builder - Featured Card with Gradient */}
+        {campaignBuilder && (() => {
+          const Icon = campaignBuilder.icon;
           return (
-            <Card key={campaignAssistant.id} className="relative overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 group border-2 border-primary/20">
+            <Card key={campaignBuilder.id} className="relative overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 group border-2 border-primary/20">
               {/* Gradient Background */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-blue-500/5 to-purple-500/10" />
               
@@ -900,28 +900,28 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
                     <Icon className="w-7 h-7 text-white" />
                   </div>
                   <div className="flex-1">
-                    <CardTitle className="text-xl font-bold group-hover:text-primary transition-colors">{campaignAssistant.title}</CardTitle>
+                    <CardTitle className="text-xl font-bold group-hover:text-primary transition-colors">{campaignBuilder.title}</CardTitle>
                     <Badge variant="outline" className="text-xs mt-1.5 bg-white/50">
-                      {campaignAssistant.estimatedTime}
+                      {campaignBuilder.estimatedTime}
                     </Badge>
                   </div>
                 </div>
-                <p className="text-sm text-gray-700 leading-relaxed">{campaignAssistant.description}</p>
+                <p className="text-sm text-gray-700 leading-relaxed">{campaignBuilder.description}</p>
               </CardHeader>
               <CardContent className="relative pt-0">
                 <Button 
                   className="w-full bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-white shadow-md group-hover:shadow-lg transition-all" 
                   size="lg"
                   onClick={() => {
-                    if (campaignAssistant.directLink) {
-                      setLocation(campaignAssistant.directLink);
+                    if (campaignBuilder.directLink) {
+                      setLocation(campaignBuilder.directLink);
                     } else {
-                      setCurrentGoal(campaignAssistant.id);
+                      setCurrentGoal(campaignBuilder.id);
                     }
                   }}
-                  data-testid={`goal-${campaignAssistant.id}`}
+                  data-testid={`goal-${campaignBuilder.id}`}
                 >
-                  {campaignAssistant.directLink ? 'Open Assistant' : 'Start Guide'}
+                  {campaignBuilder.directLink ? 'Open Builder' : 'Start Guide'}
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </CardContent>

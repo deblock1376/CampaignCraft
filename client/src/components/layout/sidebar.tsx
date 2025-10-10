@@ -12,28 +12,14 @@ export default function Sidebar() {
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
   const isAdmin = currentUser.email === 'admin@campaigncraft.com';
 
-  // Organized menu items by category for better UX
-  const campaignCreationItems = [
-    { href: "/campaigns/assistant-test", icon: "fas fa-comments", label: "Campaign Assistant" },
-    { href: "/campaigns/new", icon: "fas fa-plus-circle", label: "New Campaign" },
-    { href: "/assistant", icon: "fas fa-user-friends", label: "Marketing Assistant" },
-  ];
-
-  const campaignManagementItems = [
+  // Main navigation items in priority order
+  const navItems = [
     { href: "/", icon: "fas fa-home", label: "Dashboard" },
+    { href: "/campaigns/assistant-test", icon: "fas fa-comments", label: "Campaign Builder" },
     { href: "/campaigns/history", icon: "fas fa-history", label: "Campaign History" },
-  ];
-
-  const contentResourcesItems = [
-    { href: "/story-summaries", icon: "fas fa-newspaper", label: "Story Summaries" },
-  ];
-
-  const optimizationItems = [
+    { href: "/stylesheets", icon: "fas fa-palette", label: "Grounding Library", hasDropdown: true },
     { href: "/segments", icon: "fas fa-users", label: "Audience Segments" },
-    { href: "/email-optimizer", icon: "fas fa-envelope", label: "Email Optimizer" },
-  ];
-
-  const systemItems = [
+    { href: "/story-summaries", icon: "fas fa-newspaper", label: "Story Summaries" },
     { href: "/settings", icon: "fas fa-cog", label: "Settings" },
   ];
 
@@ -51,145 +37,71 @@ export default function Sidebar() {
       </div>
       
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        {/* Campaign Creation */}
-        {campaignCreationItems.map((item) => (
-          <Link key={item.href} href={item.href}>
-            <div className={cn(
-              "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors cursor-pointer",
-              location === item.href 
-                ? "bg-primary text-white" 
-                : "text-slate-600 hover:bg-slate-100"
-            )}>
-              <i className={`${item.icon} w-4`}></i>
-              <span>{item.label}</span>
-            </div>
-          </Link>
-        ))}
-
-        {/* Divider */}
-        <div className="py-2">
-          <div className="border-t border-slate-200"></div>
-        </div>
-
-        {/* Campaign Management */}
-        {campaignManagementItems.map((item) => (
-          <Link key={item.href} href={item.href}>
-            <div className={cn(
-              "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors cursor-pointer",
-              location === item.href 
-                ? "bg-primary text-white" 
-                : "text-slate-600 hover:bg-slate-100"
-            )}>
-              <i className={`${item.icon} w-4`}></i>
-              <span>{item.label}</span>
-            </div>
-          </Link>
-        ))}
-
-        {/* Divider */}
-        <div className="py-2">
-          <div className="border-t border-slate-200"></div>
-        </div>
-
-        {/* Content & Resources */}
-        {contentResourcesItems.map((item) => (
-          <Link key={item.href} href={item.href}>
-            <div className={cn(
-              "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors cursor-pointer",
-              location === item.href 
-                ? "bg-primary text-white" 
-                : "text-slate-600 hover:bg-slate-100"
-            )}>
-              <i className={`${item.icon} w-4`}></i>
-              <span>{item.label}</span>
-            </div>
-          </Link>
-        ))}
-        
-        {/* Grounding Library with Dropdown */}
-        <div className="space-y-1">
-          <Link href="/stylesheets">
-            <div className={cn(
-              "flex items-center justify-between px-3 py-2 rounded-lg font-medium transition-colors cursor-pointer",
-              isGroundingLibraryActive
-                ? "bg-primary text-white" 
-                : "text-slate-600 hover:bg-slate-100"
-            )}>
-              <div className="flex items-center space-x-3">
-                <i className="fas fa-palette w-4"></i>
-                <span>Grounding Library</span>
+        {/* Main Navigation Items */}
+        {navItems.map((item) => {
+          // Handle Grounding Library with dropdown separately
+          if (item.hasDropdown) {
+            return (
+              <div key={item.href} className="space-y-1">
+                <Link href={item.href}>
+                  <div className={cn(
+                    "flex items-center justify-between px-3 py-2 rounded-lg font-medium transition-colors cursor-pointer",
+                    isGroundingLibraryActive
+                      ? "bg-primary text-white" 
+                      : "text-slate-600 hover:bg-slate-100"
+                  )}>
+                    <div className="flex items-center space-x-3">
+                      <i className={`${item.icon} w-4`}></i>
+                      <span>{item.label}</span>
+                    </div>
+                    {isGroundingLibraryActive && (
+                      <ChevronDown className="h-4 w-4" />
+                    )}
+                  </div>
+                </Link>
+                
+                {isGroundingLibraryActive && (
+                  <div className="ml-7 space-y-1">
+                    <Link href="/stylesheets">
+                      <div className={cn(
+                        "px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer",
+                        location === "/stylesheets"
+                          ? "bg-primary/10 text-primary font-medium"
+                          : "text-slate-600 hover:bg-slate-100"
+                      )}>
+                        View Libraries
+                      </div>
+                    </Link>
+                    <Link href="/assistant">
+                      <div className={cn(
+                        "px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer",
+                        location === "/assistant"
+                          ? "bg-primary/10 text-primary font-medium"
+                          : "text-slate-600 hover:bg-slate-100"
+                      )}>
+                        Create a Grounding Library
+                      </div>
+                    </Link>
+                  </div>
+                )}
               </div>
-              {isGroundingLibraryActive && (
-                <ChevronDown className="h-4 w-4" />
-              )}
-            </div>
-          </Link>
-          
-          {isGroundingLibraryActive && (
-            <div className="ml-7 space-y-1">
-              <Link href="/stylesheets">
-                <div className={cn(
-                  "px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer",
-                  location === "/stylesheets"
-                    ? "bg-primary/10 text-primary font-medium"
-                    : "text-slate-600 hover:bg-slate-100"
-                )}>
-                  View Libraries
-                </div>
-              </Link>
-              <Link href="/assistant">
-                <div className={cn(
-                  "px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer",
-                  location === "/assistant"
-                    ? "bg-primary/10 text-primary font-medium"
-                    : "text-slate-600 hover:bg-slate-100"
-                )}>
-                  Create a Grounding Library
-                </div>
-              </Link>
-            </div>
-          )}
-        </div>
+            );
+          }
 
-        {/* Divider */}
-        <div className="py-2">
-          <div className="border-t border-slate-200"></div>
-        </div>
-
-        {/* Optimization Tools */}
-        {optimizationItems.map((item) => (
-          <Link key={item.href} href={item.href}>
-            <div className={cn(
-              "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors cursor-pointer",
-              location === item.href 
-                ? "bg-primary text-white" 
-                : "text-slate-600 hover:bg-slate-100"
-            )}>
-              <i className={`${item.icon} w-4`}></i>
-              <span>{item.label}</span>
-            </div>
-          </Link>
-        ))}
-
-        {/* Divider */}
-        <div className="py-2">
-          <div className="border-t border-slate-200"></div>
-        </div>
-
-        {/* System Settings */}
-        {systemItems.map((item) => (
-          <Link key={item.href} href={item.href}>
-            <div className={cn(
-              "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors cursor-pointer",
-              location === item.href 
-                ? "bg-primary text-white" 
-                : "text-slate-600 hover:bg-slate-100"
-            )}>
-              <i className={`${item.icon} w-4`}></i>
-              <span>{item.label}</span>
-            </div>
-          </Link>
-        ))}
+          return (
+            <Link key={item.href} href={item.href}>
+              <div className={cn(
+                "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors cursor-pointer",
+                location === item.href 
+                  ? "bg-primary text-white" 
+                  : "text-slate-600 hover:bg-slate-100"
+              )}>
+                <i className={`${item.icon} w-4`}></i>
+                <span>{item.label}</span>
+              </div>
+            </Link>
+          );
+        })}
 
         {/* Admin Control (if admin) */}
         {isAdmin && (
@@ -207,7 +119,20 @@ export default function Sidebar() {
         )}
       </nav>
       
-      <div className="p-4 border-t border-slate-200">
+      {/* Marketing Assistant Box at Bottom */}
+      <div className="p-4 border-t border-slate-200 bg-slate-50">
+        <Link href="/guided-assistant">
+          <div className="bg-gradient-to-r from-primary to-blue-600 text-white rounded-lg p-4 cursor-pointer hover:shadow-lg transition-all group">
+            <div className="flex items-center gap-3 mb-2">
+              <i className="fas fa-user-friends text-lg"></i>
+              <span className="font-semibold">Marketing Assistant</span>
+            </div>
+            <p className="text-xs text-white/90">Quick start templates and guided workflows</p>
+          </div>
+        </Link>
+      </div>
+      
+      <div className="p-4 border-t border-slate-200 bg-white">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
             <i className="fas fa-user text-primary text-sm"></i>
