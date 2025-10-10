@@ -26,6 +26,7 @@ export interface CampaignRequest {
     voice: string;
     keyMessages: string[];
     guidelines: string;
+    materials?: any;
   };
   newsroomName: string;
   segments?: string[];
