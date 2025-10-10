@@ -2,12 +2,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { FileText, Send, Plus } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FileText, Send, Plus, Loader2, Newspaper } from "lucide-react";
 import { useLocation } from "wouter";
+import { useState } from "react";
 
 interface PromptBuilderProps {
   groundingGuides: any[];
@@ -22,6 +25,10 @@ interface PromptBuilderProps {
   recentCampaigns: any[];
   selectedCampaigns: number[];
   onCampaignSelect: (campaignIds: number[]) => void;
+  storySummaries?: any[];
+  selectedSummaries?: number[];
+  onSummarySelect?: (summaryIds: number[]) => void;
+  onSummarize?: (data: { title: string; text?: string; url?: string }) => Promise<void>;
   onSendToChat?: (message: string) => void;
 }
 
@@ -52,9 +59,18 @@ export function PromptBuilder({
   recentCampaigns,
   selectedCampaigns,
   onCampaignSelect,
+  storySummaries = [],
+  selectedSummaries = [],
+  onSummarySelect,
+  onSummarize,
   onSendToChat,
 }: PromptBuilderProps) {
   const [, setLocation] = useLocation();
+  const [storyInputType, setStoryInputType] = useState<"text" | "url">("text");
+  const [storyTitle, setStoryTitle] = useState("");
+  const [storyText, setStoryText] = useState("");
+  const [storyUrl, setStoryUrl] = useState("");
+  const [isSummarizing, setIsSummarizing] = useState(false);
 
   const handleSegmentToggle = (segmentId: string) => {
     const newSegments = segments.includes(segmentId)
@@ -68,6 +84,33 @@ export function PromptBuilder({
       ? selectedCampaigns.filter(id => id !== campaignId)
       : [...selectedCampaigns, campaignId];
     onCampaignSelect(newSelection);
+  };
+
+  const handleSummaryToggle = (summaryId: number) => {
+    if (!onSummarySelect) return;
+    const newSelection = selectedSummaries.includes(summaryId)
+      ? selectedSummaries.filter(id => id !== summaryId)
+      : [...selectedSummaries, summaryId];
+    onSummarySelect(newSelection);
+  };
+
+  const handleSummarizeStory = async () => {
+    if (!onSummarize || !storyTitle.trim()) return;
+    
+    setIsSummarizing(true);
+    try {
+      await onSummarize({
+        title: storyTitle,
+        text: storyInputType === "text" ? storyText : undefined,
+        url: storyInputType === "url" ? storyUrl : undefined,
+      });
+      // Clear form after successful summarization
+      setStoryTitle("");
+      setStoryText("");
+      setStoryUrl("");
+    } finally {
+      setIsSummarizing(false);
+    }
   };
 
   const handleSendToChat = () => {
@@ -104,6 +147,14 @@ export function PromptBuilder({
         .filter(c => selectedCampaigns.includes(c.id))
         .map(c => c.title);
       message += `🔗 Reference Campaigns: ${refCampaigns.join(', ')}\n`;
+    }
+    
+    // Add story summaries
+    if (selectedSummaries.length > 0) {
+      const selectedStories = storySummaries
+        .filter(s => selectedSummaries.includes(s.id))
+        .map(s => s.title);
+      message += `📰 Story References: ${selectedStories.join(', ')}\n`;
     }
 
     onSendToChat(message);
@@ -236,6 +287,95 @@ export function PromptBuilder({
               </div>
             )}
           </ScrollArea>
+        </div>
+
+        {/* Story Summary */}
+        <div className="space-y-3">
+          <Label>Summarize a News Story</Label>
+          <p className="text-xs text-muted-foreground">Add story context to inform campaign creation</p>
+          
+          <Tabs value={storyInputType} onValueChange={(v) => setStoryInputType(v as "text" | "url")}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="text">Paste Text</TabsTrigger>
+              <TabsTrigger value="url">URL</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="text" className="space-y-3 mt-3">
+              <Input
+                placeholder="Story title..."
+                value={storyTitle}
+                onChange={(e) => setStoryTitle(e.target.value)}
+              />
+              <Textarea
+                placeholder="Paste full story text here..."
+                value={storyText}
+                onChange={(e) => setStoryText(e.target.value)}
+                className="min-h-[100px] resize-none"
+              />
+            </TabsContent>
+            
+            <TabsContent value="url" className="space-y-3 mt-3">
+              <Input
+                placeholder="Story title..."
+                value={storyTitle}
+                onChange={(e) => setStoryTitle(e.target.value)}
+              />
+              <Input
+                type="url"
+                placeholder="https://example.com/article"
+                value={storyUrl}
+                onChange={(e) => setStoryUrl(e.target.value)}
+              />
+            </TabsContent>
+          </Tabs>
+          
+          <Button
+            onClick={handleSummarizeStory}
+            disabled={!storyTitle.trim() || (!storyText.trim() && !storyUrl.trim()) || isSummarizing}
+            className="w-full"
+            variant="outline"
+          >
+            {isSummarizing ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Summarizing...
+              </>
+            ) : (
+              <>
+                <Newspaper className="h-4 w-4 mr-2" />
+                Summarize & Save
+              </>
+            )}
+          </Button>
+
+          {storySummaries.length > 0 && (
+            <ScrollArea className="h-[150px] border rounded-md p-2 mt-3">
+              <Label className="text-xs text-muted-foreground mb-2 block">Saved Summaries</Label>
+              <div className="space-y-2">
+                {storySummaries.map((summary) => (
+                  <div key={summary.id} className="flex items-start space-x-2">
+                    <Checkbox
+                      id={`summary-${summary.id}`}
+                      checked={selectedSummaries.includes(summary.id)}
+                      onCheckedChange={() => handleSummaryToggle(summary.id)}
+                    />
+                    <label
+                      htmlFor={`summary-${summary.id}`}
+                      className="text-sm leading-tight cursor-pointer flex-1"
+                    >
+                      <div className="flex items-center gap-1">
+                        <Newspaper className="h-3 w-3" />
+                        <span className="font-medium">{summary.title}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                        {summary.summary}
+                      </p>
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          )}
         </div>
 
         {/* Send to Chat Button */}
