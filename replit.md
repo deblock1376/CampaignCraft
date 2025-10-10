@@ -34,6 +34,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### October 10, 2025: Grounding Library Dropdown Navigation
+- **Dropdown Menu**: Added dropdown to Grounding Library navigation in sidebar
+- **Quick Access**: "Create a Grounding Library" option in dropdown links to Marketing Assistant
+- **Auto-Expand**: Dropdown automatically expands when on Grounding Library or Marketing Assistant pages
+- **Direct Navigation**: Parent item still navigates directly to Grounding Library page (/stylesheets)
+- **Visual Feedback**: Active routes highlighted with primary color styling
+- **User Flow**: Click parent to view libraries, or use dropdown to create new library via Marketing Assistant
+
 ### October 10, 2025: Save Individual Campaign Variations
 - **Save to Campaigns Feature**: Added ability to save individual draft variations without merging
 - **New Endpoint**: Created `/api/campaigns/save-draft` POST endpoint to duplicate draft as standalone campaign
