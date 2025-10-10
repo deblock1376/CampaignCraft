@@ -140,7 +140,13 @@ export function PromptBuilder({
           <Label>Grounding Library</Label>
           <Select 
             value={selectedGuideId?.toString()} 
-            onValueChange={(value) => onGuideChange(Number(value))}
+            onValueChange={(value) => {
+              if (value === "__create_new__") {
+                setLocation('/assistant');
+              } else {
+                onGuideChange(Number(value));
+              }
+            }}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select a grounding library" />
@@ -152,16 +158,15 @@ export function PromptBuilder({
                 </SelectItem>
               ))}
               <Separator className="my-2" />
-              <div
-                className="relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground transition-colors text-primary font-medium"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setLocation('/assistant');
-                }}
+              <SelectItem 
+                value="__create_new__" 
+                className="text-primary font-medium"
               >
-                <Plus className="h-4 w-4 mr-2 absolute left-2" />
-                Create a new grounding library
-              </div>
+                <div className="flex items-center">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create a new grounding library
+                </div>
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>

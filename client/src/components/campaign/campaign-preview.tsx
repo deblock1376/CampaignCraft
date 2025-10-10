@@ -113,10 +113,19 @@ export default function CampaignPreview({
                           <FormLabel>Grounding Library</FormLabel>
                           <p className="text-xs text-slate-500 mb-2">Apply your organization's brand voice and messaging guidelines</p>
                           <div className="flex space-x-2">
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select 
+                              onValueChange={(value) => {
+                                if (value === "__create_new__") {
+                                  setLocation('/assistant');
+                                } else {
+                                  field.onChange(value);
+                                }
+                              }} 
+                              defaultValue={field.value}
+                            >
                               <FormControl>
                                 <SelectTrigger className="flex-1">
-                                  <SelectValue placeholder="Select guide" />
+                                  <SelectValue placeholder="Select grounding library" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -126,16 +135,15 @@ export default function CampaignPreview({
                                   </SelectItem>
                                 )) : null}
                                 <Separator className="my-2" />
-                                <div
-                                  className="relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground transition-colors text-primary font-medium"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    setLocation('/assistant');
-                                  }}
+                                <SelectItem 
+                                  value="__create_new__" 
+                                  className="text-primary font-medium"
                                 >
-                                  <Plus className="h-4 w-4 mr-2 absolute left-2" />
-                                  Create a new grounding library
-                                </div>
+                                  <div className="flex items-center">
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Create a new grounding library
+                                  </div>
+                                </SelectItem>
                               </SelectContent>
                             </Select>
                             <Button type="button" variant="outline" size="sm">
