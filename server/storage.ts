@@ -6,6 +6,7 @@ import {
   campaignTemplates,
   segments,
   campaignEvaluations,
+  storySummaries,
   type User,
   type Newsroom,
   type BrandStylesheet,
@@ -13,13 +14,15 @@ import {
   type CampaignTemplate,
   type Segment,
   type CampaignEvaluation,
+  type StorySummary,
   type InsertUser,
   type InsertNewsroom,
   type InsertBrandStylesheet,
   type InsertCampaign,
   type InsertCampaignTemplate,
   type InsertSegment,
-  type InsertCampaignEvaluation
+  type InsertCampaignEvaluation,
+  type InsertStorySummary
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
@@ -72,6 +75,11 @@ export interface IStorage {
   getCampaignEvaluation(id: number): Promise<CampaignEvaluation | undefined>;
   getEvaluationsByCampaign(campaignId: number): Promise<CampaignEvaluation[]>;
   createCampaignEvaluation(evaluation: InsertCampaignEvaluation): Promise<CampaignEvaluation>;
+  
+  // Story Summaries
+  getStorySummary(id: number): Promise<StorySummary | undefined>;
+  getStorySummariesByNewsroom(newsroomId: number): Promise<StorySummary[]>;
+  createStorySummary(summary: InsertStorySummary): Promise<StorySummary>;
 }
 
 export class MemStorage implements IStorage {
@@ -433,6 +441,17 @@ export class MemStorage implements IStorage {
   async createCampaignEvaluation(evaluation: InsertCampaignEvaluation): Promise<CampaignEvaluation> {
     throw new Error('MemStorage not implemented');
   }
+
+  // Story Summaries (stub for MemStorage - not used in production)
+  async getStorySummary(id: number): Promise<StorySummary | undefined> {
+    throw new Error('MemStorage not implemented');
+  }
+  async getStorySummariesByNewsroom(newsroomId: number): Promise<StorySummary[]> {
+    return [];
+  }
+  async createStorySummary(summary: InsertStorySummary): Promise<StorySummary> {
+    throw new Error('MemStorage not implemented');
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -651,6 +670,21 @@ export class DatabaseStorage implements IStorage {
   async createCampaignEvaluation(evaluation: InsertCampaignEvaluation): Promise<CampaignEvaluation> {
     const [newEvaluation] = await db.insert(campaignEvaluations).values(evaluation).returning();
     return newEvaluation;
+  }
+
+  // Story Summaries
+  async getStorySummary(id: number): Promise<StorySummary | undefined> {
+    const [summary] = await db.select().from(storySummaries).where(eq(storySummaries.id, id));
+    return summary || undefined;
+  }
+
+  async getStorySummariesByNewsroom(newsroomId: number): Promise<StorySummary[]> {
+    return await db.select().from(storySummaries).where(eq(storySummaries.newsroomId, newsroomId)).orderBy(desc(storySummaries.createdAt));
+  }
+
+  async createStorySummary(summary: InsertStorySummary): Promise<StorySummary> {
+    const [newSummary] = await db.insert(storySummaries).values(summary).returning();
+    return newSummary;
   }
 }
 
