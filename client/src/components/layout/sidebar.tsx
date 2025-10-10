@@ -1,11 +1,12 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 export default function Sidebar() {
   const [location] = useLocation();
-  const [groundingLibraryOpen, setGroundingLibraryOpen] = useState(false);
+  
+  // Auto-expand Grounding Library dropdown when on related pages
+  const isGroundingLibraryActive = location === "/stylesheets" || location === "/assistant";
   
   // Check if current user is admin
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
@@ -55,29 +56,26 @@ export default function Sidebar() {
           </Link>
         ))}
         
-        {/* Grounding Library Dropdown */}
+        {/* Grounding Library with Dropdown */}
         <div className="space-y-1">
-          <div 
-            onClick={() => setGroundingLibraryOpen(!groundingLibraryOpen)}
-            className={cn(
+          <Link href="/stylesheets">
+            <div className={cn(
               "flex items-center justify-between px-3 py-2 rounded-lg font-medium transition-colors cursor-pointer",
-              location === "/stylesheets" || location === "/assistant"
+              isGroundingLibraryActive
                 ? "bg-primary text-white" 
                 : "text-slate-600 hover:bg-slate-100"
-            )}
-          >
-            <div className="flex items-center space-x-3">
-              <i className="fas fa-palette w-4"></i>
-              <span>Grounding Library</span>
+            )}>
+              <div className="flex items-center space-x-3">
+                <i className="fas fa-palette w-4"></i>
+                <span>Grounding Library</span>
+              </div>
+              {isGroundingLibraryActive && (
+                <ChevronDown className="h-4 w-4" />
+              )}
             </div>
-            {groundingLibraryOpen ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ChevronRight className="h-4 w-4" />
-            )}
-          </div>
+          </Link>
           
-          {groundingLibraryOpen && (
+          {isGroundingLibraryActive && (
             <div className="ml-7 space-y-1">
               <Link href="/stylesheets">
                 <div className={cn(
