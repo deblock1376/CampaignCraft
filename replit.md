@@ -16,7 +16,13 @@ Preferred communication style: Simple, everyday language.
 - **Design Philosophy**: Clean, intuitive interface featuring interactive forms, a multi-draft carousel, and clear visual indicators.
 - **Key UI Features**: Dashboard, Campaign Generator (with Campaign Builder for goals/audience setup), Template Library, Grounding Library, Campaign History, Guided Marketing Assistant, Segment Management, and a unified history view.
 - **Campaign Builder**: Right-side panel in Campaign Assistant with subtitle "Set your goals and audience" - allows users to configure objectives, segments, grounding guides, notes, and reference materials.
-- **Navigation**: Campaign Assistant prominently featured as top option in both sidebar navigation and Marketing Assistant quick-start page for primary access to conversational campaign creation.
+- **Navigation Structure**: Organized sidebar menu with logical groupings separated by visual dividers:
+  1. Campaign Creation (top priority): Campaign Assistant, New Campaign, Marketing Assistant
+  2. Campaign Management: Dashboard, Campaign History
+  3. Content & Resources: Story Summaries, Grounding Library (with dropdown)
+  4. Optimization Tools: Audience Segments, Email Optimizer
+  5. System: Settings, Admin Control (admin only)
+- **Featured Campaign Assistant**: Prominently displayed with gradient background, "Recommended" badge, and enhanced visual styling in Marketing Assistant page.
 
 ### Technical Implementations
 - **Frontend**: React with Wouter for routing, TanStack React Query for server state management, and Vite for building.
