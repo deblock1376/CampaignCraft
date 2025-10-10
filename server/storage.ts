@@ -80,6 +80,7 @@ export interface IStorage {
   getStorySummary(id: number): Promise<StorySummary | undefined>;
   getStorySummariesByNewsroom(newsroomId: number): Promise<StorySummary[]>;
   createStorySummary(summary: InsertStorySummary): Promise<StorySummary>;
+  deleteStorySummary(id: number): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -452,6 +453,9 @@ export class MemStorage implements IStorage {
   async createStorySummary(summary: InsertStorySummary): Promise<StorySummary> {
     throw new Error('MemStorage not implemented');
   }
+  async deleteStorySummary(id: number): Promise<void> {
+    throw new Error('MemStorage not implemented');
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -685,6 +689,10 @@ export class DatabaseStorage implements IStorage {
   async createStorySummary(summary: InsertStorySummary): Promise<StorySummary> {
     const [newSummary] = await db.insert(storySummaries).values(summary).returning();
     return newSummary;
+  }
+
+  async deleteStorySummary(id: number): Promise<void> {
+    await db.delete(storySummaries).where(eq(storySummaries.id, id));
   }
 }
 

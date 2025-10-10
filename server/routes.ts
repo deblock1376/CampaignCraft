@@ -892,6 +892,17 @@ ${contentToSummarize}`;
     }
   });
 
+  app.delete("/api/story-summaries/:id", authenticateToken, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteStorySummary(id);
+      res.json({ message: "Story summary deleted successfully" });
+    } catch (error) {
+      console.error('Delete story summary error:', error);
+      res.status(500).json({ message: "Failed to delete story summary", error: String(error) });
+    }
+  });
+
   // Campaign Assistant Chat
   app.post("/api/campaigns/chat", authenticateToken, async (req: any, res) => {
     try {
