@@ -788,6 +788,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Story Summaries
+  app.post("/api/story-summaries", authenticateToken, async (req: any, res) => {
+    try {
+      const schema = z.object({
+        newsroomId: z.number(),
+        title: z.string().min(1),
+        text: z.string().optional(),
+        url: z.string().url().optional(),
+        aiModel: z.string().optional(),
+      }).refine(data => data.text || data.url, {
+        message: "Either text or url must be provided",
+      });
+
+      const { newsroomId, title, text, url, aiModel } = schema.parse(req.body);
+
+      let contentToSummarize = text || '';
+
+      // If URL is provided, fetch content
+      if (url && !text) {
+        try {
+          const response = await fetch(url);
+          const html = await response.text();
+          
+          // Simple HTML to text extraction (basic approach)
+          contentToSummarize = html
+            .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+            .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+            .replace(/<[^>]+>/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+          
+          // Limit to first 5000 characters to avoid token limits
+          contentToSummarize = contentToSummarize.slice(0, 5000);
+        } catch (fetchError) {
+          return res.status(400).json({ message: "Failed to fetch URL content", error: String(fetchError) });
+        }
+      }
+
+      if (!contentToSummarize) {
+        return res.status(400).json({ message: "No content available to summarize" });
+      }
+
+      // Generate summary using AI
+      const summaryPrompt = `Summarize the following news story in 2-3 concise paragraphs optimized for marketing campaign creation. Focus on key facts, impact, and emotional elements that would be useful for creating compelling campaign content:\n\n${contentToSummarize}`;
+      
+      const summary = await aiProviderService.generateContent(summaryPrompt, aiModel || 'gpt-4o');
+
+      // Save to database
+      const storySummary = await storage.createStorySummary({
+        newsroomId,
+        title,
+        originalText: text || null,
+        originalUrl: url || null,
+        summary,
+      });
+
+      res.json(storySummary);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error('Story summary error:', error);
+      res.status(500).json({ message: "Failed to create story summary", error: String(error) });
+    }
+  });
+
+  app.get("/api/newsrooms/:id/story-summaries", authenticateToken, async (req: any, res) => {
+    try {
+      const newsroomId = parseInt(req.params.id);
+      const summaries = await storage.getStorySummariesByNewsroom(newsroomId);
+      res.json(summaries);
+    } catch (error) {
+      console.error('Get story summaries error:', error);
+      res.status(500).json({ message: "Failed to fetch story summaries", error: String(error) });
+    }
+  });
+
   // Campaign Assistant Chat
   app.post("/api/campaigns/chat", authenticateToken, async (req: any, res) => {
     try {
