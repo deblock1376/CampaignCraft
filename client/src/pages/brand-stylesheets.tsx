@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState } from "react";
+import { useLocation } from "wouter";
 import Sidebar from "@/components/layout/sidebar";
 import Header from "@/components/layout/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,7 +29,7 @@ const formSchema = insertBrandStylesheetSchema.extend({
 });
 
 export default function BrandStylesheets() {
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [, setLocation] = useLocation();
   const [editingStylesheet, setEditingStylesheet] = useState<any>(null);
   const [deletingStylesheet, setDeletingStylesheet] = useState<any>(null);
   const { toast } = useToast();
@@ -43,29 +44,6 @@ export default function BrandStylesheets() {
         throw new Error('Failed to fetch stylesheets');
       }
       return response.json();
-    },
-  });
-
-  const createMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await apiRequest("POST", `/api/newsrooms/${newsroomId}/stylesheets`, data);
-      return response.json();
-    },
-    onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/newsrooms", newsroomId, "stylesheets"] });
-      setIsCreateOpen(false);
-      form.reset();
-      toast({
-        title: "Success",
-        description: "Grounding guide created successfully",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create grounding guide",
-        variant: "destructive",
-      });
     },
   });
 
@@ -149,10 +127,9 @@ export default function BrandStylesheets() {
     
     delete submitData.keyMessagesText;
     
+    // Only handle update, create is done through Marketing Assistant
     if (editingStylesheet) {
       updateMutation.mutate({ id: editingStylesheet.id, data: submitData });
-    } else {
-      createMutation.mutate(submitData);
     }
   };
 
@@ -170,7 +147,6 @@ export default function BrandStylesheets() {
   };
 
   const handleCloseDialog = () => {
-    setIsCreateOpen(false);
     setEditingStylesheet(null);
     form.reset();
   };
@@ -183,19 +159,17 @@ export default function BrandStylesheets() {
           title="Grounding Library" 
           subtitle="Manage your newsroom's brand voice and messaging guidelines"
           action={
-            <Button onClick={() => setIsCreateOpen(true)} className="flex items-center justify-center">
+            <Button onClick={() => setLocation("/marketing-assistant")} className="flex items-center justify-center">
               <i className="fas fa-plus mr-2"></i>
-              New Library
+              Build New Library
             </Button>
           }
         />
         
-        <Dialog open={isCreateOpen || !!editingStylesheet} onOpenChange={handleCloseDialog}>
+        <Dialog open={!!editingStylesheet} onOpenChange={handleCloseDialog}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>
-                {editingStylesheet ? "Edit Grounding Guide" : "Create Grounding Guide"}
-              </DialogTitle>
+              <DialogTitle>Edit Grounding Guide</DialogTitle>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -318,12 +292,8 @@ export default function BrandStylesheets() {
                   <Button type="button" variant="outline" onClick={handleCloseDialog}>
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-                    {editingStylesheet ? (
-                      updateMutation.isPending ? "Updating..." : "Update Stylesheet"
-                    ) : (
-                      createMutation.isPending ? "Creating..." : "Create Stylesheet"
-                    )}
+                  <Button type="submit" disabled={updateMutation.isPending}>
+                    {updateMutation.isPending ? "Updating..." : "Update Grounding Guide"}
                   </Button>
                 </div>
               </form>
@@ -513,11 +483,11 @@ export default function BrandStylesheets() {
             ) : (
               <div className="text-center py-12">
                 <i className="fas fa-palette text-4xl text-slate-300 mb-4"></i>
-                <h3 className="text-lg font-medium text-slate-900 mb-2">No brand stylesheets</h3>
-                <p className="text-sm text-slate-600 mb-4">Create your first brand stylesheet to get started</p>
-                <Button onClick={() => setIsCreateOpen(true)}>
-                  <i className="fas fa-plus mr-2"></i>
-                  Create Stylesheet
+                <h3 className="text-lg font-medium text-slate-900 mb-2">No Grounding Libraries Yet</h3>
+                <p className="text-sm text-slate-600 mb-4">Build your first grounding library using the Marketing Assistant's guided workflow</p>
+                <Button onClick={() => setLocation("/marketing-assistant")}>
+                  <i className="fas fa-wand-magic-sparkles mr-2"></i>
+                  Go to Marketing Assistant
                 </Button>
               </div>
             )}
