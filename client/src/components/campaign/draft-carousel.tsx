@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronLeft, ChevronRight, Check, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, Sparkles, Save } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +16,7 @@ interface DraftCarouselProps {
 export default function DraftCarousel({ drafts, onMerge }: DraftCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedDrafts, setSelectedDrafts] = useState<number[]>([]);
+  const [savedDrafts, setSavedDrafts] = useState<number[]>([]);
   const { toast } = useToast();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const newsroomId = user.newsroomId || 1;
@@ -49,6 +50,31 @@ export default function DraftCarousel({ drafts, onMerge }: DraftCarouselProps) {
     },
   });
 
+  const saveDraftMutation = useMutation({
+    mutationFn: async (draftId: number) => {
+      const response = await apiRequest("POST", "/api/campaigns/save-draft", {
+        draftId,
+        newsroomId,
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/newsrooms", newsroomId, "campaigns"] });
+      setSavedDrafts((prev) => [...prev, data.id]);
+      toast({
+        title: "Draft Saved Successfully",
+        description: "This variation has been saved to your campaigns",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Save Failed",
+        description: "There was an error saving the draft",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handlePrevious = () => {
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : drafts.length - 1));
   };
@@ -75,6 +101,10 @@ export default function DraftCarousel({ drafts, onMerge }: DraftCarouselProps) {
       return;
     }
     mergeMutation.mutate(selectedDrafts);
+  };
+
+  const handleSaveDraft = (draftId: number) => {
+    saveDraftMutation.mutate(draftId);
   };
 
   if (!drafts || drafts.length === 0) {
