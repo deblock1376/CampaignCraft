@@ -871,6 +871,9 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
   };
 
   if (!currentGoal) {
+    const campaignAssistant = goals.find(g => g.id === 'campaign-assistant');
+    const otherGoals = goals.filter(g => g.id !== 'campaign-assistant');
+
     return (
       <div className="space-y-6">
         <div className="text-center">
@@ -878,8 +881,52 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
           <p className="text-gray-600">Let's walk through creating your marketing content step by step. What would you like to create today?</p>
         </div>
 
+        {/* Campaign Assistant - Full Width */}
+        {campaignAssistant && (() => {
+          const Icon = campaignAssistant.icon;
+          return (
+            <Card key={campaignAssistant.id} className="cursor-pointer hover:shadow-md transition-shadow group">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                    campaignAssistant.category === 'campaign' ? 'bg-blue-100 text-blue-600' :
+                    campaignAssistant.category === 'content' ? 'bg-green-100 text-green-600' :
+                    'bg-orange-100 text-orange-600'
+                  }`}>
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <CardTitle className="text-lg group-hover:text-primary transition-colors">{campaignAssistant.title}</CardTitle>
+                    <Badge variant="outline" className="text-xs mt-1">
+                      {campaignAssistant.estimatedTime}
+                    </Badge>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600">{campaignAssistant.description}</p>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <Button 
+                  className="w-full" 
+                  onClick={() => {
+                    if (campaignAssistant.directLink) {
+                      setLocation(campaignAssistant.directLink);
+                    } else {
+                      setCurrentGoal(campaignAssistant.id);
+                    }
+                  }}
+                  data-testid={`goal-${campaignAssistant.id}`}
+                >
+                  {campaignAssistant.directLink ? 'Open Assistant' : 'Start Guide'}
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })()}
+
+        {/* Other Goals - Two Column Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {goals.map((goal) => {
+          {otherGoals.map((goal) => {
             const Icon = goal.icon;
             return (
               <Card key={goal.id} className="cursor-pointer hover:shadow-md transition-shadow group">
