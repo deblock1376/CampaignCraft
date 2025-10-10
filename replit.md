@@ -50,22 +50,24 @@ Preferred communication style: Simple, everyday language.
 - **Backend Integration**: Utilizes existing DELETE /api/stylesheets/:id endpoint
 - **State Management**: Proper cleanup and cache invalidation after successful deletion
 
-### October 9, 2025: Comprehensive Grounding Library Builder in Marketing Assistant
-- **Categorized Material Collection**: Implemented comprehensive 10-material type grounding library form organized into 4 categories:
-  - Brand Foundation (3 types): Strategy Playbook, Brand Style Guide, About Us Content
+### October 10, 2025: Simplified Grounding Library Workflow - Materials-First Approach
+- **Streamlined Workflow**: Build Grounding Library now starts directly with reference materials collection (removed separate brand voice step)
+- **Brand Voice as Material**: Brand Voice & Mission moved into materials as first item in Brand Foundation category
+- **11 Material Types**: Comprehensive grounding library form organized into 4 categories:
+  - Brand Foundation (4 types): Brand Voice & Mission, Strategy Playbook, Brand Style Guide, About Us Content
   - Campaign Examples (3 types): Past Campaigns, Impact News Stories, Reader Testimonials
   - Audience Intelligence (3 types): Audience Segments, Survey Responses, Key Local Dates
   - Performance Data (2 types): Survey & Research Data, Performance Metrics & Analytics
+- **Two-Step Process**: Simplified workflow from 3 steps to 2 steps:
+  - Step 1: Add Reference Materials (includes brand voice, mission, and all other materials)
+  - Step 2: Generate Grounding Library
 - **Flexible Input Methods**: Each material type supports both text paste and file upload via URL
 - **Visual Progress Indicators**: Category progress badges show material count and completeness
 - **Accordion UI**: Collapsible sections for easy navigation across material categories
-- **Marketing Assistant Integration**: Updated "Build Grounding Library" workflow to use new form:
-  - Step 1: Define brand voice and mission
-  - Step 2: Add reference materials using comprehensive grounding library form
-  - Step 3: Generate grounding library with all collected materials
-- **Backend Support**: Updated `/api/quickstart/grounding-library` endpoint to:
-  - Accept new `materials` parameter (replaces legacy `existingContent`)
-  - Parse materials across all 4 categories for AI context
+- **Backend Update**: Updated `/api/quickstart/grounding-library` endpoint to:
+  - Accept only `materials` parameter (removed separate `newsroomInfo` parameter)
+  - Extract brand voice from `materials.brandFoundation.brandVoice`
+  - Parse all 11 material types across 4 categories for AI context
   - Store materials in brand stylesheet's materials JSONB field
   - Use GPT-4o (default) for grounding library generation
 - **Database Integration**: Materials persisted to `brandStylesheets.materials` column for future reuse
