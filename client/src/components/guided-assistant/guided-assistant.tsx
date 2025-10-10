@@ -989,7 +989,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="sm" onClick={resetAssistant}>
           <ArrowLeft className="w-4 h-4 mr-1" />
-          Back to Goals
+          Back to Menu
         </Button>
         <div className="flex-1">
           <h2 className="text-xl font-bold text-gray-900">{selectedGoal?.title}</h2>
