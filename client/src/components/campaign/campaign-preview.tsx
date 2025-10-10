@@ -107,7 +107,7 @@ export default function CampaignPreview({
                       name="brandStylesheetId"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Grounding Guide</FormLabel>
+                          <FormLabel>Grounding Library</FormLabel>
                           <p className="text-xs text-slate-500 mb-2">Apply your organization's brand voice and messaging guidelines</p>
                           <div className="flex space-x-2">
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
