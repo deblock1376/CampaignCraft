@@ -56,11 +56,11 @@ export default function DraftCarousel({ drafts, onMerge }: DraftCarouselProps) {
         draftId,
         newsroomId,
       });
-      return response.json();
+      return { savedCampaign: await response.json(), originalDraftId: draftId };
     },
-    onSuccess: (data) => {
+    onSuccess: ({ originalDraftId }) => {
       queryClient.invalidateQueries({ queryKey: ["/api/newsrooms", newsroomId, "campaigns"] });
-      setSavedDrafts((prev) => [...prev, data.id]);
+      setSavedDrafts((prev) => [...prev, originalDraftId]);
       toast({
         title: "Draft Saved Successfully",
         description: "This variation has been saved to your campaigns",

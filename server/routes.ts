@@ -589,10 +589,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         type: draft.type,
         objective: draft.objective,
         context: draft.context || "",
-        aiModel: draft.aiModel || 'gpt-4o',
+        aiModel: String(draft.aiModel || 'gpt-4o'),
         brandStylesheetId: draft.brandStylesheetId || null,
         status: 'draft',
-        content: draft.content,
+        content: draft.content as any,
         parentCampaignId: draft.parentCampaignId || null,
         draftNumber: null, // No draft number for saved campaigns
         selectedForMerge: false,
