@@ -34,6 +34,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### October 10, 2025: Streamlined Grounding Library Creation
+- **Single Creation Path**: Marketing Assistant is now the only way to create new grounding libraries
+- **Removed Duplicate Form**: Eliminated the simple create dialog from Grounding Library page to avoid confusion
+- **Improved Navigation**: "Build New Library" button on Grounding Library page navigates to Marketing Assistant
+- **Updated Empty State**: Clear messaging guides new users to Marketing Assistant for their first library
+- **Management Focus**: Grounding Library page now focused on viewing, editing, and deleting existing libraries
+- **User Experience**: Single, guided workflow ensures users always collect comprehensive materials through categorized form
+
 ### October 10, 2025: Delete Grounding Libraries Feature
 - **Delete Functionality**: Added ability to delete grounding libraries from the Grounding Library page
 - **Confirmation Dialog**: Implemented AlertDialog component for delete confirmation to prevent accidental deletions
