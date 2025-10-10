@@ -378,6 +378,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           voice: brandStylesheet.voice,
           keyMessages: brandStylesheet.keyMessages || [],
           guidelines: brandStylesheet.guidelines || '',
+          materials: brandStylesheet.materials || null,
         },
         newsroomName: brandStylesheet.name.includes("Style") ? newsroom.name : brandStylesheet.name,
         ...(validatedData.segments && { segments: validatedData.segments }),
