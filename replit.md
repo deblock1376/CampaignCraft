@@ -34,6 +34,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### October 10, 2025: Save Individual Campaign Variations
+- **Save to Campaigns Feature**: Added ability to save individual draft variations without merging
+- **New Endpoint**: Created `/api/campaigns/save-draft` POST endpoint to duplicate draft as standalone campaign
+- **UI Enhancement**: Added "Save to Campaigns" button to each variation in the draft carousel
+- **Visual Feedback**: Button shows "Saved" with checkmark when variation is saved and stays disabled
+- **Smart State Management**: Tracks saved drafts by original ID to prevent duplicate saves
+- **Seamless Integration**: Saved campaigns appear immediately in campaign list with query cache invalidation
+- **User Flow**: Users can now save any favorite variations individually while still being able to merge multiple drafts
+
 ### October 10, 2025: Materials-Enhanced Campaign Generation
 - **Full Materials Integration**: Campaign generation now uses ALL 11 material types from grounding libraries
 - **Enhanced AI Prompts**: AI receives complete context including:
