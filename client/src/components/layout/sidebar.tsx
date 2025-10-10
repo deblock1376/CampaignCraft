@@ -12,22 +12,31 @@ export default function Sidebar() {
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
   const isAdmin = currentUser.email === 'admin@campaigncraft.com';
 
-  const baseNavItems = [
+  // Organized menu items by category for better UX
+  const campaignCreationItems = [
     { href: "/campaigns/assistant-test", icon: "fas fa-comments", label: "Campaign Assistant" },
-    { href: "/", icon: "fas fa-home", label: "Dashboard" },
     { href: "/campaigns/new", icon: "fas fa-plus-circle", label: "New Campaign" },
-    { href: "/campaigns/history", icon: "fas fa-history", label: "Campaign History" },
-    { href: "/story-summaries", icon: "fas fa-newspaper", label: "Story Summaries" },
     { href: "/assistant", icon: "fas fa-user-friends", label: "Marketing Assistant" },
+  ];
+
+  const campaignManagementItems = [
+    { href: "/", icon: "fas fa-home", label: "Dashboard" },
+    { href: "/campaigns/history", icon: "fas fa-history", label: "Campaign History" },
+  ];
+
+  const contentResourcesItems = [
+    { href: "/story-summaries", icon: "fas fa-newspaper", label: "Story Summaries" },
+  ];
+
+  const optimizationItems = [
     { href: "/segments", icon: "fas fa-users", label: "Audience Segments" },
     { href: "/email-optimizer", icon: "fas fa-envelope", label: "Email Optimizer" },
+  ];
+
+  const systemItems = [
     { href: "/settings", icon: "fas fa-cog", label: "Settings" },
   ];
 
-  // Only add admin control for admin@campaigncraft.com
-  const navItems = isAdmin 
-    ? [...baseNavItems, { href: "/admin", icon: "fas fa-shield-alt", label: "Admin Control" }]
-    : baseNavItems;
 
   return (
     <aside className="w-64 bg-white border-r border-slate-200 flex flex-col">
@@ -41,8 +50,49 @@ export default function Sidebar() {
         </Link>
       </div>
       
-      <nav className="flex-1 p-4 space-y-2">
-        {navItems.map((item) => (
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        {/* Campaign Creation */}
+        {campaignCreationItems.map((item) => (
+          <Link key={item.href} href={item.href}>
+            <div className={cn(
+              "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors cursor-pointer",
+              location === item.href 
+                ? "bg-primary text-white" 
+                : "text-slate-600 hover:bg-slate-100"
+            )}>
+              <i className={`${item.icon} w-4`}></i>
+              <span>{item.label}</span>
+            </div>
+          </Link>
+        ))}
+
+        {/* Divider */}
+        <div className="py-2">
+          <div className="border-t border-slate-200"></div>
+        </div>
+
+        {/* Campaign Management */}
+        {campaignManagementItems.map((item) => (
+          <Link key={item.href} href={item.href}>
+            <div className={cn(
+              "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors cursor-pointer",
+              location === item.href 
+                ? "bg-primary text-white" 
+                : "text-slate-600 hover:bg-slate-100"
+            )}>
+              <i className={`${item.icon} w-4`}></i>
+              <span>{item.label}</span>
+            </div>
+          </Link>
+        ))}
+
+        {/* Divider */}
+        <div className="py-2">
+          <div className="border-t border-slate-200"></div>
+        </div>
+
+        {/* Content & Resources */}
+        {contentResourcesItems.map((item) => (
           <Link key={item.href} href={item.href}>
             <div className={cn(
               "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors cursor-pointer",
@@ -100,6 +150,61 @@ export default function Sidebar() {
             </div>
           )}
         </div>
+
+        {/* Divider */}
+        <div className="py-2">
+          <div className="border-t border-slate-200"></div>
+        </div>
+
+        {/* Optimization Tools */}
+        {optimizationItems.map((item) => (
+          <Link key={item.href} href={item.href}>
+            <div className={cn(
+              "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors cursor-pointer",
+              location === item.href 
+                ? "bg-primary text-white" 
+                : "text-slate-600 hover:bg-slate-100"
+            )}>
+              <i className={`${item.icon} w-4`}></i>
+              <span>{item.label}</span>
+            </div>
+          </Link>
+        ))}
+
+        {/* Divider */}
+        <div className="py-2">
+          <div className="border-t border-slate-200"></div>
+        </div>
+
+        {/* System Settings */}
+        {systemItems.map((item) => (
+          <Link key={item.href} href={item.href}>
+            <div className={cn(
+              "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors cursor-pointer",
+              location === item.href 
+                ? "bg-primary text-white" 
+                : "text-slate-600 hover:bg-slate-100"
+            )}>
+              <i className={`${item.icon} w-4`}></i>
+              <span>{item.label}</span>
+            </div>
+          </Link>
+        ))}
+
+        {/* Admin Control (if admin) */}
+        {isAdmin && (
+          <Link href="/admin">
+            <div className={cn(
+              "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors cursor-pointer",
+              location === "/admin"
+                ? "bg-primary text-white" 
+                : "text-slate-600 hover:bg-slate-100"
+            )}>
+              <i className="fas fa-shield-alt w-4"></i>
+              <span>Admin Control</span>
+            </div>
+          </Link>
+        )}
       </nav>
       
       <div className="p-4 border-t border-slate-200">
