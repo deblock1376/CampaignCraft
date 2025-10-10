@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +42,7 @@ export interface AssistantGoal {
   steps: AssistantStep[];
   estimatedTime: string;
   category: 'campaign' | 'content' | 'setup';
+  directLink?: string;
 }
 
 interface GuidedAssistantProps {
@@ -71,6 +73,7 @@ interface WizardState {
 }
 
 export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) {
+  const [, setLocation] = useLocation();
   const [currentGoal, setCurrentGoal] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
@@ -179,6 +182,16 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
   });
 
   const goals: AssistantGoal[] = [
+    {
+      id: 'campaign-assistant',
+      title: 'Campaign Assistant',
+      description: 'Chat with AI to create campaigns step-by-step with personalized guidance',
+      icon: MessageSquare,
+      category: 'campaign',
+      estimatedTime: '5-10 minutes',
+      directLink: '/campaigns/assistant-test',
+      steps: []
+    },
     {
       id: 'breaking-news',
       title: 'Breaking News Campaign',
@@ -891,10 +904,16 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
                 <CardContent className="pt-0">
                   <Button 
                     className="w-full" 
-                    onClick={() => setCurrentGoal(goal.id)}
+                    onClick={() => {
+                      if (goal.directLink) {
+                        setLocation(goal.directLink);
+                      } else {
+                        setCurrentGoal(goal.id);
+                      }
+                    }}
                     data-testid={`goal-${goal.id}`}
                   >
-                    Start Guide
+                    {goal.directLink ? 'Open Assistant' : 'Start Guide'}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </CardContent>
