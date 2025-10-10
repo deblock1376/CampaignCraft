@@ -16,13 +16,17 @@ Preferred communication style: Simple, everyday language.
 - **Design Philosophy**: Clean, intuitive interface featuring interactive forms, a multi-draft carousel, and clear visual indicators.
 - **Key UI Features**: Dashboard, Campaign Generator (with Campaign Builder for goals/audience setup), Template Library, Grounding Library, Campaign History, Guided Marketing Assistant, Segment Management, and a unified history view.
 - **Campaign Builder**: Right-side panel in Campaign Assistant with subtitle "Set your goals and audience" - allows users to configure objectives, segments, grounding guides, notes, and reference materials.
-- **Navigation Structure**: Organized sidebar menu with logical groupings separated by visual dividers:
-  1. Campaign Creation (top priority): Campaign Assistant, New Campaign, Marketing Assistant
-  2. Campaign Management: Dashboard, Campaign History
-  3. Content & Resources: Story Summaries, Grounding Library (with dropdown)
-  4. Optimization Tools: Audience Segments, Email Optimizer
-  5. System: Settings, Admin Control (admin only)
-- **Featured Campaign Assistant**: Prominently displayed with gradient background, "Recommended" badge, and enhanced visual styling in Marketing Assistant page.
+- **Navigation Structure**: Streamlined sidebar menu in priority order:
+  1. Dashboard (top)
+  2. Campaign Builder (conversational AI campaign creation)
+  3. Campaign History
+  4. Grounding Library (with dropdown for View Libraries and Create)
+  5. Audience Segments
+  6. Story Summaries
+  7. Settings
+  8. Admin Control (admin only)
+  9. Marketing Assistant (gradient box at bottom for quick-start templates)
+- **Featured Campaign Builder**: Prominently displayed with gradient background, "Recommended" badge, and enhanced visual styling in Marketing Assistant page.
 
 ### Technical Implementations
 - **Frontend**: React with Wouter for routing, TanStack React Query for server state management, and Vite for building.
