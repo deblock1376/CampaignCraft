@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { Search, Edit, Save, X, History, Code } from "lucide-react";
 
 interface Prompt {
@@ -44,24 +45,21 @@ export default function AdminPrompts() {
 
   const { data: categories = [] } = useQuery<PromptCategory[]>({
     queryKey: ["/api/prompt-categories"],
+    queryFn: async () => {
+      return await apiRequest('GET', '/api/prompt-categories');
+    },
   });
 
   const { data: prompts = [], isLoading } = useQuery<Prompt[]>({
     queryKey: ["/api/prompts"],
+    queryFn: async () => {
+      return await apiRequest('GET', '/api/prompts');
+    },
   });
 
   const updatePromptMutation = useMutation({
     mutationFn: async (data: { id: number; updates: Partial<Prompt> }) => {
-      const response = await fetch(`/api/prompts/${data.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(data.updates),
-      });
-      if (!response.ok) throw new Error("Failed to update prompt");
-      return response.json();
+      return await apiRequest('PUT', `/api/prompts/${data.id}`, data.updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/prompts"] });

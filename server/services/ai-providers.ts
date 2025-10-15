@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenAI } from '@google/genai';
+import { storage } from '../storage';
 
 /*
 <important_code_snippet_instructions>
@@ -16,6 +17,15 @@ const DEFAULT_ANTHROPIC_MODEL = "claude-sonnet-4-20250514";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const DEFAULT_OPENAI_MODEL = "gpt-4o";
+
+// Prompt cache with TTL (5 minutes)
+interface CachedPrompt {
+  text: string;
+  systemMessage: string | null;
+  timestamp: number;
+}
+
+const PROMPT_CACHE_TTL = 5 * 60 * 1000;
 
 export interface CampaignRequest {
   type: 'email' | 'social' | 'web';
@@ -57,6 +67,7 @@ class AIProviderService {
   private openai: OpenAI;
   private anthropic: Anthropic;
   private gemini: GoogleGenAI;
+  private promptCache: Map<string, CachedPrompt>;
 
   constructor() {
     this.openai = new OpenAI({ 
@@ -70,10 +81,56 @@ class AIProviderService {
     this.gemini = new GoogleGenAI({ 
       apiKey: process.env.GEMINI_API_KEY || "default_key"
     });
+
+    this.promptCache = new Map<string, CachedPrompt>();
+  }
+
+  private async getPromptByKey(
+    key: string, 
+    variables: Record<string, string> = {}
+  ): Promise<{ text: string; systemMessage: string | null }> {
+    const now = Date.now();
+    const cacheKey = `${key}:${JSON.stringify(variables)}`;
+    const cached = this.promptCache.get(cacheKey);
+    
+    if (cached && (now - cached.timestamp) < PROMPT_CACHE_TTL) {
+      return { text: cached.text, systemMessage: cached.systemMessage };
+    }
+
+    try {
+      const prompt = await storage.getPromptByKey(key);
+      
+      if (!prompt) {
+        console.warn(`Prompt not found for key: ${key}, using fallback`);
+        return { text: '', systemMessage: null };
+      }
+
+      let interpolatedText = prompt.promptText;
+      
+      for (const [varKey, varValue] of Object.entries(variables)) {
+        const regex = new RegExp(`{{${varKey}}}`, 'g');
+        interpolatedText = interpolatedText.replace(regex, varValue);
+      }
+
+      const result = {
+        text: interpolatedText,
+        systemMessage: prompt.systemMessage
+      };
+
+      this.promptCache.set(cacheKey, {
+        ...result,
+        timestamp: now
+      });
+
+      return result;
+    } catch (error) {
+      console.error(`Error fetching prompt ${key}:`, error);
+      return { text: '', systemMessage: null };
+    }
   }
 
   async generateCampaign(request: CampaignRequest, model: string): Promise<CampaignResponse> {
-    const prompt = this.buildCampaignPrompt(request);
+    const prompt = await this.buildCampaignPrompt(request);
     
     switch (model) {
       case 'gpt-4o':
@@ -111,7 +168,7 @@ class AIProviderService {
     type: string,
     model: string = 'gpt-4o'
   ): Promise<CampaignResponse> {
-    const prompt = this.buildMergePrompt(drafts, newsroomName, objective, type);
+    const prompt = await this.buildMergePrompt(drafts, newsroomName, objective, type);
     
     switch (model) {
       case 'gpt-4o':
@@ -268,7 +325,7 @@ class AIProviderService {
     }
   }
 
-  private buildMergePrompt(drafts: Array<{ subject?: string; content: string; cta: string }>, newsroomName: string, objective: string, type: string): string {
+  private async buildMergePrompt(drafts: Array<{ subject?: string; content: string; cta: string }>, newsroomName: string, objective: string, type: string): Promise<string> {
     const draftsSummary = drafts.map((draft, index) => `
 Draft ${index + 1}:
 Subject: ${draft.subject || 'No subject'}
@@ -276,6 +333,24 @@ Content: ${draft.content}
 CTA: ${draft.cta}
     `).join('\n---\n');
 
+    try {
+      const dbPrompt = await this.getPromptByKey('draft_merge', {
+        newsroomName,
+        campaignType: type,
+        objective,
+        draftCount: drafts.length.toString(),
+        draftsSummary
+      });
+
+      if (dbPrompt.text && dbPrompt.text.trim().length > 0) {
+        console.log('Using database prompt for draft merging');
+        return dbPrompt.text;
+      }
+    } catch (error) {
+      console.error('Error fetching merge prompt from database, using hardcoded fallback:', error);
+    }
+
+    console.log('Using hardcoded fallback prompt for draft merging');
     return `
 👤 Your Role
 You are a copywriter at BlueLena, tasked with intelligently merging multiple campaign drafts into one cohesive, high-performing email campaign.
@@ -445,7 +520,7 @@ Apply these segment-specific principles to craft your campaign message, ensuring
 `;
   }
 
-  private buildCampaignPrompt(request: CampaignRequest): string {
+  private async buildCampaignPrompt(request: CampaignRequest): Promise<string> {
     const objectiveMap = {
       subscription: 'subscriptions',
       donation: 'donations', 
@@ -453,41 +528,54 @@ Apply these segment-specific principles to craft your campaign message, ensuring
       engagement: 'reader support'
     };
 
-    // Build context section with Prompt Builder inputs
-    let contextSection = `📋 Campaign Context
-Publisher: ${request.newsroomName}
+    let contextDetails = `Publisher: ${request.newsroomName}
 Campaign Type: ${request.type}
 Primary Objective: ${request.objective} (${objectiveMap[request.objective as keyof typeof objectiveMap]})
 Breaking News Story/Context: ${request.context}`;
 
     if (request.segments && request.segments.length > 0) {
-      contextSection += `\nTarget Segments: ${request.segments.join(', ')}`;
+      contextDetails += `\nTarget Segments: ${request.segments.join(', ')}`;
     }
 
     if (request.notes) {
-      contextSection += `\nCampaign Notes: ${request.notes}`;
+      contextDetails += `\nCampaign Notes: ${request.notes}`;
     }
 
     if (request.referenceCampaigns && request.referenceCampaigns.length > 0) {
-      contextSection += `\nReference Campaigns for Tone/Style: ${request.referenceCampaigns.map(c => `${c.title} (${c.objective})`).join(', ')}`;
+      contextDetails += `\nReference Campaigns for Tone/Style: ${request.referenceCampaigns.map(c => `${c.title} (${c.objective})`).join(', ')}`;
     }
 
-    contextSection += `
-
-Brand Voice & Tone:
-- Tone: ${request.brandStylesheet.tone}
-- Voice: ${request.brandStylesheet.voice}
-- Key Messages: ${request.brandStylesheet.keyMessages.join(', ')}
-- Additional Guidelines: ${request.brandStylesheet.guidelines}`;
-
-    // Add materials context if available
     const materialsContext = request.brandStylesheet.materials 
       ? this.buildMaterialsContext(request.brandStylesheet.materials)
       : '';
     
-    // Build segment-specific messaging instructions
     const segmentInstructions = this.buildSegmentInstructions(request.segments);
     
+    try {
+      const dbPrompt = await this.getPromptByKey('campaign_generate', {
+        newsroomName: request.newsroomName,
+        campaignType: request.type,
+        objective: request.objective,
+        objectiveName: objectiveMap[request.objective as keyof typeof objectiveMap] || request.objective,
+        context: request.context,
+        contextDetails: contextDetails,
+        tone: request.brandStylesheet.tone,
+        voice: request.brandStylesheet.voice,
+        keyMessages: request.brandStylesheet.keyMessages.join(', '),
+        guidelines: request.brandStylesheet.guidelines,
+        materialsContext: materialsContext || 'No additional materials provided.',
+        segmentInstructions: segmentInstructions || 'No segment-specific targeting.',
+      });
+
+      if (dbPrompt.text && dbPrompt.text.trim().length > 0) {
+        console.log('Using database prompt for campaign generation');
+        return dbPrompt.text;
+      }
+    } catch (error) {
+      console.error('Error fetching campaign prompt from database, using hardcoded fallback:', error);
+    }
+
+    console.log('Using hardcoded fallback prompt for campaign generation');
     return `
 👤 Your Role
 You are a copywriter at BlueLena, tasked with drafting compelling, emotionally resonant, and urgent email campaigns for independent news organizations. These campaigns will feature a breaking news story and include an appeal for support.
@@ -498,7 +586,15 @@ Create a standalone audience engagement and reader revenue email campaign that u
 - Showcase the unique value of the publisher's journalism
 - Emphasize the role of readers in sustaining independent reporting
 
-${contextSection}
+📋 Campaign Context
+${contextDetails}
+
+Brand Voice & Tone:
+- Tone: ${request.brandStylesheet.tone}
+- Voice: ${request.brandStylesheet.voice}
+- Key Messages: ${request.brandStylesheet.keyMessages.join(', ')}
+- Additional Guidelines: ${request.brandStylesheet.guidelines}
+
 ${materialsContext}
 ${segmentInstructions}
 
