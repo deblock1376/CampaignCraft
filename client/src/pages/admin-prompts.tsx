@@ -43,23 +43,26 @@ export default function AdminPrompts() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
 
-  const { data: categories = [] } = useQuery<PromptCategory[]>({
+  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useQuery<PromptCategory[]>({
     queryKey: ["/api/prompt-categories"],
     queryFn: async () => {
-      return await apiRequest('GET', '/api/prompt-categories');
+      const res = await apiRequest('GET', '/api/prompt-categories');
+      return await res.json();
     },
   });
 
-  const { data: prompts = [], isLoading } = useQuery<Prompt[]>({
+  const { data: prompts = [], isLoading: promptsLoading, error: promptsError } = useQuery<Prompt[]>({
     queryKey: ["/api/prompts"],
     queryFn: async () => {
-      return await apiRequest('GET', '/api/prompts');
+      const res = await apiRequest('GET', '/api/prompts');
+      return await res.json();
     },
   });
 
   const updatePromptMutation = useMutation({
     mutationFn: async (data: { id: number; updates: Partial<Prompt> }) => {
-      return await apiRequest('PUT', `/api/prompts/${data.id}`, data.updates);
+      const res = await apiRequest('PUT', `/api/prompts/${data.id}`, data.updates);
+      return await res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/prompts"] });
@@ -105,10 +108,36 @@ export default function AdminPrompts() {
     });
   };
 
-  const groupedPrompts = categories.map((category) => ({
+  // Ensure categories is always an array before mapping
+  const groupedPrompts = Array.isArray(categories) ? categories.map((category) => ({
     ...category,
     prompts: filteredPrompts.filter((p) => p.categoryId === category.id),
-  }));
+  })) : [];
+
+  // Show error state if authentication fails
+  if (categoriesError || promptsError) {
+    return (
+      <div className="h-full p-6 bg-slate-50">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Authentication Error</CardTitle>
+              <CardDescription>
+                Your session has expired. Please log out and log back in to access the Prompt Manager.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Error: {(categoriesError as Error)?.message || (promptsError as Error)?.message || 'Unable to load prompts'}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  const isLoading = categoriesLoading || promptsLoading;
 
   return (
     <div className="h-full p-6 bg-slate-50">
