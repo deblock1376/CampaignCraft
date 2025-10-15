@@ -7,6 +7,9 @@ import {
   segments,
   campaignEvaluations,
   storySummaries,
+  promptCategories,
+  prompts,
+  promptVersions,
   type User,
   type Newsroom,
   type BrandStylesheet,
@@ -15,6 +18,9 @@ import {
   type Segment,
   type CampaignEvaluation,
   type StorySummary,
+  type PromptCategory,
+  type Prompt,
+  type PromptVersion,
   type InsertUser,
   type InsertNewsroom,
   type InsertBrandStylesheet,
@@ -22,7 +28,10 @@ import {
   type InsertCampaignTemplate,
   type InsertSegment,
   type InsertCampaignEvaluation,
-  type InsertStorySummary
+  type InsertStorySummary,
+  type InsertPromptCategory,
+  type InsertPrompt,
+  type InsertPromptVersion
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
@@ -81,6 +90,24 @@ export interface IStorage {
   getStorySummariesByNewsroom(newsroomId: number): Promise<StorySummary[]>;
   createStorySummary(summary: InsertStorySummary): Promise<StorySummary>;
   deleteStorySummary(id: number): Promise<void>;
+  
+  // Prompt Categories
+  getPromptCategory(id: number): Promise<PromptCategory | undefined>;
+  getAllPromptCategories(): Promise<PromptCategory[]>;
+  createPromptCategory(category: InsertPromptCategory): Promise<PromptCategory>;
+  
+  // Prompts
+  getPrompt(id: number): Promise<Prompt | undefined>;
+  getPromptByKey(key: string): Promise<Prompt | undefined>;
+  getPromptsByCategory(categoryId: number): Promise<Prompt[]>;
+  getAllPrompts(): Promise<Prompt[]>;
+  createPrompt(prompt: InsertPrompt): Promise<Prompt>;
+  updatePrompt(id: number, prompt: Partial<InsertPrompt>): Promise<Prompt>;
+  deletePrompt(id: number): Promise<void>;
+  
+  // Prompt Versions
+  getPromptVersions(promptId: number): Promise<PromptVersion[]>;
+  createPromptVersion(version: InsertPromptVersion): Promise<PromptVersion>;
 }
 
 export class MemStorage implements IStorage {
@@ -456,6 +483,48 @@ export class MemStorage implements IStorage {
   async deleteStorySummary(id: number): Promise<void> {
     throw new Error('MemStorage not implemented');
   }
+
+  // Prompt Categories (stub for MemStorage - not used in production)
+  async getPromptCategory(id: number): Promise<PromptCategory | undefined> {
+    throw new Error('MemStorage not implemented');
+  }
+  async getAllPromptCategories(): Promise<PromptCategory[]> {
+    return [];
+  }
+  async createPromptCategory(category: InsertPromptCategory): Promise<PromptCategory> {
+    throw new Error('MemStorage not implemented');
+  }
+
+  // Prompts (stub for MemStorage - not used in production)
+  async getPrompt(id: number): Promise<Prompt | undefined> {
+    throw new Error('MemStorage not implemented');
+  }
+  async getPromptByKey(key: string): Promise<Prompt | undefined> {
+    throw new Error('MemStorage not implemented');
+  }
+  async getPromptsByCategory(categoryId: number): Promise<Prompt[]> {
+    return [];
+  }
+  async getAllPrompts(): Promise<Prompt[]> {
+    return [];
+  }
+  async createPrompt(prompt: InsertPrompt): Promise<Prompt> {
+    throw new Error('MemStorage not implemented');
+  }
+  async updatePrompt(id: number, prompt: Partial<InsertPrompt>): Promise<Prompt> {
+    throw new Error('MemStorage not implemented');
+  }
+  async deletePrompt(id: number): Promise<void> {
+    throw new Error('MemStorage not implemented');
+  }
+
+  // Prompt Versions (stub for MemStorage - not used in production)
+  async getPromptVersions(promptId: number): Promise<PromptVersion[]> {
+    return [];
+  }
+  async createPromptVersion(version: InsertPromptVersion): Promise<PromptVersion> {
+    throw new Error('MemStorage not implemented');
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -693,6 +762,68 @@ export class DatabaseStorage implements IStorage {
 
   async deleteStorySummary(id: number): Promise<void> {
     await db.delete(storySummaries).where(eq(storySummaries.id, id));
+  }
+
+  // Prompt Categories
+  async getPromptCategory(id: number): Promise<PromptCategory | undefined> {
+    const [category] = await db.select().from(promptCategories).where(eq(promptCategories.id, id));
+    return category || undefined;
+  }
+
+  async getAllPromptCategories(): Promise<PromptCategory[]> {
+    return await db.select().from(promptCategories).orderBy(promptCategories.name);
+  }
+
+  async createPromptCategory(category: InsertPromptCategory): Promise<PromptCategory> {
+    const [newCategory] = await db.insert(promptCategories).values(category).returning();
+    return newCategory;
+  }
+
+  // Prompts
+  async getPrompt(id: number): Promise<Prompt | undefined> {
+    const [prompt] = await db.select().from(prompts).where(eq(prompts.id, id));
+    return prompt || undefined;
+  }
+
+  async getPromptByKey(key: string): Promise<Prompt | undefined> {
+    const [prompt] = await db.select().from(prompts).where(eq(prompts.promptKey, key));
+    return prompt || undefined;
+  }
+
+  async getPromptsByCategory(categoryId: number): Promise<Prompt[]> {
+    return await db.select().from(prompts).where(eq(prompts.categoryId, categoryId)).orderBy(prompts.name);
+  }
+
+  async getAllPrompts(): Promise<Prompt[]> {
+    return await db.select().from(prompts).orderBy(prompts.categoryId, prompts.name);
+  }
+
+  async createPrompt(prompt: InsertPrompt): Promise<Prompt> {
+    const [newPrompt] = await db.insert(prompts).values(prompt).returning();
+    return newPrompt;
+  }
+
+  async updatePrompt(id: number, updates: Partial<InsertPrompt>): Promise<Prompt> {
+    const [updated] = await db
+      .update(prompts)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(prompts.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deletePrompt(id: number): Promise<void> {
+    await db.delete(prompts).where(eq(prompts.id, id));
+  }
+
+  // Prompt Versions
+  async getPromptVersions(promptId: number): Promise<PromptVersion[]> {
+    return await db.select().from(promptVersions).where(eq(promptVersions.promptId, promptId)).orderBy(desc(promptVersions.createdAt));
+  }
+
+  async createPromptVersion(version: InsertPromptVersion): Promise<PromptVersion> {
+    const [newVersion] = await db.insert(promptVersions).values(version).returning();
+    return newVersion;
   }
 }
 

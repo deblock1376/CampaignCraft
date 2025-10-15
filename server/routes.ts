@@ -1834,6 +1834,125 @@ Return JSON format:
     }
   });
 
+  // Prompt Management Routes (Admin Only)
+  app.get("/api/prompt-categories", authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      const categories = await storage.getAllPromptCategories();
+      res.json(categories);
+    } catch (error) {
+      console.error('Error fetching prompt categories:', error);
+      res.status(500).json({ message: "Failed to fetch categories" });
+    }
+  });
+
+  app.get("/api/prompts", authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      const prompts = await storage.getAllPrompts();
+      res.json(prompts);
+    } catch (error) {
+      console.error('Error fetching prompts:', error);
+      res.status(500).json({ message: "Failed to fetch prompts" });
+    }
+  });
+
+  app.get("/api/prompts/category/:categoryId", authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      const categoryId = parseInt(req.params.categoryId);
+      const prompts = await storage.getPromptsByCategory(categoryId);
+      res.json(prompts);
+    } catch (error) {
+      console.error('Error fetching prompts by category:', error);
+      res.status(500).json({ message: "Failed to fetch prompts" });
+    }
+  });
+
+  app.get("/api/prompts/:id", authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const prompt = await storage.getPrompt(id);
+      if (!prompt) {
+        return res.status(404).json({ message: "Prompt not found" });
+      }
+      res.json(prompt);
+    } catch (error) {
+      console.error('Error fetching prompt:', error);
+      res.status(500).json({ message: "Failed to fetch prompt" });
+    }
+  });
+
+  app.put("/api/prompts/:id", authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const schema = z.object({
+        name: z.string().optional(),
+        description: z.string().optional(),
+        promptText: z.string().optional(),
+        systemMessage: z.string().nullable().optional(),
+        variables: z.array(z.string()).optional(),
+        aiModel: z.string().optional(),
+        status: z.enum(['active', 'draft', 'archived']).optional(),
+        version: z.string().optional(),
+      });
+
+      const updates = schema.parse(req.body);
+      const updatedPrompt = await storage.updatePrompt(id, updates);
+      res.json(updatedPrompt);
+    } catch (error: any) {
+      console.error('Error updating prompt:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ message: "Invalid request data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update prompt" });
+    }
+  });
+
+  app.post("/api/prompts/:id/versions", authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      const promptId = parseInt(req.params.id);
+      const prompt = await storage.getPrompt(promptId);
+      if (!prompt) {
+        return res.status(404).json({ message: "Prompt not found" });
+      }
+
+      const schema = z.object({
+        changeDescription: z.string(),
+      });
+
+      const { changeDescription } = schema.parse(req.body);
+
+      // Create version snapshot of current prompt
+      const version = await storage.createPromptVersion({
+        promptId,
+        version: prompt.version,
+        promptText: prompt.promptText,
+        systemMessage: prompt.systemMessage,
+        variables: prompt.variables as any,
+        aiModel: prompt.aiModel,
+        changeDescription,
+        createdBy: req.user.userId,
+      });
+
+      res.json(version);
+    } catch (error: any) {
+      console.error('Error creating prompt version:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ message: "Invalid request data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create version" });
+    }
+  });
+
+  app.get("/api/prompts/:id/versions", authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      const promptId = parseInt(req.params.id);
+      const versions = await storage.getPromptVersions(promptId);
+      res.json(versions);
+    } catch (error) {
+      console.error('Error fetching prompt versions:', error);
+      res.status(500).json({ message: "Failed to fetch versions" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

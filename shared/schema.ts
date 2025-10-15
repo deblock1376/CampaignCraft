@@ -101,6 +101,42 @@ export const storySummaries = pgTable("story_summaries", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const promptCategories = pgTable("prompt_categories", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const prompts = pgTable("prompts", {
+  id: serial("id").primaryKey(),
+  categoryId: integer("category_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  promptKey: text("prompt_key").notNull().unique(),
+  promptText: text("prompt_text").notNull(),
+  systemMessage: text("system_message"),
+  variables: jsonb("variables"),
+  aiModel: text("ai_model").notNull().default("gpt-4o"),
+  status: text("status").notNull().default("active"),
+  version: text("version").notNull().default("1.0"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const promptVersions = pgTable("prompt_versions", {
+  id: serial("id").primaryKey(),
+  promptId: integer("prompt_id").notNull(),
+  version: text("version").notNull(),
+  promptText: text("prompt_text").notNull(),
+  systemMessage: text("system_message"),
+  variables: jsonb("variables"),
+  aiModel: text("ai_model").notNull(),
+  changeDescription: text("change_description"),
+  createdBy: integer("created_by"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertNewsroomSchema = createInsertSchema(newsrooms).omit({
   id: true,
   createdAt: true,
@@ -144,6 +180,22 @@ export const insertUserSchema = createInsertSchema(users).omit({
   updatedAt: true,
 });
 
+export const insertPromptCategorySchema = createInsertSchema(promptCategories).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPromptSchema = createInsertSchema(prompts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertPromptVersionSchema = createInsertSchema(promptVersions).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertNewsroom = z.infer<typeof insertNewsroomSchema>;
 export type InsertBrandStylesheet = z.infer<typeof insertBrandStylesheetSchema>;
@@ -152,6 +204,9 @@ export type InsertCampaignTemplate = z.infer<typeof insertCampaignTemplateSchema
 export type InsertSegment = z.infer<typeof insertSegmentSchema>;
 export type InsertCampaignEvaluation = z.infer<typeof insertCampaignEvaluationSchema>;
 export type InsertStorySummary = z.infer<typeof insertStorySummarySchema>;
+export type InsertPromptCategory = z.infer<typeof insertPromptCategorySchema>;
+export type InsertPrompt = z.infer<typeof insertPromptSchema>;
+export type InsertPromptVersion = z.infer<typeof insertPromptVersionSchema>;
 
 export type User = typeof users.$inferSelect;
 export type Newsroom = typeof newsrooms.$inferSelect;
@@ -161,3 +216,6 @@ export type CampaignTemplate = typeof campaignTemplates.$inferSelect;
 export type Segment = typeof segments.$inferSelect;
 export type CampaignEvaluation = typeof campaignEvaluations.$inferSelect;
 export type StorySummary = typeof storySummaries.$inferSelect;
+export type PromptCategory = typeof promptCategories.$inferSelect;
+export type Prompt = typeof prompts.$inferSelect;
+export type PromptVersion = typeof promptVersions.$inferSelect;
