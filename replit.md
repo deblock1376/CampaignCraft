@@ -41,6 +41,14 @@ Preferred communication style: Simple, everyday language.
 - **BlueLena Copywriting Integration**: AI generation adheres to BlueLena professional copywriting guidelines for email structure, subject lines, and CTAs.
 - **AI-Powered Merge**: Utilizes AI to intelligently combine best elements from multiple drafts into a cohesive, unified campaign.
 - **Conversational Campaign Assistant**: An AI-guided chat interface for structured campaign creation, material gathering, and automated generation.
+- **AI Prompt Management System**: Admin-facing system for cataloging, updating, and managing all AI prompts without code changes. Features include:
+  - Database-backed prompt storage with versioning support
+  - 14 prompts organized across 8 categories (Campaign Generation, Draft Merging, Evaluation, Rewriting, Story Summarization, Chat Assistant, Email Optimization, Grounding Library)
+  - Variable interpolation for dynamic prompt customization
+  - 5-minute caching layer for performance optimization
+  - Robust fallback to hardcoded prompts for reliability
+  - Admin-only UI for searching, filtering, and editing prompts
+  - Full CRUD operations with authentication and authorization
 
 ### System Design Choices
 - **Development**: Vite development server with Express API integration and hot module replacement.
