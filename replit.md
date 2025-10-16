@@ -34,7 +34,11 @@ Preferred communication style: Simple, everyday language.
 - **Data Storage**: PostgreSQL database using Drizzle ORM, with Neon Database for serverless PostgreSQL.
 - **AI Integration**: Integrates with OpenAI (GPT-4o, default) and Anthropic (Claude Sonnet 4) for content generation and evaluation.
 - **Content Generation**: Generates campaign content, CTAs, and performance insights, applying grounding guides for brand consistency.
-- **Campaign Workflow**: Supports "Create Campaign" with multi-draft generation and "Get Feedback" for evaluation using frameworks like BlueLena.
+- **Campaign Workflow**: Supports "Create Campaign" with multi-draft generation and "Get Feedback" for evaluation using frameworks like BlueLena. Features seamless campaign-to-evaluation flow with auto-population:
+  - "Evaluate this campaign" button encodes generated campaign data (subject, body, CTA) in URL parameter
+  - Campaign evaluation page automatically reads and pre-fills content from URL on page load
+  - Users can immediately evaluate without manual copy-paste
+  - Toast notification confirms campaign data has been loaded
 - **Multi-tenancy**: Supports multiple newsrooms with isolated data and role-based admin capabilities.
 - **User Management System**: Role-based access control with comprehensive user administration:
   - Super Admin role (role = "admin", newsroomId = null) with full system access
