@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { 
   ArrowRight, 
@@ -839,11 +839,50 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
         const brandState = state as typeof wizardState.brandSetup;
         
         if (stepId === 'collect-content') {
+          const handleFileUpload = async (category: string, field: string, file: File): Promise<string> => {
+            try {
+              // Get upload URL from API
+              const response = await apiRequest("POST", "/api/objects/upload");
+              const data = await response.json();
+              
+              // Upload file directly to the presigned URL
+              const uploadResponse = await fetch(data.uploadURL, {
+                method: "PUT",
+                body: file,
+                headers: {
+                  'Content-Type': file.type || 'application/octet-stream',
+                },
+              });
+              
+              if (!uploadResponse.ok) {
+                throw new Error("File upload failed");
+              }
+              
+              // Return the upload URL (without query params) as the file URL
+              const fileUrl = data.uploadURL.split('?')[0];
+              
+              toast({
+                title: "File uploaded",
+                description: `${file.name} has been uploaded successfully`,
+              });
+              
+              return fileUrl;
+            } catch (error) {
+              toast({
+                title: "Upload failed",
+                description: "Failed to upload file. Please try again.",
+                variant: "destructive",
+              });
+              throw error;
+            }
+          };
+
           return (
             <div>
               <GroundingLibraryForm
                 materials={brandState.materials}
                 onChange={(newMaterials) => updateWizardState(stateKey, { materials: newMaterials })}
+                onFileUpload={handleFileUpload}
               />
             </div>
           );
