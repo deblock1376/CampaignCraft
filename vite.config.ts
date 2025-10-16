@@ -31,7 +31,7 @@ export default defineConfig({
     // CSP-compliant production builds
     sourcemap: false, // Disable source maps to prevent eval usage
     minify: 'esbuild', // Use esbuild for minification (no eval)
-    target: 'es2015', // Ensure compatibility without eval
+    target: 'es2020', // Modern target with BigInt support, no eval
   },
   server: {
     host: "0.0.0.0",
