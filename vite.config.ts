@@ -11,7 +11,7 @@ const cspDevPlugin = () => ({
         'Content-Security-Policy',
         [
           "default-src 'self'",
-          "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://replit.com",
           "style-src 'self' 'unsafe-inline'",
           "connect-src 'self' ws: wss: https:",
           "img-src 'self' data: blob: https:",
