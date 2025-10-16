@@ -1333,7 +1333,7 @@ Please respond with just the summary text, no additional formatting or explanati
 
   app.post("/api/quickstart/grounding-library", authenticateToken, async (req: any, res) => {
     try {
-      const { newsroomId, materials } = req.body;
+      const { newsroomId, name, materials } = req.body;
       
       if (!newsroomId) {
         return res.status(400).json({ message: "Newsroom ID is required" });
@@ -1424,7 +1424,7 @@ Please respond with just the summary text, no additional formatting or explanati
 
       const stylesheet = await storage.createBrandStylesheet({
         newsroomId,
-        name: `${newsroom.name} - AI Generated Guide`,
+        name: name || `${newsroom.name} - AI Generated Guide`,
         description: "Automatically generated brand guidelines based on newsroom analysis",
         tone: brandGuide.tone,
         voice: brandGuide.voice,

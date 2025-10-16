@@ -70,6 +70,7 @@ interface WizardState {
   };
   brandSetup: {
     newsroomInfo: string;
+    name: string;
     materials: GroundingLibraryMaterials;
   };
 }
@@ -85,6 +86,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
     emailOptimization: { context: '', campaignType: 'email', objective: 'engagement' },
     brandSetup: { 
       newsroomInfo: '', 
+      name: '',
       materials: {
         brandFoundation: {},
         campaignExamples: {},
@@ -306,6 +308,12 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
           completed: false
         },
         {
+          id: 'name-library',
+          title: 'Name Your Library',
+          description: 'Give your grounding library a meaningful name',
+          completed: false
+        },
+        {
           id: 'generate-guidelines',
           title: 'Generate Grounding Library',
           description: 'Create your comprehensive grounding library for consistent brand messaging',
@@ -332,6 +340,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
       emailOptimization: { context: '', campaignType: 'email', objective: 'engagement' },
       brandSetup: { 
         newsroomInfo: '', 
+        name: '',
         materials: {
           brandFoundation: {},
           campaignExamples: {},
@@ -405,6 +414,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
           );
           return hasAnyMaterial;
         }
+        if (stepId === 'name-library') return brandState.name.trim().length > 0;
         if (stepId === 'generate-guidelines') return true;
         break;
     }
@@ -454,6 +464,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
               },
               body: JSON.stringify({
                 newsroomId,
+                name: brandState.name,
                 materials: brandState.materials
               }),
             });
@@ -888,6 +899,25 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
           );
         }
 
+        if (stepId === 'name-library') {
+          return (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="library-name">Library Name</Label>
+                <Input
+                  id="library-name"
+                  placeholder="e.g., Q4 2024 Brand Guidelines, News Campaign Library, etc."
+                  value={brandState.name}
+                  onChange={(e) => updateWizardState(stateKey, { name: e.target.value })}
+                />
+                <p className="text-sm text-gray-500">
+                  Give your grounding library a descriptive name to easily identify it later.
+                </p>
+              </div>
+            </div>
+          );
+        }
+
         if (stepId === 'generate-guidelines') {
           const materialsCount = Object.values(brandState.materials).reduce((count, category) => 
             count + Object.values(category).filter((material: any) => material?.text || material?.fileUrl).length, 
@@ -897,6 +927,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
             <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
               <h4 className="font-medium">Ready to Create Your Grounding Library</h4>
               <div className="text-sm space-y-1">
+                <p><span className="font-medium">Library Name:</span> {brandState.name}</p>
                 {materialsCount > 0 && (
                   <p><span className="font-medium">Reference Materials:</span> {materialsCount} items added</p>
                 )}
