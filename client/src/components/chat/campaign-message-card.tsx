@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Save, Download, RefreshCw, Mail, Lightbulb } from "lucide-react";
+import { PromptIndicator } from "@/components/ui/prompt-indicator";
 
 interface CampaignMessageCardProps {
   campaign: {
@@ -12,6 +13,7 @@ interface CampaignMessageCardProps {
       url?: string;
     };
     followUpSuggestion?: string;
+    promptKey?: string;
   };
   onSave?: () => void;
   onExport?: () => void;
@@ -32,6 +34,7 @@ export function CampaignMessageCard({
         <div className="flex items-center gap-2">
           <Mail className="h-5 w-5 text-primary" />
           <CardTitle className="text-lg">Generated Campaign</CardTitle>
+          <PromptIndicator promptKey={campaign.promptKey} />
           <Badge variant="secondary" className="ml-auto">Email</Badge>
         </div>
       </CardHeader>
