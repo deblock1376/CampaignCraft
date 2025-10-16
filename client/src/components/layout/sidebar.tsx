@@ -7,7 +7,8 @@ export default function Sidebar() {
   
   // Check if current user is admin
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-  const isAdmin = currentUser.email === 'admin@campaigncraft.com';
+  const isAdmin = currentUser.role === 'admin';
+  const isSuperAdmin = currentUser.role === 'admin' && currentUser.newsroomId === null;
 
   // Main navigation items in priority order
   const navItems = [

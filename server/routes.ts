@@ -31,7 +31,7 @@ const authenticateToken = (req: any, res: any, next: any) => {
   });
 };
 
-// Admin-only middleware
+// Admin-only middleware (for super admins with newsroomId = null)
 const requireAdmin = async (req: any, res: any, next: any) => {
   try {
     if (!req.user || !req.user.userId) {
@@ -43,9 +43,9 @@ const requireAdmin = async (req: any, res: any, next: any) => {
       return res.status(401).json({ error: 'User not found' });
     }
 
-    // Only allow admin@campaigncraft.com account
-    if (user.email !== 'admin@campaigncraft.com' || user.role !== 'admin') {
-      return res.status(403).json({ error: 'Admin access required' });
+    // Check if user is a super admin (role = 'admin' AND newsroomId = null)
+    if (user.role !== 'admin' || user.newsroomId !== null) {
+      return res.status(403).json({ error: 'Super admin access required' });
     }
 
     req.adminUser = user;
@@ -1500,10 +1500,63 @@ Please respond with just the summary text, no additional formatting or explanati
     }
   });
 
+  // User Management Endpoints
+  app.get("/api/admin/users", authenticateToken, requireAdmin, async (req: any, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      // Don't send password hashes to client
+      const safeUsers = users.map(({ passwordHash, ...user }) => user);
+      res.json(safeUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  app.post("/api/admin/users", authenticateToken, requireAdmin, async (req: any, res) => {
+    try {
+      const { name, email, password, role, newsroomId } = req.body;
+
+      // Validation
+      if (!name || !email || !password) {
+        return res.status(400).json({ error: "Name, email, and password are required" });
+      }
+
+      if (password.length < 6) {
+        return res.status(400).json({ error: "Password must be at least 6 characters long" });
+      }
+
+      // Check if email already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ error: "Email already exists" });
+      }
+
+      // Hash password
+      const passwordHash = await bcrypt.hash(password, 10);
+
+      // Create user
+      const newUser = await storage.createUser({
+        name,
+        email,
+        passwordHash,
+        role: role || 'user',
+        newsroomId: newsroomId || null,
+      });
+
+      // Don't send password hash to client
+      const { passwordHash: _, ...safeUser } = newUser;
+      res.json(safeUser);
+    } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ error: "Failed to create user" });
+    }
+  });
+
   app.patch("/api/admin/users/:id", authenticateToken, requireAdmin, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
-      const { name, email, password } = req.body;
+      const { name, email, password, role, newsroomId } = req.body;
       
       // Check if email already exists for another user
       if (email) {
@@ -1515,8 +1568,10 @@ Please respond with just the summary text, no additional formatting or explanati
 
       // Prepare update data
       const updateData: any = {};
-      if (name) updateData.name = name;
-      if (email) updateData.email = email;
+      if (name !== undefined) updateData.name = name;
+      if (email !== undefined) updateData.email = email;
+      if (role !== undefined) updateData.role = role;
+      if (newsroomId !== undefined) updateData.newsroomId = newsroomId;
       
       // Hash password if provided
       if (password && password.trim()) {
@@ -1527,10 +1582,28 @@ Please respond with just the summary text, no additional formatting or explanati
       }
 
       const updatedUser = await storage.updateUser(id, updateData);
-      res.json(updatedUser);
+      const { passwordHash: _, ...safeUser } = updatedUser;
+      res.json(safeUser);
     } catch (error) {
       console.error("Error updating user:", error);
       res.status(500).json({ error: "Failed to update user" });
+    }
+  });
+
+  app.delete("/api/admin/users/:id", authenticateToken, requireAdmin, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      // Prevent deleting yourself
+      if (id === req.adminUser.id) {
+        return res.status(400).json({ error: "Cannot delete your own account" });
+      }
+
+      await storage.deleteUser(id);
+      res.json({ message: "User deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ error: "Failed to delete user" });
     }
   });
 

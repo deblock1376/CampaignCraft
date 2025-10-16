@@ -35,7 +35,15 @@ Preferred communication style: Simple, everyday language.
 - **AI Integration**: Integrates with OpenAI (GPT-4o, default) and Anthropic (Claude Sonnet 4) for content generation and evaluation.
 - **Content Generation**: Generates campaign content, CTAs, and performance insights, applying grounding guides for brand consistency.
 - **Campaign Workflow**: Supports "Create Campaign" with multi-draft generation and "Get Feedback" for evaluation using frameworks like BlueLena.
-- **Multi-tenancy**: Supports multiple newsrooms with isolated data and admin capabilities.
+- **Multi-tenancy**: Supports multiple newsrooms with isolated data and role-based admin capabilities.
+- **User Management System**: Role-based access control with comprehensive user administration:
+  - Super Admin role (role = "admin", newsroomId = null) with full system access
+  - Regular Admin role (role = "admin", newsroomId = specific ID) with newsroom-scoped access
+  - User role (role = "user") with standard newsroom access
+  - Admin-only User Management page for creating, editing, and deleting users
+  - Newsroom assignment and role modification for flexible access control
+  - Multiple users per newsroom supported for team collaboration
+  - Password management and account administration
 - **Document Upload**: Integrates with Google Cloud Storage for uploading reference materials to inform AI generation within the Grounding Library.
 - **Quick Start Templates**: Pre-built AI tools for specific marketing needs (e.g., Rapid-Response Campaign Creator, AI Subject Line Generator).
 - **BlueLena Copywriting Integration**: AI generation adheres to BlueLena professional copywriting guidelines for email structure, subject lines, and CTAs.
@@ -58,7 +66,7 @@ Preferred communication style: Simple, everyday language.
   - Scheduled daily log cleanup to maintain database performance
 - **Prompt Auditing System**: Temporary admin-only visual indicators for prompt monitoring:
   - Colored badge indicators showing which AI prompt powers each generation
-  - Only visible to admin@campaigncraft.com for quality assurance and auditing
+  - Only visible to super administrators for quality assurance and auditing
   - Displays prompt names (e.g., "Campaign Generate", "Draft Merge", "BlueLena Evaluation") on:
     - Campaign Form (generated campaigns)
     - Chat Assistant (conversational campaign generation)

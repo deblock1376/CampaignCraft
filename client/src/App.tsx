@@ -16,6 +16,7 @@ import GuidedAssistant from "@/pages/guided-assistant";
 import Admin from "@/pages/admin";
 import AdminPrompts from "@/pages/admin-prompts";
 import AdminLogs from "@/pages/admin-logs";
+import AdminUsers from "@/pages/admin-users";
 import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 import CampaignAssistantTest from "@/pages/campaign-assistant-test";
@@ -57,6 +58,7 @@ function Router() {
       <Route path="/admin" component={Admin} />
       <Route path="/admin/prompts" component={AdminPrompts} />
       <Route path="/admin/logs" component={AdminLogs} />
+      <Route path="/admin/users" component={AdminUsers} />
       <Route path="/login" component={Login} />
       <Route component={NotFound} />
     </Switch>
