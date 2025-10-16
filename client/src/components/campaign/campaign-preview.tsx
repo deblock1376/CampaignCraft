@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Copy, Plus } from "lucide-react";
 import { useLocation } from "wouter";
+import { PromptIndicator } from "@/components/ui/prompt-indicator";
 
 interface CampaignPreviewProps {
   campaign: any;
@@ -249,7 +250,10 @@ export default function CampaignPreview({
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>Generated Campaign</CardTitle>
+          <div className="flex items-center space-x-3">
+            <CardTitle>Generated Campaign</CardTitle>
+            <PromptIndicator promptKey={campaign.content?.promptKey} />
+          </div>
           <div className="flex items-center space-x-2">
             <Button variant="outline" size="sm">
               <i className="fas fa-file-import mr-2"></i>
