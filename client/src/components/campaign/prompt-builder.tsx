@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, Plus, Loader2, Newspaper } from "lucide-react";
+import { FileText, Plus, Loader2, Newspaper, Send } from "lucide-react";
 import { useLocation } from "wouter";
 import { useState } from "react";
 
@@ -29,6 +29,7 @@ interface PromptBuilderProps {
   selectedSummaries?: number[];
   onSummarySelect?: (summaryIds: number[]) => void;
   onSummarize?: (data: { text?: string; url?: string }) => Promise<void>;
+  onSendToChat?: () => void;
 }
 
 const SEGMENT_OPTIONS = [
@@ -61,6 +62,7 @@ export function PromptBuilder({
   selectedSummaries = [],
   onSummarySelect,
   onSummarize,
+  onSendToChat,
 }: PromptBuilderProps) {
   const [, setLocation] = useLocation();
   const [storyInputType, setStoryInputType] = useState<"text" | "url">("text");
@@ -111,8 +113,18 @@ export function PromptBuilder({
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="border-b">
-        <CardTitle className="text-lg">Campaign Builder</CardTitle>
-        <p className="text-sm text-muted-foreground mt-1">Set your goals and audience</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-lg">Campaign Builder</CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">Set your goals and audience</p>
+          </div>
+          {onSendToChat && (
+            <Button onClick={onSendToChat} size="sm">
+              <Send className="h-4 w-4 mr-2" />
+              Send to Chat
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="flex-1 overflow-auto p-6 space-y-6">
         {/* Campaign Objective */}
