@@ -1,8 +1,11 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Newspaper, ExternalLink, Trash2, Calendar } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Newspaper, ExternalLink, Trash2, Calendar, Sparkles, FileText, Link as LinkIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Sidebar from "@/components/layout/sidebar";
 import Header from "@/components/layout/header";
@@ -23,6 +26,9 @@ export default function StorySummaries() {
   const newsroomId = user?.newsroomId || 1;
   const { toast } = useToast();
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [inputText, setInputText] = useState("");
+  const [inputUrl, setInputUrl] = useState("");
+  const [activeTab, setActiveTab] = useState("text");
 
   const { data: summaries = [], refetch } = useQuery({
     queryKey: [`/api/newsrooms/${newsroomId}/story-summaries`],
@@ -69,6 +75,61 @@ export default function StorySummaries() {
     },
   });
 
+  const summarizeMutation = useMutation({
+    mutationFn: async (data: { text?: string; url?: string }) => {
+      const response = await fetch("/api/story-summaries", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          newsroomId,
+          text: data.text,
+          url: data.url,
+          aiModel: "gpt-4o",
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to summarize story");
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Story summarized successfully",
+      });
+      refetch();
+      setInputText("");
+      setInputUrl("");
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to summarize story",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSummarize = () => {
+    if (activeTab === "text" && inputText.trim()) {
+      summarizeMutation.mutate({ text: inputText });
+    } else if (activeTab === "url" && inputUrl.trim()) {
+      summarizeMutation.mutate({ url: inputUrl });
+    } else {
+      toast({
+        title: "Input Required",
+        description: `Please enter ${activeTab === "text" ? "text" : "a URL"} to summarize`,
+        variant: "destructive",
+      });
+    }
+  };
+
   if (!user?.id) {
     return (
       <>
@@ -96,18 +157,98 @@ export default function StorySummaries() {
           title="Story Summaries" 
           subtitle="View and manage your saved story summaries"
         />
-        <div className="container mx-auto py-8">
+        <div className="container mx-auto py-8 space-y-6">
 
+          {/* Summarize Form */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Sparkles className="h-5 w-5 mr-2" />
+                Summarize Story
+              </CardTitle>
+              <CardDescription>
+                Create an AI-powered summary from article text or URL
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="text">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Text
+                  </TabsTrigger>
+                  <TabsTrigger value="url">
+                    <LinkIcon className="h-4 w-4 mr-2" />
+                    URL
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="text" className="mt-4 space-y-4">
+                  <Textarea
+                    placeholder="Paste your article text here..."
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    className="min-h-[200px]"
+                  />
+                  <Button 
+                    onClick={handleSummarize} 
+                    disabled={summarizeMutation.isPending || !inputText.trim()}
+                    className="w-full"
+                  >
+                    {summarizeMutation.isPending ? (
+                      <>
+                        <span className="mr-2">Summarizing...</span>
+                        <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Generate Summary
+                      </>
+                    )}
+                  </Button>
+                </TabsContent>
+
+                <TabsContent value="url" className="mt-4 space-y-4">
+                  <Input
+                    type="url"
+                    placeholder="https://example.com/article"
+                    value={inputUrl}
+                    onChange={(e) => setInputUrl(e.target.value)}
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Enter the URL of an article to fetch and summarize automatically
+                  </p>
+                  <Button 
+                    onClick={handleSummarize} 
+                    disabled={summarizeMutation.isPending || !inputUrl.trim()}
+                    className="w-full"
+                  >
+                    {summarizeMutation.isPending ? (
+                      <>
+                        <span className="mr-2">Summarizing...</span>
+                        <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Generate Summary
+                      </>
+                    )}
+                  </Button>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+
+          {/* Summaries List */}
           {summaries.length === 0 ? (
             <Card className="p-12 text-center">
               <Newspaper className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">No story summaries yet</h3>
-              <p className="text-muted-foreground mb-4">
-                Create your first summary in the Campaign Assistant
+              <p className="text-muted-foreground">
+                Use the form above to create your first summary
               </p>
-              <Button asChild>
-                <a href="/campaigns/assistant-test">Go to Campaign Assistant</a>
-              </Button>
             </Card>
           ) : (
             <div className="grid gap-4">
