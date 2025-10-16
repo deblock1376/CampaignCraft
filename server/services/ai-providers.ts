@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenAI } from '@google/genai';
 import { storage } from '../storage';
+import { FileExtractorService } from './file-extractor';
 
 /*
 <important_code_snippet_instructions>
@@ -410,60 +411,103 @@ Response must be valid JSON with all fields included.
 `;
   }
 
-  private buildMaterialsContext(materials: any): string {
+  private async buildMaterialsContext(materials: any): Promise<string> {
     if (!materials) return '';
     
+    const fileExtractor = new FileExtractorService();
     const sections: string[] = [];
+    
+    // Helper function to get content from both text and file
+    const getContent = async (material: any): Promise<string> => {
+      const parts: string[] = [];
+      
+      if (material?.text) {
+        parts.push(material.text);
+      }
+      
+      if (material?.fileUrl) {
+        try {
+          const fileContent = await fileExtractor.extractTextFromFile(material.fileUrl);
+          if (fileContent) {
+            parts.push(fileContent);
+          }
+        } catch (error) {
+          console.error(`Failed to extract file content from ${material.fileUrl}:`, error);
+        }
+      }
+      
+      return parts.join('\n\n');
+    };
     
     // Brand Foundation materials
     if (materials.brandFoundation) {
-      if (materials.brandFoundation.brandVoice?.text) {
-        sections.push(`📝 BRAND VOICE & MISSION:\n${materials.brandFoundation.brandVoice.text}`);
+      const brandVoice = await getContent(materials.brandFoundation.brandVoice);
+      if (brandVoice) {
+        sections.push(`📝 BRAND VOICE & MISSION:\n${brandVoice}`);
       }
-      if (materials.brandFoundation.strategyPlaybook?.text) {
-        sections.push(`📊 STRATEGY PLAYBOOK:\n${materials.brandFoundation.strategyPlaybook.text}`);
+      
+      const strategyPlaybook = await getContent(materials.brandFoundation.strategyPlaybook);
+      if (strategyPlaybook) {
+        sections.push(`📊 STRATEGY PLAYBOOK:\n${strategyPlaybook}`);
       }
-      if (materials.brandFoundation.brandStyleGuide?.text) {
-        sections.push(`🎨 BRAND STYLE GUIDE:\n${materials.brandFoundation.brandStyleGuide.text}`);
+      
+      const brandStyleGuide = await getContent(materials.brandFoundation.brandStyleGuide);
+      if (brandStyleGuide) {
+        sections.push(`🎨 BRAND STYLE GUIDE:\n${brandStyleGuide}`);
       }
-      if (materials.brandFoundation.aboutUs?.text) {
-        sections.push(`ℹ️ ABOUT US:\n${materials.brandFoundation.aboutUs.text}`);
+      
+      const aboutUs = await getContent(materials.brandFoundation.aboutUs);
+      if (aboutUs) {
+        sections.push(`ℹ️ ABOUT US:\n${aboutUs}`);
       }
     }
     
     // Campaign Examples materials
     if (materials.campaignExamples) {
-      if (materials.campaignExamples.pastCampaigns?.text) {
-        sections.push(`📧 PAST SUCCESSFUL CAMPAIGNS:\n${materials.campaignExamples.pastCampaigns.text}`);
+      const pastCampaigns = await getContent(materials.campaignExamples.pastCampaigns);
+      if (pastCampaigns) {
+        sections.push(`📧 PAST SUCCESSFUL CAMPAIGNS:\n${pastCampaigns}`);
       }
-      if (materials.campaignExamples.impactStories?.text) {
-        sections.push(`📰 IMPACT NEWS STORIES:\n${materials.campaignExamples.impactStories.text}`);
+      
+      const impactStories = await getContent(materials.campaignExamples.impactStories);
+      if (impactStories) {
+        sections.push(`📰 IMPACT NEWS STORIES:\n${impactStories}`);
       }
-      if (materials.campaignExamples.testimonials?.text) {
-        sections.push(`💬 READER TESTIMONIALS:\n${materials.campaignExamples.testimonials.text}`);
+      
+      const testimonials = await getContent(materials.campaignExamples.testimonials);
+      if (testimonials) {
+        sections.push(`💬 READER TESTIMONIALS:\n${testimonials}`);
       }
     }
     
     // Audience Intelligence materials
     if (materials.audienceIntelligence) {
-      if (materials.audienceIntelligence.segments?.text) {
-        sections.push(`👥 AUDIENCE SEGMENTS:\n${materials.audienceIntelligence.segments.text}`);
+      const segments = await getContent(materials.audienceIntelligence.segments);
+      if (segments) {
+        sections.push(`👥 AUDIENCE SEGMENTS:\n${segments}`);
       }
-      if (materials.audienceIntelligence.surveyResponses?.text) {
-        sections.push(`📋 SURVEY RESPONSES:\n${materials.audienceIntelligence.surveyResponses.text}`);
+      
+      const surveyResponses = await getContent(materials.audienceIntelligence.surveyResponses);
+      if (surveyResponses) {
+        sections.push(`📋 SURVEY RESPONSES:\n${surveyResponses}`);
       }
-      if (materials.audienceIntelligence.localDates?.text) {
-        sections.push(`📅 KEY LOCAL DATES:\n${materials.audienceIntelligence.localDates.text}`);
+      
+      const localDates = await getContent(materials.audienceIntelligence.localDates);
+      if (localDates) {
+        sections.push(`📅 KEY LOCAL DATES:\n${localDates}`);
       }
     }
     
     // Performance Data materials
     if (materials.performanceData) {
-      if (materials.performanceData.surveyData?.text) {
-        sections.push(`📈 SURVEY & RESEARCH DATA:\n${materials.performanceData.surveyData.text}`);
+      const surveyData = await getContent(materials.performanceData.surveyData);
+      if (surveyData) {
+        sections.push(`📈 SURVEY & RESEARCH DATA:\n${surveyData}`);
       }
-      if (materials.performanceData.metrics?.text) {
-        sections.push(`📊 PERFORMANCE METRICS:\n${materials.performanceData.metrics.text}`);
+      
+      const metrics = await getContent(materials.performanceData.metrics);
+      if (metrics) {
+        sections.push(`📊 PERFORMANCE METRICS:\n${metrics}`);
       }
     }
     
@@ -561,7 +605,7 @@ Breaking News Story/Context: ${request.context}`;
     }
 
     const materialsContext = request.brandStylesheet.materials 
-      ? this.buildMaterialsContext(request.brandStylesheet.materials)
+      ? await this.buildMaterialsContext(request.brandStylesheet.materials)
       : '';
     
     const segmentInstructions = this.buildSegmentInstructions(request.segments);
