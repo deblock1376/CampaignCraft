@@ -13,6 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Target, Sparkles, AlertCircle, CheckCircle2, ArrowRight, Save } from "lucide-react";
+import { PromptIndicator } from "@/components/ui/prompt-indicator";
 
 export default function CampaignEvaluate() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -240,10 +241,13 @@ export default function CampaignEvaluate() {
               <Card className="border-2 border-primary">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center">
-                      <CheckCircle2 className="h-5 w-5 mr-2 text-green-600" />
-                      {framework === "bluelena" ? "BlueLena Best Practices Score" : "Evaluation Results"}
-                    </CardTitle>
+                    <div className="flex items-center space-x-3">
+                      <CardTitle className="flex items-center">
+                        <CheckCircle2 className="h-5 w-5 mr-2 text-green-600" />
+                        {framework === "bluelena" ? "BlueLena Best Practices Score" : "Evaluation Results"}
+                      </CardTitle>
+                      <PromptIndicator promptKey={evaluation.promptKey} />
+                    </div>
                     <div className="flex items-center gap-2">
                       {evaluation.rating && (
                         <Badge variant="outline" className="text-sm">
