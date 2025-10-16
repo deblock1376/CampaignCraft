@@ -3,6 +3,26 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
+const cspDevPlugin = () => ({
+  name: 'csp-dev-headers',
+  configureServer(server: any) {
+    server.middlewares.use((_req: any, res: any, next: any) => {
+      res.setHeader(
+        'Content-Security-Policy',
+        [
+          "default-src 'self'",
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+          "style-src 'self' 'unsafe-inline'",
+          "connect-src 'self' ws: wss: https:",
+          "img-src 'self' data: blob: https:",
+          "font-src 'self' data:",
+        ].join('; ')
+      );
+      next();
+    });
+  }
+});
+
 export default defineConfig({
   plugins: [
     react(),
@@ -16,6 +36,8 @@ export default defineConfig({
           ),
         ]
       : []),
+    // Add CSP headers in development for HMR and file uploads
+    ...(process.env.NODE_ENV !== "production" ? [cspDevPlugin()] : []),
   ],
   resolve: {
     alias: {
@@ -40,10 +62,6 @@ export default defineConfig({
     fs: {
       strict: true,
       deny: ["**/.*"],
-    },
-    headers: {
-      // Allow unsafe-eval in development for Vite HMR
-      'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' ws: wss: https:; font-src 'self';",
     },
   },
 });
