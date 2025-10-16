@@ -56,6 +56,15 @@ Preferred communication style: Simple, everyday language.
   - Admin logs page with filtering, search, and user flag management
   - Logger auto-initializes with user context on login for complete activity tracking
   - Scheduled daily log cleanup to maintain database performance
+- **Prompt Auditing System**: Temporary admin-only visual indicators for prompt monitoring:
+  - Colored badge indicators showing which AI prompt powers each generation
+  - Only visible to admin@campaigncraft.com for quality assurance and auditing
+  - Displays prompt names (e.g., "Campaign Generate", "Draft Merge", "BlueLena Evaluation") on:
+    - Campaign Form (generated campaigns)
+    - Chat Assistant (conversational campaign generation)
+    - Campaign Evaluation (evaluation results)
+  - Backend returns promptKey in all AI service responses for tracking
+  - Helps validate prompt management system and monitor AI usage patterns
 
 ### System Design Choices
 - **Development**: Vite development server with Express API integration and hot module replacement.
