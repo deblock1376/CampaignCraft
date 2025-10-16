@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import Sidebar from "@/components/layout/sidebar";
 import Header from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ export default function CampaignEvaluate() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const newsroomId = user.newsroomId || 1;
   const { toast } = useToast();
+  const [location] = useLocation();
 
   const [campaignContent, setCampaignContent] = useState("");
   const [campaignType, setCampaignType] = useState("email");
@@ -30,6 +32,30 @@ export default function CampaignEvaluate() {
   const { data: campaigns } = useQuery({
     queryKey: ["/api/newsrooms", newsroomId, "campaigns"],
   });
+
+  // Auto-populate campaign from URL parameter
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const encodedCampaign = searchParams.get('campaign');
+    
+    if (encodedCampaign) {
+      try {
+        const campaignData = JSON.parse(decodeURIComponent(encodedCampaign));
+        
+        // Build campaign content from the encoded data
+        const content = `Subject: ${campaignData.subject || ''}\n\n${campaignData.body || ''}${campaignData.cta ? `\n\nCTA: ${campaignData.cta}` : ''}`;
+        setCampaignContent(content);
+        setCampaignType('email');
+        
+        toast({
+          title: "Campaign Loaded",
+          description: "Your campaign has been loaded for evaluation",
+        });
+      } catch (error) {
+        console.error('Error parsing campaign data:', error);
+      }
+    }
+  }, [location, toast]);
 
   const evaluateMutation = useMutation({
     mutationFn: async () => {
