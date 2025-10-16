@@ -13,11 +13,13 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
 
     try {
       const response = await fetch("/api/auth/login", {
@@ -51,17 +53,21 @@ export default function Login() {
         window.location.href = "/dashboard";
         setTimeout(() => window.location.reload(), 100);
       } else {
-        const error = await response.json();
+        const errorData = await response.json();
+        const errorMessage = errorData.message || "Invalid credentials";
+        setError(errorMessage);
         toast({
           title: "Login failed",
-          description: error.message || "Invalid credentials",
+          description: errorMessage,
           variant: "destructive",
         });
       }
     } catch (error) {
+      const errorMessage = "Unable to connect to server";
+      setError(errorMessage);
       toast({
         title: "Login failed",
-        description: "Unable to connect to server",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -87,7 +93,10 @@ export default function Login() {
                 type="email"
                 placeholder="your@newsroom.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setError("");
+                }}
                 required
               />
             </div>
@@ -97,9 +106,15 @@ export default function Login() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setError("");
+                }}
                 required
               />
+              {error && (
+                <p className="text-sm text-red-600 mt-1">{error}</p>
+              )}
             </div>
             <Button 
               type="submit" 
