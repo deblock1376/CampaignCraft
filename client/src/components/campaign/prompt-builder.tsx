@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, Send, Plus, Loader2, Newspaper } from "lucide-react";
+import { FileText, Plus, Loader2, Newspaper } from "lucide-react";
 import { useLocation } from "wouter";
 import { useState } from "react";
 
@@ -29,7 +29,6 @@ interface PromptBuilderProps {
   selectedSummaries?: number[];
   onSummarySelect?: (summaryIds: number[]) => void;
   onSummarize?: (data: { text?: string; url?: string }) => Promise<void>;
-  onSendToChat?: (message: string) => void;
 }
 
 const SEGMENT_OPTIONS = [
@@ -62,7 +61,6 @@ export function PromptBuilder({
   selectedSummaries = [],
   onSummarySelect,
   onSummarize,
-  onSendToChat,
 }: PromptBuilderProps) {
   const [, setLocation] = useLocation();
   const [storyInputType, setStoryInputType] = useState<"text" | "url">("text");
@@ -108,53 +106,6 @@ export function PromptBuilder({
     } finally {
       setIsSummarizing(false);
     }
-  };
-
-  const handleSendToChat = () => {
-    if (!onSendToChat) return;
-
-    let message = "I'd like to create a campaign with the following context:\n\n";
-    
-    // Add objective
-    const objectiveLabel = OBJECTIVE_OPTIONS.find(opt => opt.value === objective)?.label || objective;
-    message += `🎯 Campaign Objective: ${objectiveLabel}\n`;
-    
-    // Add grounding library
-    const selectedGuide = groundingGuides.find(g => g.id === selectedGuideId);
-    if (selectedGuide) {
-      message += `📋 Grounding Library: ${selectedGuide.name}\n`;
-    }
-    
-    // Add segments
-    if (segments.length > 0) {
-      const segmentLabels = segments.map(s => 
-        SEGMENT_OPTIONS.find(opt => opt.id === s)?.label || s
-      );
-      message += `👥 Target Segments: ${segmentLabels.join(', ')}\n`;
-    }
-    
-    // Add notes
-    if (notes.trim()) {
-      message += `📝 Notes: ${notes}\n`;
-    }
-    
-    // Add reference campaigns
-    if (selectedCampaigns.length > 0) {
-      const refCampaigns = recentCampaigns
-        .filter(c => selectedCampaigns.includes(c.id))
-        .map(c => c.title);
-      message += `🔗 Reference Campaigns: ${refCampaigns.join(', ')}\n`;
-    }
-    
-    // Add story summaries
-    if (selectedSummaries.length > 0) {
-      const selectedStories = storySummaries
-        .filter(s => selectedSummaries.includes(s.id))
-        .map(s => s.title);
-      message += `📰 Story References: ${selectedStories.join(', ')}\n`;
-    }
-
-    onSendToChat(message);
   };
 
   return (
@@ -366,15 +317,6 @@ export function PromptBuilder({
           )}
         </div>
 
-        {/* Send to Chat Button */}
-        <Button 
-          onClick={handleSendToChat} 
-          className="w-full"
-          size="lg"
-        >
-          <Send className="h-4 w-4 mr-2" />
-          Send Context to Chat
-        </Button>
       </CardContent>
     </Card>
   );

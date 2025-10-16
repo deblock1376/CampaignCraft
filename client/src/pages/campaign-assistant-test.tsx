@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { PromptBuilder } from "@/components/campaign/prompt-builder";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Send } from "lucide-react";
 
 export default function CampaignAssistantTest() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -331,6 +331,64 @@ export default function CampaignAssistantTest() {
     },
   });
 
+  const OBJECTIVE_OPTIONS = [
+    { value: "donation", label: "Donation" },
+    { value: "membership", label: "Membership" },
+    { value: "engagement", label: "Engagement" },
+  ];
+
+  const SEGMENT_OPTIONS = [
+    { id: "donors", label: "Donors" },
+    { id: "non-donors", label: "Non-Donors" },
+    { id: "highly-engaged", label: "Highly Engaged Users" },
+    { id: "disengaged", label: "Disengaged Users" },
+  ];
+
+  const handleSendContextToChat = () => {
+    let message = "I'd like to create a campaign with the following context:\n\n";
+    
+    // Add objective
+    const objectiveLabel = OBJECTIVE_OPTIONS.find(opt => opt.value === selectedObjective)?.label || selectedObjective;
+    message += `🎯 Campaign Objective: ${objectiveLabel}\n`;
+    
+    // Add grounding library
+    const selectedGuide = groundingGuides.find((g: any) => g.id === selectedGuideId);
+    if (selectedGuide) {
+      message += `📋 Grounding Library: ${selectedGuide.name}\n`;
+    }
+    
+    // Add segments
+    if (selectedSegments.length > 0) {
+      const segmentLabels = selectedSegments.map(s => 
+        SEGMENT_OPTIONS.find(opt => opt.id === s)?.label || s
+      );
+      message += `👥 Target Segments: ${segmentLabels.join(', ')}\n`;
+    }
+    
+    // Add notes
+    if (campaignNotes.trim()) {
+      message += `📝 Notes: ${campaignNotes}\n`;
+    }
+    
+    // Add reference campaigns
+    if (selectedRecentCampaigns.length > 0) {
+      const refCampaigns = recentCampaigns
+        .filter((c: any) => selectedRecentCampaigns.includes(c.id))
+        .map((c: any) => c.title);
+      message += `🔗 Reference Campaigns: ${refCampaigns.join(', ')}\n`;
+    }
+    
+    // Add story summaries
+    if (selectedStorySummaries.length > 0) {
+      const selectedStories = storySummaries
+        .filter((s: any) => selectedStorySummaries.includes(s.id))
+        .map((s: any) => s.title);
+      message += `📰 Story References: ${selectedStories.join(', ')}\n`;
+    }
+
+    handleSendMessage(message);
+  };
+
   const handleSendMessage = (message: string) => {
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
@@ -390,12 +448,20 @@ export default function CampaignAssistantTest() {
     <div className="h-screen flex flex-col bg-slate-50">
       <div className="border-b bg-white shadow-sm p-4">
         <div className="container mx-auto">
-          <div className="flex items-center gap-4 mb-2">
+          <div className="flex items-center justify-between gap-4 mb-2">
             <Button variant="ghost" size="sm" asChild>
               <Link href="/">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Return to Dashboard
               </Link>
+            </Button>
+            <Button 
+              onClick={handleSendContextToChat} 
+              size="default"
+              className="ml-auto"
+            >
+              <Send className="h-4 w-4 mr-2" />
+              Send Context to Chat
             </Button>
           </div>
           <h1 className="text-2xl font-bold">Campaign Assistant</h1>
@@ -440,7 +506,6 @@ export default function CampaignAssistantTest() {
               selectedSummaries={selectedStorySummaries}
               onSummarySelect={setSelectedStorySummaries}
               onSummarize={summarizeMutation.mutateAsync}
-              onSendToChat={handleSendMessage}
             />
           </div>
         </div>
