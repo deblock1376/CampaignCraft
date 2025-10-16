@@ -385,27 +385,51 @@ export default function Admin() {
 
       <div className="mt-6 space-y-6">
         {/* System Tools */}
-        <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <FileText className="w-5 h-5 text-purple-600" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <FileText className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">AI Prompt Manager</h3>
+                    <p className="text-sm text-gray-600">Manage AI prompts</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">AI Prompt Manager</h3>
-                  <p className="text-sm text-gray-600">Manage and update all AI prompts across the system</p>
-                </div>
+                <Link href="/admin/prompts">
+                  <Button variant="default">
+                    Open
+                    <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
+                  </Button>
+                </Link>
               </div>
-              <Link href="/admin/prompts">
-                <Button variant="default">
-                  Open Prompt Manager
-                  <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-indigo-100 rounded-lg">
+                    <Eye className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">System Logs & Flags</h3>
+                    <p className="text-sm text-gray-600">Monitor activity</p>
+                  </div>
+                </div>
+                <Link href="/admin/logs">
+                  <Button variant="default">
+                    Open
+                    <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         <Tabs defaultValue="accounts" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">

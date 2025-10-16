@@ -10,6 +10,8 @@ import {
   promptCategories,
   prompts,
   promptVersions,
+  clientLogs,
+  userFlags,
   type User,
   type Newsroom,
   type BrandStylesheet,
@@ -21,6 +23,8 @@ import {
   type PromptCategory,
   type Prompt,
   type PromptVersion,
+  type ClientLog,
+  type UserFlag,
   type InsertUser,
   type InsertNewsroom,
   type InsertBrandStylesheet,
@@ -31,10 +35,12 @@ import {
   type InsertStorySummary,
   type InsertPromptCategory,
   type InsertPrompt,
-  type InsertPromptVersion
+  type InsertPromptVersion,
+  type InsertClientLog,
+  type InsertUserFlag
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql, lt } from "drizzle-orm";
 import * as bcrypt from "bcryptjs";
 
 export interface IStorage {
@@ -108,6 +114,18 @@ export interface IStorage {
   // Prompt Versions
   getPromptVersions(promptId: number): Promise<PromptVersion[]>;
   createPromptVersion(version: InsertPromptVersion): Promise<PromptVersion>;
+  
+  // Client Logs
+  createClientLogs(logs: InsertClientLog[]): Promise<void>;
+  getClientLogs(filters: { userId?: number; newsroomId?: number; level?: string; limit?: number; offset?: number }): Promise<ClientLog[]>;
+  deleteOldLogs(daysToKeep: number): Promise<void>;
+  
+  // User Flags
+  createUserFlag(flag: InsertUserFlag): Promise<UserFlag>;
+  getUserFlags(userId: number): Promise<UserFlag[]>;
+  getAllUserFlags(): Promise<(UserFlag & { userName: string; newsroomName?: string })[]>;
+  updateUserFlag(id: number, updates: Partial<InsertUserFlag>): Promise<UserFlag>;
+  deleteUserFlag(id: number): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -525,6 +543,34 @@ export class MemStorage implements IStorage {
   async createPromptVersion(version: InsertPromptVersion): Promise<PromptVersion> {
     throw new Error('MemStorage not implemented');
   }
+  
+  // Client Logs (stub for MemStorage - not used in production)
+  async createClientLogs(logs: InsertClientLog[]): Promise<void> {
+    throw new Error('MemStorage not implemented');
+  }
+  async getClientLogs(filters: { userId?: number; newsroomId?: number; level?: string; limit?: number; offset?: number }): Promise<ClientLog[]> {
+    return [];
+  }
+  async deleteOldLogs(daysToKeep: number): Promise<void> {
+    throw new Error('MemStorage not implemented');
+  }
+  
+  // User Flags (stub for MemStorage - not used in production)
+  async createUserFlag(flag: InsertUserFlag): Promise<UserFlag> {
+    throw new Error('MemStorage not implemented');
+  }
+  async getUserFlags(userId: number): Promise<UserFlag[]> {
+    return [];
+  }
+  async getAllUserFlags(): Promise<(UserFlag & { userName: string; newsroomName?: string })[]> {
+    return [];
+  }
+  async updateUserFlag(id: number, updates: Partial<InsertUserFlag>): Promise<UserFlag> {
+    throw new Error('MemStorage not implemented');
+  }
+  async deleteUserFlag(id: number): Promise<void> {
+    throw new Error('MemStorage not implemented');
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -825,6 +871,96 @@ export class DatabaseStorage implements IStorage {
     const [newVersion] = await db.insert(promptVersions).values(version).returning();
     return newVersion;
   }
+  
+  // Client Logs
+  async createClientLogs(logs: InsertClientLog[]): Promise<void> {
+    if (logs.length === 0) return;
+    await db.insert(clientLogs).values(logs);
+  }
+  
+  async getClientLogs(filters: { userId?: number; newsroomId?: number; level?: string; limit?: number; offset?: number }): Promise<ClientLog[]> {
+    let queryBuilder = db.select().from(clientLogs);
+    
+    const conditions = [];
+    if (filters.userId !== undefined) {
+      conditions.push(eq(clientLogs.userId, filters.userId));
+    }
+    if (filters.newsroomId !== undefined) {
+      conditions.push(eq(clientLogs.newsroomId, filters.newsroomId));
+    }
+    if (filters.level) {
+      conditions.push(eq(clientLogs.level, filters.level));
+    }
+    
+    if (conditions.length > 0) {
+      queryBuilder = queryBuilder.where(conditions.length === 1 ? conditions[0] : conditions.reduce((acc, cond) => eq(acc, cond)));
+    }
+    
+    const logs = await queryBuilder
+      .orderBy(desc(clientLogs.createdAt))
+      .limit(filters.limit || 100)
+      .offset(filters.offset || 0);
+    
+    return logs;
+  }
+  
+  async deleteOldLogs(daysToKeep: number): Promise<void> {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
+    
+    await db.delete(clientLogs).where(eq(clientLogs.createdAt, cutoffDate));
+  }
+  
+  // User Flags
+  async createUserFlag(flag: InsertUserFlag): Promise<UserFlag> {
+    const [newFlag] = await db.insert(userFlags).values(flag).returning();
+    return newFlag;
+  }
+  
+  async getUserFlags(userId: number): Promise<UserFlag[]> {
+    return await db.select().from(userFlags).where(eq(userFlags.userId, userId)).orderBy(desc(userFlags.createdAt));
+  }
+  
+  async getAllUserFlags(): Promise<(UserFlag & { userName: string; newsroomName?: string })[]> {
+    const flags = await db
+      .select({
+        id: userFlags.id,
+        userId: userFlags.userId,
+        newsroomId: userFlags.newsroomId,
+        flagType: userFlags.flagType,
+        reason: userFlags.reason,
+        notes: userFlags.notes,
+        flaggedBy: userFlags.flaggedBy,
+        createdAt: userFlags.createdAt,
+        updatedAt: userFlags.updatedAt,
+        userName: users.name,
+        newsroomName: newsrooms.name,
+      })
+      .from(userFlags)
+      .leftJoin(users, eq(userFlags.userId, users.id))
+      .leftJoin(newsrooms, eq(userFlags.newsroomId, newsrooms.id))
+      .orderBy(desc(userFlags.createdAt));
+    
+    return flags;
+  }
+  
+  async updateUserFlag(id: number, updates: Partial<InsertUserFlag>): Promise<UserFlag> {
+    const [updated] = await db
+      .update(userFlags)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(userFlags.id, id))
+      .returning();
+    
+    if (!updated) {
+      throw new Error(`UserFlag with id ${id} not found`);
+    }
+    
+    return updated;
+  }
+  
+  async deleteUserFlag(id: number): Promise<void> {
+    await db.delete(userFlags).where(eq(userFlags.id, id));
+  }
 }
 
 // Create a function to initialize sample data in the database
@@ -932,6 +1068,23 @@ async function initializeSampleData() {
 }
 
 export const storage = new DatabaseStorage();
+
+// Cleanup old client logs (older than 90 days)
+export async function cleanupOldLogs(): Promise<void> {
+  try {
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
+    const result = await db
+      .delete(clientLogs)
+      .where(lt(clientLogs.createdAt, ninetyDaysAgo));
+
+    console.log(`Cleaned up client logs older than 90 days`);
+  } catch (error) {
+    console.error("Error cleaning up old logs:", error);
+    throw error;
+  }
+}
 
 // Initialize sample data when the module loads
 initializeSampleData();

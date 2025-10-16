@@ -1953,6 +1953,116 @@ Return JSON format:
     }
   });
 
+  // Client Logging Routes
+  app.post("/api/logs", async (req, res) => {
+    try {
+      const { logs } = req.body;
+      if (!Array.isArray(logs) || logs.length === 0) {
+        return res.status(400).json({ error: "Invalid logs data" });
+      }
+      
+      await storage.createClientLogs(logs);
+      res.status(201).json({ success: true });
+    } catch (error) {
+      console.error('Error saving client logs:', error);
+      res.status(500).json({ error: "Failed to save logs" });
+    }
+  });
+
+  app.get("/api/admin/logs", authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      const { userId, newsroomId, level, limit, offset } = req.query;
+      
+      const filters: any = {};
+      if (userId) filters.userId = parseInt(userId as string);
+      if (newsroomId) filters.newsroomId = parseInt(newsroomId as string);
+      if (level) filters.level = level as string;
+      if (limit) filters.limit = parseInt(limit as string);
+      if (offset) filters.offset = parseInt(offset as string);
+      
+      const logs = await storage.getClientLogs(filters);
+      res.json(logs);
+    } catch (error) {
+      console.error('Error fetching logs:', error);
+      res.status(500).json({ error: "Failed to fetch logs" });
+    }
+  });
+
+  // User Flagging Routes
+  app.post("/api/admin/user-flags", authenticateToken, requireAdmin, async (req: any, res) => {
+    try {
+      const { userId, newsroomId, flagType, reason, notes } = req.body;
+      
+      if (!userId || !flagType) {
+        return res.status(400).json({ error: "userId and flagType are required" });
+      }
+      
+      const flag = await storage.createUserFlag({
+        userId,
+        newsroomId: newsroomId || null,
+        flagType,
+        reason: reason || null,
+        notes: notes || null,
+        flaggedBy: req.adminUser.id,
+      });
+      
+      res.status(201).json(flag);
+    } catch (error) {
+      console.error('Error creating user flag:', error);
+      res.status(500).json({ error: "Failed to create flag" });
+    }
+  });
+
+  app.get("/api/admin/user-flags", authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      const flags = await storage.getAllUserFlags();
+      res.json(flags);
+    } catch (error) {
+      console.error('Error fetching user flags:', error);
+      res.status(500).json({ error: "Failed to fetch flags" });
+    }
+  });
+
+  app.get("/api/admin/user-flags/:userId", authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const flags = await storage.getUserFlags(userId);
+      res.json(flags);
+    } catch (error) {
+      console.error('Error fetching user flags:', error);
+      res.status(500).json({ error: "Failed to fetch flags" });
+    }
+  });
+
+  app.put("/api/admin/user-flags/:id", authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { flagType, reason, notes } = req.body;
+      
+      const updated = await storage.updateUserFlag(id, {
+        flagType,
+        reason: reason || null,
+        notes: notes || null,
+      });
+      
+      res.json(updated);
+    } catch (error) {
+      console.error('Error updating user flag:', error);
+      res.status(500).json({ error: "Failed to update flag" });
+    }
+  });
+
+  app.delete("/api/admin/user-flags/:id", authenticateToken, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteUserFlag(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error('Error deleting user flag:', error);
+      res.status(500).json({ error: "Failed to delete flag" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

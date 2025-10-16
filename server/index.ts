@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { cleanupOldLogs } from "./storage";
 
 const app = express();
 app.use(express.json());
@@ -67,4 +68,12 @@ app.use((req, res, next) => {
   }, () => {
     log(`serving on port ${port}`);
   });
+
+  // Run log cleanup on startup
+  cleanupOldLogs().catch((err: any) => log(`Log cleanup error: ${err.message}`));
+
+  // Schedule daily log cleanup (runs every 24 hours)
+  setInterval(() => {
+    cleanupOldLogs().catch((err: any) => log(`Scheduled log cleanup error: ${err.message}`));
+  }, 24 * 60 * 60 * 1000);
 })();

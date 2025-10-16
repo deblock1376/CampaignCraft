@@ -49,6 +49,13 @@ Preferred communication style: Simple, everyday language.
   - Robust fallback to hardcoded prompts for reliability
   - Admin-only UI for searching, filtering, and editing prompts
   - Full CRUD operations with authentication and authorization
+- **Production Logging & Quality Assurance**: Comprehensive logging and user tracking system for debugging and quality assurance:
+  - Client-side logger capturing errors, user actions, API calls, and performance metrics
+  - Database storage with 90-day retention policy and automated cleanup
+  - User flagging system to mark users as "testing", "bug reporter", "issue", or "watch" with notes
+  - Admin logs page with filtering, search, and user flag management
+  - Logger auto-initializes with user context on login for complete activity tracking
+  - Scheduled daily log cleanup to maintain database performance
 
 ### System Design Choices
 - **Development**: Vite development server with Express API integration and hot module replacement.

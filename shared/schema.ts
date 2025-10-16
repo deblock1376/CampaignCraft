@@ -137,6 +137,31 @@ export const promptVersions = pgTable("prompt_versions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const clientLogs = pgTable("client_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id"),
+  newsroomId: integer("newsroom_id"),
+  sessionId: text("session_id").notNull(),
+  level: text("level").notNull(), // 'error', 'warn', 'info', 'debug'
+  message: text("message").notNull(),
+  context: jsonb("context"), // Additional data like stack trace, user action, etc.
+  url: text("url"), // Page where log occurred
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const userFlags = pgTable("user_flags", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  newsroomId: integer("newsroom_id"),
+  flagType: text("flag_type").notNull(), // 'good', 'bad', 'testing'
+  reason: text("reason"),
+  notes: text("notes"),
+  flaggedBy: integer("flagged_by").notNull(), // Admin user who flagged
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const insertNewsroomSchema = createInsertSchema(newsrooms).omit({
   id: true,
   createdAt: true,
@@ -196,6 +221,17 @@ export const insertPromptVersionSchema = createInsertSchema(promptVersions).omit
   createdAt: true,
 });
 
+export const insertClientLogSchema = createInsertSchema(clientLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserFlagSchema = createInsertSchema(userFlags).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertNewsroom = z.infer<typeof insertNewsroomSchema>;
 export type InsertBrandStylesheet = z.infer<typeof insertBrandStylesheetSchema>;
@@ -207,6 +243,8 @@ export type InsertStorySummary = z.infer<typeof insertStorySummarySchema>;
 export type InsertPromptCategory = z.infer<typeof insertPromptCategorySchema>;
 export type InsertPrompt = z.infer<typeof insertPromptSchema>;
 export type InsertPromptVersion = z.infer<typeof insertPromptVersionSchema>;
+export type InsertClientLog = z.infer<typeof insertClientLogSchema>;
+export type InsertUserFlag = z.infer<typeof insertUserFlagSchema>;
 
 export type User = typeof users.$inferSelect;
 export type Newsroom = typeof newsrooms.$inferSelect;
@@ -219,3 +257,5 @@ export type StorySummary = typeof storySummaries.$inferSelect;
 export type PromptCategory = typeof promptCategories.$inferSelect;
 export type Prompt = typeof prompts.$inferSelect;
 export type PromptVersion = typeof promptVersions.$inferSelect;
+export type ClientLog = typeof clientLogs.$inferSelect;
+export type UserFlag = typeof userFlags.$inferSelect;

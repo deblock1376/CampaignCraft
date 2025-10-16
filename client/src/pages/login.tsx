@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { logger } from "@/services/logger";
 
 export default function Login() {
   const [_, setLocation] = useLocation();
@@ -36,6 +37,10 @@ export default function Login() {
         // Store user session and token in localStorage
         localStorage.setItem("user", JSON.stringify(data.user));
         localStorage.setItem("token", data.token);
+        
+        // Update logger with user info
+        logger.updateUser(data.user.id, data.user.newsroomId || null);
+        logger.info('User logged in', { userId: data.user.id, email: data.user.email });
         
         toast({
           title: "Login successful",
