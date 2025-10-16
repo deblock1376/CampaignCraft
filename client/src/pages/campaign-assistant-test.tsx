@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Link } from "wouter";
+import Sidebar from "@/components/layout/sidebar";
+import Header from "@/components/layout/header";
 import ChatAssistant, { ChatMessage } from "@/components/chat/chat-assistant";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { PromptBuilder } from "@/components/campaign/prompt-builder";
-import { ArrowLeft } from "lucide-react";
 
 export default function CampaignAssistantTest() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -445,25 +444,15 @@ export default function CampaignAssistantTest() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-slate-50">
-      <div className="border-b bg-white shadow-sm p-4">
-        <div className="container mx-auto">
-          <div className="flex items-center gap-4 mb-2">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Return to Dashboard
-              </Link>
-            </Button>
-          </div>
-          <h1 className="text-2xl font-bold">Campaign Assistant</h1>
-          <p className="text-sm text-muted-foreground">
-            Chat with AI to create your campaign
-          </p>
-        </div>
-      </div>
-      
-      <div className="flex-1 overflow-hidden flex">
+    <>
+      <Sidebar />
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <Header 
+          title="Campaign Assistant" 
+          subtitle="Chat with AI to create your campaign"
+        />
+        
+        <div className="flex-1 overflow-hidden flex">
         {/* Chat Column - Left (60%) */}
         <div className="w-3/5 border-r overflow-auto">
           <div className="h-full py-6 px-4">
@@ -502,7 +491,8 @@ export default function CampaignAssistantTest() {
             />
           </div>
         </div>
-      </div>
-    </div>
+        </div>
+      </main>
+    </>
   );
 }
