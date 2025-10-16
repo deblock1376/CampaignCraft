@@ -272,6 +272,12 @@ export default function CampaignAssistantTest() {
           followUpSuggestion: generatedCampaign.followUpSuggestion,
           promptKey: generatedCampaign.promptKey,
         },
+        context: {
+          objective: selectedObjective,
+          groundingGuideIds: selectedGuideId ? [selectedGuideId] : undefined,
+          storySummaryIds: selectedStorySummaries.length > 0 ? selectedStorySummaries : undefined,
+          hasReferenceMaterials: selectedRecentCampaigns.length > 0,
+        },
       };
       setMessages(prev => [...prev, campaignMessage]);
     },

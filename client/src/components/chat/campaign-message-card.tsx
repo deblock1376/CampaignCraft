@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Save, Download, RefreshCw, Mail, Lightbulb } from "lucide-react";
 import { PromptIndicator } from "@/components/ui/prompt-indicator";
+import { NextSteps } from "../campaign/next-steps";
 
 interface CampaignMessageCardProps {
   campaign: {
@@ -15,6 +16,14 @@ interface CampaignMessageCardProps {
     followUpSuggestion?: string;
     promptKey?: string;
   };
+  context?: {
+    objective?: string;
+    segmentId?: number;
+    segmentName?: string;
+    groundingGuideIds?: number[];
+    storySummaryIds?: number[];
+    hasReferenceMaterials?: boolean;
+  };
   onSave?: () => void;
   onExport?: () => void;
   onRegenerate?: () => void;
@@ -23,6 +32,7 @@ interface CampaignMessageCardProps {
 
 export function CampaignMessageCard({ 
   campaign, 
+  context,
   onSave, 
   onExport, 
   onRegenerate,
@@ -112,6 +122,19 @@ export function CampaignMessageCard({
             <RefreshCw className="h-4 w-4 mr-2" />
             Regenerate
           </Button>
+        </div>
+
+        {/* Next Steps */}
+        <div className="mt-4">
+          <NextSteps
+            campaign={{
+              title: campaign.subjectLine,
+              content: campaign.body,
+              subject: campaign.subjectLine,
+              callToAction: campaign.cta.text,
+            }}
+            context={context}
+          />
         </div>
       </CardContent>
     </Card>

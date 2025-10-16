@@ -16,6 +16,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import CampaignPreview from "./campaign-preview";
 import DraftCarousel from "./draft-carousel";
+import { NextSteps } from "./next-steps";
 
 const formSchema = z.object({
   objective: z.enum(['donation', 'membership', 'engagement']),
@@ -25,7 +26,7 @@ const formSchema = z.object({
 
 export default function CampaignForm() {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedCampaign, setGeneratedCampaign] = useState(null);
+  const [generatedCampaign, setGeneratedCampaign] = useState<any>(null);
   const [generatedDrafts, setGeneratedDrafts] = useState<any[]>([]);
   const [useMultiDraft, setUseMultiDraft] = useState(true);
   const [activeTab, setActiveTab] = useState('content');
@@ -210,6 +211,31 @@ export default function CampaignForm() {
           onExport={handleExport}
         />
       </div>
+
+      {/* Next Steps */}
+      {generatedCampaign && (
+        <NextSteps
+          campaign={{
+            title: generatedCampaign.title || "Campaign",
+            content: typeof generatedCampaign.content === 'string' 
+              ? JSON.parse(generatedCampaign.content).content 
+              : generatedCampaign.content?.content || "",
+            subject: typeof generatedCampaign.content === 'string'
+              ? JSON.parse(generatedCampaign.content).subject
+              : generatedCampaign.content?.subject,
+            callToAction: typeof generatedCampaign.content === 'string'
+              ? JSON.parse(generatedCampaign.content).cta
+              : generatedCampaign.content?.cta,
+          }}
+          context={{
+            objective: form.getValues('objective'),
+            groundingGuideIds: (() => {
+              const guideId = parseInt(form.getValues('brandStylesheetId'));
+              return !isNaN(guideId) && guideId > 0 ? [guideId] : undefined;
+            })(),
+          }}
+        />
+      )}
 
       {/* Draft Carousel */}
       {generatedDrafts.length > 0 && (

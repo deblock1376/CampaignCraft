@@ -21,6 +21,14 @@ export interface ChatMessage {
     followUpSuggestion?: string;
     promptKey?: string;
   };
+  context?: {
+    objective?: string;
+    segmentId?: number;
+    segmentName?: string;
+    groundingGuideIds?: number[];
+    storySummaryIds?: number[];
+    hasReferenceMaterials?: boolean;
+  };
 }
 
 interface ChatAssistantProps {
@@ -114,6 +122,7 @@ export default function ChatAssistant({
                     {message.campaign && message.role === "assistant" && (
                       <CampaignMessageCard
                         campaign={message.campaign}
+                        context={message.context}
                         onSave={() => onSaveCampaign?.(message.campaign)}
                         onExport={() => onExportCampaign?.(message.campaign)}
                         onRegenerate={onRegenerateCampaign}
