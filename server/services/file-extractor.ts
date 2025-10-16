@@ -1,5 +1,4 @@
 import { ObjectStorageService } from '../objectStorage';
-import { PDFParse } from 'pdf-parse';
 import mammoth from 'mammoth';
 
 /**
@@ -60,8 +59,10 @@ export class FileExtractorService {
    * Extracts text from a PDF file buffer.
    */
   private async extractPdfText(buffer: Buffer): Promise<string> {
-    let parser: PDFParse | null = null;
+    let parser: any = null;
     try {
+      // Use dynamic import to load pdf-parse
+      const { PDFParse } = await import('pdf-parse');
       parser = new PDFParse({ data: buffer });
       const result = await parser.getText();
       return result.text.trim();
@@ -70,7 +71,11 @@ export class FileExtractorService {
       throw new Error('Failed to extract text from PDF');
     } finally {
       if (parser) {
-        await parser.destroy();
+        try {
+          await parser.destroy();
+        } catch (destroyError) {
+          console.error('Error destroying PDF parser:', destroyError);
+        }
       }
     }
   }

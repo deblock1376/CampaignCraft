@@ -44,7 +44,13 @@ Preferred communication style: Simple, everyday language.
   - Newsroom assignment and role modification for flexible access control
   - Multiple users per newsroom supported for team collaboration
   - Password management and account administration
-- **Document Upload**: Integrates with Google Cloud Storage for uploading reference materials to inform AI generation within the Grounding Library.
+- **Document Upload & Extraction**: Integrates with Replit App Storage (Google Cloud Storage) for uploading reference materials to inform AI generation within the Grounding Library. Features automated text extraction from uploaded files:
+  - PDF text extraction using pdf-parse library
+  - DOCX text extraction using mammoth library
+  - Plain text file support
+  - FileExtractorService fetches files from object storage and extracts content
+  - Extracted file content is automatically combined with manual text and included in AI prompts
+  - Ensures AI references both typed materials and uploaded documents for comprehensive brand consistency
 - **Quick Start Templates**: Pre-built AI tools for specific marketing needs (e.g., Rapid-Response Campaign Creator, AI Subject Line Generator).
 - **BlueLena Copywriting Integration**: AI generation adheres to BlueLena professional copywriting guidelines for email structure, subject lines, and CTAs.
 - **AI-Powered Merge**: Utilizes AI to intelligently combine best elements from multiple drafts into a cohesive, unified campaign.
@@ -95,5 +101,7 @@ Preferred communication style: Simple, everyday language.
     - `@tanstack/react-query`
 - **Form Handling**:
     - `react-hook-form` with `@hookform/resolvers`
-- **Cloud Storage**:
-    - Google Cloud Storage
+- **Cloud Storage & File Processing**:
+    - Replit App Storage (Google Cloud Storage)
+    - `pdf-parse` - PDF text extraction
+    - `mammoth` - DOCX text extraction
