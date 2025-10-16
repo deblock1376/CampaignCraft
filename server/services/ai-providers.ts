@@ -61,6 +61,7 @@ export interface CampaignResponse {
     estimatedConversion?: number;
   };
   followUpSuggestion?: string;
+  promptKey?: string; // For admin auditing - shows which prompt was used
 }
 
 class AIProviderService {
@@ -131,19 +132,26 @@ class AIProviderService {
 
   async generateCampaign(request: CampaignRequest, model: string): Promise<CampaignResponse> {
     const prompt = await this.buildCampaignPrompt(request);
+    const promptKey = 'campaign_generate';
     
+    let response: CampaignResponse;
     switch (model) {
       case 'gpt-4o':
-        return this.generateWithOpenAI(prompt, request);
+        response = await this.generateWithOpenAI(prompt, request);
+        break;
       case 'claude-sonnet-4':
       case 'claude-sonnet-4-20250514':
-        return this.generateWithAnthropic(prompt, request);
+        response = await this.generateWithAnthropic(prompt, request);
+        break;
       case 'gemini-pro':
       case 'gemini-2.5-flash':
-        return this.generateWithGemini(prompt, request);
+        response = await this.generateWithGemini(prompt, request);
+        break;
       default:
         throw new Error(`Unsupported AI model: ${model}`);
     }
+    
+    return { ...response, promptKey };
   }
 
   async generateContent(prompt: string, model: string): Promise<string> {
@@ -169,19 +177,26 @@ class AIProviderService {
     model: string = 'gpt-4o'
   ): Promise<CampaignResponse> {
     const prompt = await this.buildMergePrompt(drafts, newsroomName, objective, type);
+    const promptKey = 'draft_merge';
     
+    let response: CampaignResponse;
     switch (model) {
       case 'gpt-4o':
-        return this.generateMergeWithOpenAI(prompt);
+        response = await this.generateMergeWithOpenAI(prompt);
+        break;
       case 'claude-sonnet-4':
       case 'claude-sonnet-4-20250514':
-        return this.generateMergeWithAnthropic(prompt);
+        response = await this.generateMergeWithAnthropic(prompt);
+        break;
       case 'gemini-pro':
       case 'gemini-2.5-flash':
-        return this.generateMergeWithGemini(prompt);
+        response = await this.generateMergeWithGemini(prompt);
+        break;
       default:
-        return this.generateMergeWithOpenAI(prompt);
+        response = await this.generateMergeWithOpenAI(prompt);
     }
+    
+    return { ...response, promptKey };
   }
 
   private async generateMergeWithOpenAI(prompt: string): Promise<CampaignResponse> {
@@ -769,6 +784,7 @@ Response must be valid JSON with all fields included.
     explanation?: string;
     rewriteOffer?: string;
     rating?: string;
+    promptKey?: string;
   }> {
     const frameworkGuidelines = framework === 'bluelena' 
       ? `BlueLena Best Practices Scoring (0-100 total):
@@ -908,6 +924,7 @@ Provide your evaluation in this exact JSON format:
         explanation: parsed.explanation,
         rewriteOffer: parsed.rewriteOffer,
         rating: parsed.rating,
+        promptKey: framework === 'bluelena' ? 'campaign_evaluate_bluelena' : 'campaign_evaluate_audience',
       };
     } catch (error) {
       console.error('Failed to parse evaluation response:', response);
@@ -921,7 +938,7 @@ Provide your evaluation in this exact JSON format:
     recommendations: string[],
     campaignType: string,
     model: string = 'claude-sonnet-4-20250514'
-  ): Promise<string> {
+  ): Promise<{ content: string; promptKey: string }> {
     const prompt = `You are a marketing copywriter. Rewrite this ${campaignType} campaign to implement these recommendations:
 
 Original Content:
@@ -932,7 +949,8 @@ ${recommendations.map((r, i) => `${i + 1}. ${r}`).join('\n')}
 
 Rewrite the campaign content implementing ALL recommendations. Return ONLY the improved campaign content, no explanations.`;
 
-    return this.generateContent(prompt, model);
+    const content = await this.generateContent(prompt, model);
+    return { content, promptKey: 'campaign_rewrite' };
   }
 }
 

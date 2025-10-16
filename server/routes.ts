@@ -721,14 +721,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { originalContent, recommendations, campaignType, aiModel } = schema.parse(req.body);
 
-      const rewrittenContent = await aiProviderService.rewriteCampaign(
+      const result = await aiProviderService.rewriteCampaign(
         originalContent,
         recommendations,
         campaignType,
         aiModel || 'gpt-4o'
       );
 
-      res.json({ rewrittenContent });
+      res.json({ rewrittenContent: result.content, promptKey: result.promptKey });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
