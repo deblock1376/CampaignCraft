@@ -19,6 +19,7 @@ export interface ChatMessage {
       url?: string;
     };
     followUpSuggestion?: string;
+    promptKey?: string;
   };
 }
 

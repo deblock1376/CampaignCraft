@@ -270,6 +270,7 @@ export default function CampaignAssistantTest() {
             text: generatedCampaign.cta || "Learn More",
           },
           followUpSuggestion: generatedCampaign.followUpSuggestion,
+          promptKey: generatedCampaign.promptKey,
         },
       };
       setMessages(prev => [...prev, campaignMessage]);
