@@ -10,7 +10,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Eye, Calendar, Search, Filter, X } from "lucide-react";
+import { Eye, Calendar, Search, Filter, X, Copy, Download, FileCheck } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 
 export default function CampaignHistory() {
   const [selectedCampaign, setSelectedCampaign] = useState(null);
@@ -20,6 +22,8 @@ export default function CampaignHistory() {
   const [objectiveFilter, setObjectiveFilter] = useState("all");
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const newsroomId = user.newsroomId || 1;
+  const { toast } = useToast();
+  const [, setLocation] = useLocation();
   
   const { data: campaigns, isLoading, error } = useQuery({
     queryKey: ["/api/newsrooms", newsroomId, "campaigns"],
@@ -68,6 +72,67 @@ export default function CampaignHistory() {
 
   // Check if any filters are active
   const hasActiveFilters = searchQuery !== "" || statusFilter !== "all" || typeFilter !== "all" || objectiveFilter !== "all";
+
+  // Copy campaign content to clipboard
+  const handleCopyCampaign = async (campaign: any) => {
+    try {
+      const content = campaign.content?.body || campaign.content?.content || "";
+      const subject = campaign.content?.subject || "";
+      const cta = campaign.content?.cta || "";
+      const fullText = `Subject: ${subject}\n\n${content}\n\nCall to Action: ${cta}`;
+      
+      await navigator.clipboard.writeText(fullText);
+      toast({
+        title: "Copied!",
+        description: "Campaign content copied to clipboard",
+      });
+    } catch (err) {
+      toast({
+        title: "Copy failed",
+        description: "Unable to copy to clipboard",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Export campaign to text file
+  const handleExportCampaign = (campaign: any) => {
+    const content = campaign.content?.body || campaign.content?.content || "";
+    const subject = campaign.content?.subject || "";
+    const cta = campaign.content?.cta || "";
+    const fullText = `Subject: ${subject}\n\n${content}\n\nCall to Action: ${cta}`;
+    
+    const blob = new Blob([fullText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${campaign.title.replace(/[^a-z0-9]/gi, '_')}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Campaign Exported!",
+      description: "Your campaign has been downloaded as a text file.",
+    });
+  };
+
+  // Navigate to evaluation page with campaign data
+  const handleEvaluateCampaign = (campaign: any) => {
+    const subject = campaign.content?.subject || "";
+    const content = campaign.content?.body || campaign.content?.content || "";
+    const cta = campaign.content?.cta || "";
+    
+    const campaignData = {
+      subject,
+      body: content,
+      cta,
+    };
+    
+    const encodedData = encodeURIComponent(JSON.stringify(campaignData));
+    setLocation(`/campaign-evaluate?campaign=${encodedData}`);
+  };
 
   if (error) {
     return (
@@ -213,7 +278,7 @@ export default function CampaignHistory() {
                             )}
                           </div>
                           <div className="flex items-center space-x-4 mt-1 text-sm text-slate-600">
-                            <span>{new Date(campaign.createdAt).toLocaleDateString()}</span>
+                            <span>{new Date(campaign.createdAt).toLocaleString()}</span>
                             <span>•</span>
                             <span className="capitalize">{campaign.type}</span>
                             <span>•</span>
@@ -242,7 +307,35 @@ export default function CampaignHistory() {
                             </DialogTrigger>
                             <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
                               <DialogHeader>
-                                <DialogTitle>{campaign.title}</DialogTitle>
+                                <div className="flex items-start justify-between">
+                                  <DialogTitle className="flex-1">{campaign.title}</DialogTitle>
+                                  <div className="flex items-center gap-2 ml-4">
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => handleCopyCampaign(campaign)}
+                                    >
+                                      <Copy className="w-4 h-4 mr-1" />
+                                      Copy
+                                    </Button>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => handleExportCampaign(campaign)}
+                                    >
+                                      <Download className="w-4 h-4 mr-1" />
+                                      Export
+                                    </Button>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => handleEvaluateCampaign(campaign)}
+                                    >
+                                      <FileCheck className="w-4 h-4 mr-1" />
+                                      Evaluate
+                                    </Button>
+                                  </div>
+                                </div>
                               </DialogHeader>
                               
                               <Tabs defaultValue="content" className="w-full">
@@ -311,6 +404,28 @@ export default function CampaignHistory() {
                                       <h4 className="font-medium text-sm text-gray-700 mb-2">Last Updated</h4>
                                       <p>{new Date(campaign.updatedAt).toLocaleString()}</p>
                                     </div>
+                                    {campaign.content?.evaluationScore !== undefined && campaign.content?.evaluationScore !== null && (
+                                      <div className="col-span-2">
+                                        <h4 className="font-medium text-sm text-gray-700 mb-2">BlueLena Evaluation Score</h4>
+                                        <div className="p-3 bg-blue-50 rounded-lg">
+                                          <div className="flex items-center justify-between">
+                                            <span className="text-lg font-bold text-blue-900">
+                                              {campaign.content.evaluationScore}/100
+                                            </span>
+                                            <Badge 
+                                              variant={
+                                                campaign.content.evaluationScore >= 80 ? 'default' :
+                                                campaign.content.evaluationScore >= 60 ? 'secondary' : 'destructive'
+                                              }
+                                              className="text-xs"
+                                            >
+                                              {campaign.content.evaluationScore >= 80 ? 'Excellent' :
+                                               campaign.content.evaluationScore >= 60 ? 'Good' : 'Needs Improvement'}
+                                            </Badge>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
                                   </div>
                                   
                                   <div>
