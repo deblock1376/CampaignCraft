@@ -19,6 +19,7 @@ export default function Sidebar() {
     { href: "/segments", icon: "fas fa-users", label: "Audience Segments" },
     { href: "/story-summaries", icon: "fas fa-newspaper", label: "Story Summaries" },
     { href: "/settings", icon: "fas fa-cog", label: "Settings" },
+    { href: "/help", icon: "fas fa-book-open", label: "Help & Guides" },
   ];
 
 

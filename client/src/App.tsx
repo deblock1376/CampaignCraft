@@ -21,6 +21,7 @@ import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 import CampaignAssistantTest from "@/pages/campaign-assistant-test";
 import StorySummaries from "@/pages/story-summaries";
+import HelpCenter from "@/pages/help-center";
 
 function Router() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -55,6 +56,7 @@ function Router() {
       <Route path="/segments" component={Segments} />
       <Route path="/email-optimizer" component={EmailOptimizer} />
       <Route path="/settings" component={Settings} />
+      <Route path="/help" component={HelpCenter} />
       <Route path="/admin" component={Admin} />
       <Route path="/admin/prompts" component={AdminPrompts} />
       <Route path="/admin/logs" component={AdminLogs} />
