@@ -3,8 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Bot, User } from "lucide-react";
+import { Send, Bot, User, Paperclip, X, FileText } from "lucide-react";
 import { CampaignMessageCard } from "./campaign-message-card";
+import { ObjectUploader } from "@/components/ObjectUploader";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export interface ChatMessage {
   id: string;
@@ -33,7 +36,7 @@ export interface ChatMessage {
 
 interface ChatAssistantProps {
   messages: ChatMessage[];
-  onSendMessage: (message: string) => void;
+  onSendMessage: (message: string, files?: string[]) => void;
   isLoading?: boolean;
   onSaveCampaign?: (campaign: ChatMessage["campaign"]) => void;
   onExportCampaign?: (campaign: ChatMessage["campaign"]) => void;
@@ -49,6 +52,8 @@ export default function ChatAssistant({
   onRegenerateCampaign 
 }: ChatAssistantProps) {
   const [input, setInput] = useState("");
+  const [attachedFiles, setAttachedFiles] = useState<string[]>([]);
+  const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -62,8 +67,31 @@ export default function ChatAssistant({
 
   const handleSend = () => {
     if (!input.trim() || isLoading) return;
-    onSendMessage(input);
+    onSendMessage(input, attachedFiles.length > 0 ? attachedFiles : undefined);
     setInput("");
+    setAttachedFiles([]);
+  };
+
+  const handleFileUpload = (filename: string, uploadURL: string) => {
+    const fileRef = JSON.stringify({ filename, url: uploadURL });
+    setAttachedFiles(prev => [...prev, fileRef]);
+    toast({
+      title: "File attached",
+      description: `${filename} will be included in your message`
+    });
+  };
+
+  const handleFileRemove = (index: number) => {
+    try {
+      const fileData = JSON.parse(attachedFiles[index]);
+      setAttachedFiles(prev => prev.filter((_, i) => i !== index));
+      toast({
+        title: "File removed",
+        description: `${fileData.filename} removed`
+      });
+    } catch {
+      setAttachedFiles(prev => prev.filter((_, i) => i !== index));
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -150,6 +178,36 @@ export default function ChatAssistant({
           </div>
         </ScrollArea>
         <div className="border-t p-4">
+          {/* Attached Files Display */}
+          {attachedFiles.length > 0 && (
+            <div className="mb-2 space-y-1">
+              {attachedFiles.map((fileRef, index) => {
+                try {
+                  const fileData = JSON.parse(fileRef);
+                  return (
+                    <div key={index} className="flex items-center justify-between text-xs bg-slate-50 rounded px-2 py-1">
+                      <div className="flex items-center">
+                        <FileText className="w-3 h-3 mr-1 text-slate-400" />
+                        <span className="truncate max-w-md">{fileData.filename}</span>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-4 w-4 p-0 hover:bg-slate-200"
+                        onClick={() => handleFileRemove(index)}
+                        disabled={isLoading}
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  );
+                } catch {
+                  return null;
+                }
+              })}
+            </div>
+          )}
+          
           <div className="flex gap-2">
             <Textarea
               value={input}
@@ -160,14 +218,39 @@ export default function ChatAssistant({
               rows={2}
               disabled={isLoading}
             />
-            <Button
-              onClick={handleSend}
-              disabled={!input.trim() || isLoading}
-              size="icon"
-              className="h-[60px] w-[60px] flex-shrink-0"
-            >
-              <Send className="w-5 h-5" />
-            </Button>
+            <div className="flex flex-col gap-2">
+              <ObjectUploader
+                maxNumberOfFiles={3}
+                maxFileSize={10485760}
+                onGetUploadParameters={async () => {
+                  const response = await apiRequest("POST", "/api/objects/upload");
+                  const data = await response.json();
+                  return {
+                    method: "PUT" as const,
+                    url: data.uploadURL
+                  };
+                }}
+                onComplete={async (result) => {
+                  if (result.successful && result.successful.length > 0) {
+                    const uploadedFile = result.successful[0];
+                    if (uploadedFile.name && uploadedFile.uploadURL) {
+                      handleFileUpload(uploadedFile.name, uploadedFile.uploadURL);
+                    }
+                  }
+                }}
+                buttonClassName="h-[28px] w-[60px] flex-shrink-0"
+              >
+                <Paperclip className="w-4 h-4" />
+              </ObjectUploader>
+              <Button
+                onClick={handleSend}
+                disabled={!input.trim() || isLoading}
+                size="icon"
+                className="h-[28px] w-[60px] flex-shrink-0"
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </CardContent>

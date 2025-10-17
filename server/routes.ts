@@ -293,15 +293,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const { FileExtractorService } = await import('./services/file-extractor');
         const extractor = new FileExtractorService();
         
-        for (const filePath of validatedData.noteFiles) {
-          const [filename, fileUrl] = filePath.split(':');
+        for (const fileRef of validatedData.noteFiles) {
           try {
-            const extractedText = await extractor.extractTextFromFile(fileUrl);
+            const fileData = JSON.parse(fileRef);
+            const extractedText = await extractor.extractTextFromFile(fileData.url);
             if (extractedText && !extractedText.includes('extraction failed')) {
-              combinedNotes += `\n\n--- Reference from ${filename} ---\n${extractedText.substring(0, 2000)}`;
+              combinedNotes += `\n\n--- Reference from ${fileData.filename} ---\n${extractedText.substring(0, 2000)}`;
             }
           } catch (error) {
-            console.error(`Error extracting text from ${filename}:`, error);
+            console.error(`Error extracting text from file:`, error);
           }
         }
       }

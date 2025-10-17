@@ -48,12 +48,18 @@ Preferred communication style: Simple, everyday language.
   - Newsroom assignment and role modification for flexible access control
   - Multiple users per newsroom supported for team collaboration
   - Password management and account administration
-- **Document Upload & Extraction**: Integrates with Replit App Storage (Google Cloud Storage) for uploading reference materials to inform AI generation within the Grounding Library. Features automated text extraction from uploaded files:
+- **Document Upload & Extraction**: Integrates with Replit App Storage (Google Cloud Storage) for uploading reference materials to inform AI generation. Features automated text extraction from uploaded files:
   - PDF text extraction using pdf-parse library
   - DOCX text extraction using mammoth library
   - Plain text file support
   - FileExtractorService fetches files from object storage and extracts content
   - Extracted file content is automatically combined with manual text and included in AI prompts
+  - File references stored as JSON objects `{"filename": "...", "url": "..."}` to handle special characters in URLs
+  - Available in three locations:
+    1. **Grounding Library**: Upload brand materials for library creation
+    2. **Campaign Notes (Campaign Builder)**: Upload reference documents to inform specific campaign generation
+    3. **Chat Assistant**: Attach files directly to chat messages for contextual AI responses
+  - All uploaded files are extracted and their content is merged with user notes before AI generation
   - Ensures AI references both typed materials and uploaded documents for comprehensive brand consistency
 - **Quick Start Templates**: Pre-built AI tools for specific marketing needs (e.g., Rapid-Response Campaign Creator, AI Subject Line Generator).
 - **BlueLena Copywriting Integration**: AI generation adheres to BlueLena professional copywriting guidelines for email structure, subject lines, and CTAs.

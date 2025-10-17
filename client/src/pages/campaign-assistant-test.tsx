@@ -124,12 +124,12 @@ export default function CampaignAssistantTest() {
 
   // Chat mutation
   const chatMutation = useMutation({
-    mutationFn: async (message: string) => {
+    mutationFn: async ({ message, files }: { message: string; files?: string[] }) => {
       // Build enriched context from Campaign Builder
       const enrichedContext = {
         segments: selectedSegments.length > 0 ? selectedSegments : undefined,
         notes: campaignNotes.trim() || undefined,
-        noteFiles: noteFiles.length > 0 ? noteFiles : undefined,
+        noteFiles: [...(noteFiles.length > 0 ? noteFiles : []), ...(files || [])],
         referenceCampaigns: selectedRecentCampaigns.length > 0 
           ? (recentCampaigns as any[])
               .filter((c: any) => selectedRecentCampaigns.includes(c.id))
@@ -245,6 +245,7 @@ export default function CampaignAssistantTest() {
           brandStylesheetId: brandStylesheetId,
           newsroomId: newsroomId,
           aiModel: selectedModel,
+          noteFiles: noteFiles.length > 0 ? noteFiles : undefined,
         }),
       });
 
@@ -391,7 +392,7 @@ export default function CampaignAssistantTest() {
     handleSendMessage(message);
   };
 
-  const handleSendMessage = (message: string) => {
+  const handleSendMessage = (message: string, files?: string[]) => {
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       role: "user",
@@ -399,7 +400,7 @@ export default function CampaignAssistantTest() {
       timestamp: new Date(),
     };
     setMessages(prev => [...prev, userMessage]);
-    chatMutation.mutate(message);
+    chatMutation.mutate({ message, files });
   };
 
   const handleSaveCampaign = (campaign: any) => {
