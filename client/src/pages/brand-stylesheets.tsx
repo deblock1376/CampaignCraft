@@ -49,6 +49,22 @@ export default function BrandStylesheets() {
   const { toast } = useToast();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const newsroomId = user.newsroomId || 1;
+  
+  // File upload state for each material field
+  const [materialFiles, setMaterialFiles] = useState<Record<string, string>>({
+    brandVoice: "",
+    strategyPlaybook: "",
+    styleGuide: "",
+    aboutUs: "",
+    pastCampaigns: "",
+    impactStories: "",
+    testimonials: "",
+    segments: "",
+    surveyResponses: "",
+    localDates: "",
+    surveyResearch: "",
+    campaignMetrics: "",
+  });
 
   const { data: stylesheets, isLoading } = useQuery({
     queryKey: ["/api/newsrooms", newsroomId, "stylesheets"],
@@ -137,27 +153,63 @@ export default function BrandStylesheets() {
       ? data.keyMessagesText.split('\n').filter((msg: string) => msg.trim())
       : [];
     
-    // Build materials structure from text fields
+    // Build materials structure from text fields and file uploads
     const materials = {
       brandFoundation: {
-        brandVoice: data.brandVoiceText ? { text: data.brandVoiceText } : undefined,
-        strategyPlaybook: data.strategyPlaybookText ? { text: data.strategyPlaybookText } : undefined,
-        styleGuide: data.styleGuideText ? { text: data.styleGuideText } : undefined,
-        aboutUs: data.aboutUsText ? { text: data.aboutUsText } : undefined,
+        brandVoice: (data.brandVoiceText || materialFiles.brandVoice) ? { 
+          text: data.brandVoiceText,
+          fileUrl: materialFiles.brandVoice || undefined,
+        } : undefined,
+        strategyPlaybook: (data.strategyPlaybookText || materialFiles.strategyPlaybook) ? { 
+          text: data.strategyPlaybookText,
+          fileUrl: materialFiles.strategyPlaybook || undefined,
+        } : undefined,
+        styleGuide: (data.styleGuideText || materialFiles.styleGuide) ? { 
+          text: data.styleGuideText,
+          fileUrl: materialFiles.styleGuide || undefined,
+        } : undefined,
+        aboutUs: (data.aboutUsText || materialFiles.aboutUs) ? { 
+          text: data.aboutUsText,
+          fileUrl: materialFiles.aboutUs || undefined,
+        } : undefined,
       },
       campaignExamples: {
-        pastCampaigns: data.pastCampaignsText ? { text: data.pastCampaignsText } : undefined,
-        impactStories: data.impactStoriesText ? { text: data.impactStoriesText } : undefined,
-        testimonials: data.testimonialsText ? { text: data.testimonialsText } : undefined,
+        pastCampaigns: (data.pastCampaignsText || materialFiles.pastCampaigns) ? { 
+          text: data.pastCampaignsText,
+          fileUrl: materialFiles.pastCampaigns || undefined,
+        } : undefined,
+        impactStories: (data.impactStoriesText || materialFiles.impactStories) ? { 
+          text: data.impactStoriesText,
+          fileUrl: materialFiles.impactStories || undefined,
+        } : undefined,
+        testimonials: (data.testimonialsText || materialFiles.testimonials) ? { 
+          text: data.testimonialsText,
+          fileUrl: materialFiles.testimonials || undefined,
+        } : undefined,
       },
       audienceIntelligence: {
-        segments: data.segmentsText ? { text: data.segmentsText } : undefined,
-        surveyResponses: data.surveyResponsesText ? { text: data.surveyResponsesText } : undefined,
-        localDates: data.localDatesText ? { text: data.localDatesText } : undefined,
+        segments: (data.segmentsText || materialFiles.segments) ? { 
+          text: data.segmentsText,
+          fileUrl: materialFiles.segments || undefined,
+        } : undefined,
+        surveyResponses: (data.surveyResponsesText || materialFiles.surveyResponses) ? { 
+          text: data.surveyResponsesText,
+          fileUrl: materialFiles.surveyResponses || undefined,
+        } : undefined,
+        localDates: (data.localDatesText || materialFiles.localDates) ? { 
+          text: data.localDatesText,
+          fileUrl: materialFiles.localDates || undefined,
+        } : undefined,
       },
       performanceData: {
-        surveyResearch: data.surveyResearchText ? { text: data.surveyResearchText } : undefined,
-        campaignMetrics: data.campaignMetricsText ? { text: data.campaignMetricsText } : undefined,
+        surveyResearch: (data.surveyResearchText || materialFiles.surveyResearch) ? { 
+          text: data.surveyResearchText,
+          fileUrl: materialFiles.surveyResearch || undefined,
+        } : undefined,
+        campaignMetrics: (data.campaignMetricsText || materialFiles.campaignMetrics) ? { 
+          text: data.campaignMetricsText,
+          fileUrl: materialFiles.campaignMetrics || undefined,
+        } : undefined,
       },
     };
     
@@ -201,12 +253,28 @@ export default function BrandStylesheets() {
   const handleEdit = (stylesheet: any) => {
     setEditingStylesheet(stylesheet);
     
-    // Extract materials text from the materials object
+    // Extract materials text and file URLs from the materials object
     const materials = stylesheet.materials || {};
     const brandFoundation = materials.brandFoundation || {};
     const campaignExamples = materials.campaignExamples || {};
     const audienceIntelligence = materials.audienceIntelligence || {};
     const performanceData = materials.performanceData || {};
+    
+    // Load file URLs into state
+    setMaterialFiles({
+      brandVoice: brandFoundation.brandVoice?.fileUrl || "",
+      strategyPlaybook: brandFoundation.strategyPlaybook?.fileUrl || "",
+      styleGuide: brandFoundation.styleGuide?.fileUrl || "",
+      aboutUs: brandFoundation.aboutUs?.fileUrl || "",
+      pastCampaigns: campaignExamples.pastCampaigns?.fileUrl || "",
+      impactStories: campaignExamples.impactStories?.fileUrl || "",
+      testimonials: campaignExamples.testimonials?.fileUrl || "",
+      segments: audienceIntelligence.segments?.fileUrl || "",
+      surveyResponses: audienceIntelligence.surveyResponses?.fileUrl || "",
+      localDates: audienceIntelligence.localDates?.fileUrl || "",
+      surveyResearch: performanceData.surveyResearch?.fileUrl || "",
+      campaignMetrics: performanceData.campaignMetrics?.fileUrl || "",
+    });
     
     form.reset({
       name: stylesheet.name,
@@ -235,6 +303,20 @@ export default function BrandStylesheets() {
   const handleCloseDialog = () => {
     setEditingStylesheet(null);
     form.reset();
+    setMaterialFiles({
+      brandVoice: "",
+      strategyPlaybook: "",
+      styleGuide: "",
+      aboutUs: "",
+      pastCampaigns: "",
+      impactStories: "",
+      testimonials: "",
+      segments: "",
+      surveyResponses: "",
+      localDates: "",
+      surveyResearch: "",
+      campaignMetrics: "",
+    });
   };
 
   return (
@@ -405,6 +487,28 @@ export default function BrandStylesheets() {
                               {...field} 
                             />
                           </FormControl>
+                          {materialFiles.brandVoice && (
+                            <div className="flex items-center gap-2 text-xs bg-slate-50 rounded px-2 py-1 mt-1">
+                              <FileText className="w-3 h-3 text-slate-400" />
+                              <span className="truncate flex-1">{materialFiles.brandVoice.split('/').pop()}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-4 w-4 p-0 hover:bg-slate-200"
+                                onClick={() => setMaterialFiles(prev => ({ ...prev, brandVoice: "" }))}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+                          <ObjectUploader
+                            onUpload={(fileRef) => setMaterialFiles(prev => ({ ...prev, brandVoice: fileRef }))}
+                            className="mt-1"
+                          >
+                            <Upload className="w-3 h-3 mr-1" />
+                            Upload File
+                          </ObjectUploader>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -422,6 +526,28 @@ export default function BrandStylesheets() {
                               {...field} 
                             />
                           </FormControl>
+                          {materialFiles.strategyPlaybook && (
+                            <div className="flex items-center gap-2 text-xs bg-slate-50 rounded px-2 py-1 mt-1">
+                              <FileText className="w-3 h-3 text-slate-400" />
+                              <span className="truncate flex-1">{materialFiles.strategyPlaybook.split('/').pop()}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-4 w-4 p-0 hover:bg-slate-200"
+                                onClick={() => setMaterialFiles(prev => ({ ...prev, strategyPlaybook: "" }))}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+                          <ObjectUploader
+                            onUpload={(fileRef) => setMaterialFiles(prev => ({ ...prev, strategyPlaybook: fileRef }))}
+                            className="mt-1"
+                          >
+                            <Upload className="w-3 h-3 mr-1" />
+                            Upload File
+                          </ObjectUploader>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -439,6 +565,28 @@ export default function BrandStylesheets() {
                               {...field} 
                             />
                           </FormControl>
+                          {materialFiles.styleGuide && (
+                            <div className="flex items-center gap-2 text-xs bg-slate-50 rounded px-2 py-1 mt-1">
+                              <FileText className="w-3 h-3 text-slate-400" />
+                              <span className="truncate flex-1">{materialFiles.styleGuide.split('/').pop()}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-4 w-4 p-0 hover:bg-slate-200"
+                                onClick={() => setMaterialFiles(prev => ({ ...prev, styleGuide: "" }))}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+                          <ObjectUploader
+                            onUpload={(fileRef) => setMaterialFiles(prev => ({ ...prev, styleGuide: fileRef }))}
+                            className="mt-1"
+                          >
+                            <Upload className="w-3 h-3 mr-1" />
+                            Upload File
+                          </ObjectUploader>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -456,6 +604,28 @@ export default function BrandStylesheets() {
                               {...field} 
                             />
                           </FormControl>
+                          {materialFiles.aboutUs && (
+                            <div className="flex items-center gap-2 text-xs bg-slate-50 rounded px-2 py-1 mt-1">
+                              <FileText className="w-3 h-3 text-slate-400" />
+                              <span className="truncate flex-1">{materialFiles.aboutUs.split('/').pop()}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-4 w-4 p-0 hover:bg-slate-200"
+                                onClick={() => setMaterialFiles(prev => ({ ...prev, aboutUs: "" }))}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+                          <ObjectUploader
+                            onUpload={(fileRef) => setMaterialFiles(prev => ({ ...prev, aboutUs: fileRef }))}
+                            className="mt-1"
+                          >
+                            <Upload className="w-3 h-3 mr-1" />
+                            Upload File
+                          </ObjectUploader>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -479,6 +649,28 @@ export default function BrandStylesheets() {
                               {...field} 
                             />
                           </FormControl>
+                          {materialFiles.pastCampaigns && (
+                            <div className="flex items-center gap-2 text-xs bg-slate-50 rounded px-2 py-1 mt-1">
+                              <FileText className="w-3 h-3 text-slate-400" />
+                              <span className="truncate flex-1">{materialFiles.pastCampaigns.split('/').pop()}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-4 w-4 p-0 hover:bg-slate-200"
+                                onClick={() => setMaterialFiles(prev => ({ ...prev, pastCampaigns: "" }))}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+                          <ObjectUploader
+                            onUpload={(fileRef) => setMaterialFiles(prev => ({ ...prev, pastCampaigns: fileRef }))}
+                            className="mt-1"
+                          >
+                            <Upload className="w-3 h-3 mr-1" />
+                            Upload File
+                          </ObjectUploader>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -496,6 +688,28 @@ export default function BrandStylesheets() {
                               {...field} 
                             />
                           </FormControl>
+                          {materialFiles.impactStories && (
+                            <div className="flex items-center gap-2 text-xs bg-slate-50 rounded px-2 py-1 mt-1">
+                              <FileText className="w-3 h-3 text-slate-400" />
+                              <span className="truncate flex-1">{materialFiles.impactStories.split('/').pop()}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-4 w-4 p-0 hover:bg-slate-200"
+                                onClick={() => setMaterialFiles(prev => ({ ...prev, impactStories: "" }))}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+                          <ObjectUploader
+                            onUpload={(fileRef) => setMaterialFiles(prev => ({ ...prev, impactStories: fileRef }))}
+                            className="mt-1"
+                          >
+                            <Upload className="w-3 h-3 mr-1" />
+                            Upload File
+                          </ObjectUploader>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -513,6 +727,28 @@ export default function BrandStylesheets() {
                               {...field} 
                             />
                           </FormControl>
+                          {materialFiles.testimonials && (
+                            <div className="flex items-center gap-2 text-xs bg-slate-50 rounded px-2 py-1 mt-1">
+                              <FileText className="w-3 h-3 text-slate-400" />
+                              <span className="truncate flex-1">{materialFiles.testimonials.split('/').pop()}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-4 w-4 p-0 hover:bg-slate-200"
+                                onClick={() => setMaterialFiles(prev => ({ ...prev, testimonials: "" }))}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+                          <ObjectUploader
+                            onUpload={(fileRef) => setMaterialFiles(prev => ({ ...prev, testimonials: fileRef }))}
+                            className="mt-1"
+                          >
+                            <Upload className="w-3 h-3 mr-1" />
+                            Upload File
+                          </ObjectUploader>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -536,6 +772,28 @@ export default function BrandStylesheets() {
                               {...field} 
                             />
                           </FormControl>
+                          {materialFiles.segments && (
+                            <div className="flex items-center gap-2 text-xs bg-slate-50 rounded px-2 py-1 mt-1">
+                              <FileText className="w-3 h-3 text-slate-400" />
+                              <span className="truncate flex-1">{materialFiles.segments.split('/').pop()}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-4 w-4 p-0 hover:bg-slate-200"
+                                onClick={() => setMaterialFiles(prev => ({ ...prev, segments: "" }))}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+                          <ObjectUploader
+                            onUpload={(fileRef) => setMaterialFiles(prev => ({ ...prev, segments: fileRef }))}
+                            className="mt-1"
+                          >
+                            <Upload className="w-3 h-3 mr-1" />
+                            Upload File
+                          </ObjectUploader>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -553,6 +811,28 @@ export default function BrandStylesheets() {
                               {...field} 
                             />
                           </FormControl>
+                          {materialFiles.surveyResponses && (
+                            <div className="flex items-center gap-2 text-xs bg-slate-50 rounded px-2 py-1 mt-1">
+                              <FileText className="w-3 h-3 text-slate-400" />
+                              <span className="truncate flex-1">{materialFiles.surveyResponses.split('/').pop()}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-4 w-4 p-0 hover:bg-slate-200"
+                                onClick={() => setMaterialFiles(prev => ({ ...prev, surveyResponses: "" }))}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+                          <ObjectUploader
+                            onUpload={(fileRef) => setMaterialFiles(prev => ({ ...prev, surveyResponses: fileRef }))}
+                            className="mt-1"
+                          >
+                            <Upload className="w-3 h-3 mr-1" />
+                            Upload File
+                          </ObjectUploader>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -570,6 +850,28 @@ export default function BrandStylesheets() {
                               {...field} 
                             />
                           </FormControl>
+                          {materialFiles.localDates && (
+                            <div className="flex items-center gap-2 text-xs bg-slate-50 rounded px-2 py-1 mt-1">
+                              <FileText className="w-3 h-3 text-slate-400" />
+                              <span className="truncate flex-1">{materialFiles.localDates.split('/').pop()}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-4 w-4 p-0 hover:bg-slate-200"
+                                onClick={() => setMaterialFiles(prev => ({ ...prev, localDates: "" }))}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+                          <ObjectUploader
+                            onUpload={(fileRef) => setMaterialFiles(prev => ({ ...prev, localDates: fileRef }))}
+                            className="mt-1"
+                          >
+                            <Upload className="w-3 h-3 mr-1" />
+                            Upload File
+                          </ObjectUploader>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -593,6 +895,28 @@ export default function BrandStylesheets() {
                               {...field} 
                             />
                           </FormControl>
+                          {materialFiles.surveyResearch && (
+                            <div className="flex items-center gap-2 text-xs bg-slate-50 rounded px-2 py-1 mt-1">
+                              <FileText className="w-3 h-3 text-slate-400" />
+                              <span className="truncate flex-1">{materialFiles.surveyResearch.split('/').pop()}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-4 w-4 p-0 hover:bg-slate-200"
+                                onClick={() => setMaterialFiles(prev => ({ ...prev, surveyResearch: "" }))}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+                          <ObjectUploader
+                            onUpload={(fileRef) => setMaterialFiles(prev => ({ ...prev, surveyResearch: fileRef }))}
+                            className="mt-1"
+                          >
+                            <Upload className="w-3 h-3 mr-1" />
+                            Upload File
+                          </ObjectUploader>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -610,6 +934,28 @@ export default function BrandStylesheets() {
                               {...field} 
                             />
                           </FormControl>
+                          {materialFiles.campaignMetrics && (
+                            <div className="flex items-center gap-2 text-xs bg-slate-50 rounded px-2 py-1 mt-1">
+                              <FileText className="w-3 h-3 text-slate-400" />
+                              <span className="truncate flex-1">{materialFiles.campaignMetrics.split('/').pop()}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-4 w-4 p-0 hover:bg-slate-200"
+                                onClick={() => setMaterialFiles(prev => ({ ...prev, campaignMetrics: "" }))}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+                          <ObjectUploader
+                            onUpload={(fileRef) => setMaterialFiles(prev => ({ ...prev, campaignMetrics: fileRef }))}
+                            className="mt-1"
+                          >
+                            <Upload className="w-3 h-3 mr-1" />
+                            Upload File
+                          </ObjectUploader>
                           <FormMessage />
                         </FormItem>
                       )}
