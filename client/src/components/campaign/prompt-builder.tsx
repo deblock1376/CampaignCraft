@@ -9,7 +9,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { FileText, Plus, Loader2, Newspaper, Send, Upload, X, ChevronDown, Check } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { FileText, Plus, Loader2, Newspaper, Send, Upload, X, ChevronDown, Check, HelpCircle } from "lucide-react";
 import { useLocation } from "wouter";
 import { useState } from "react";
 import { ObjectUploader } from "@/components/ObjectUploader";
@@ -182,25 +183,38 @@ export function PromptBuilder({
   };
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="border-b">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-lg">Campaign Builder</CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">Set your goals and audience</p>
+    <TooltipProvider>
+      <Card className="h-full flex flex-col">
+        <CardHeader className="border-b">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-lg">Campaign Builder</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">Set your goals and audience</p>
+            </div>
+            {onSendToChat && (
+              <Button onClick={onSendToChat} size="sm">
+                <Send className="h-4 w-4 mr-2" />
+                Send to Chat
+              </Button>
+            )}
           </div>
-          {onSendToChat && (
-            <Button onClick={onSendToChat} size="sm">
-              <Send className="h-4 w-4 mr-2" />
-              Send to Chat
-            </Button>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="flex-1 overflow-auto p-6 space-y-6">
-        {/* Campaign Objective */}
-        <div className="space-y-2">
-          <Label>Campaign Objective</Label>
+        </CardHeader>
+        <CardContent className="flex-1 overflow-auto p-6 space-y-6">
+          {/* Campaign Objective */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-1.5">
+              <Label>Campaign Objective</Label>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button type="button" className="inline-flex items-center justify-center" aria-label="Help about campaign objective">
+                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="max-w-xs">
+                  <p>Choose the primary goal of your campaign: driving donations, increasing memberships, or boosting engagement with your content.</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
           <Select 
             value={objective} 
             onValueChange={onObjectiveChange}
@@ -221,7 +235,19 @@ export function PromptBuilder({
         {/* AI Model Selector */}
         {onModelChange && (
           <div className="space-y-2">
-            <Label>AI Model</Label>
+            <div className="flex items-center gap-1.5">
+              <Label>AI Model</Label>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button type="button" className="inline-flex items-center justify-center" aria-label="Help about AI model selection">
+                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="max-w-xs">
+                  <p>Choose which AI model powers your campaign. GPT-4o is balanced, Claude excels at nuanced messaging, and Gemini is fast for quick iterations.</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
             <Select 
               value={aiModel} 
               onValueChange={onModelChange}
@@ -242,7 +268,19 @@ export function PromptBuilder({
 
         {/* Grounding Library Selector */}
         <div className="space-y-2">
-          <Label>Grounding Library</Label>
+          <div className="flex items-center gap-1.5">
+            <Label>Grounding Library</Label>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button type="button" className="inline-flex items-center justify-center" aria-label="Help about grounding library">
+                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="max-w-xs">
+                <p>Your brand guidelines collection. The AI uses this to match your newsroom's voice, tone, and messaging style in every campaign.</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
           <Select 
             value={selectedGuideId?.toString()} 
             onValueChange={(value) => {
@@ -278,7 +316,19 @@ export function PromptBuilder({
 
         {/* Segment Selection */}
         <div className="space-y-2">
-          <Label>Target Segments</Label>
+          <div className="flex items-center gap-1.5">
+            <Label>Target Segments</Label>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button type="button" className="inline-flex items-center justify-center" aria-label="Help about target segments">
+                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="max-w-xs">
+                <p>Select your audience groups. The AI will tailor messaging, tone, and CTAs to resonate with these specific segments.</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
           <Popover open={segmentPopoverOpen} onOpenChange={setSegmentPopoverOpen}>
             <PopoverTrigger asChild>
               <Button
@@ -334,7 +384,19 @@ export function PromptBuilder({
 
         {/* Notes */}
         <div className="space-y-2">
-          <Label>Campaign Notes</Label>
+          <div className="flex items-center gap-1.5">
+            <Label>Campaign Notes</Label>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button type="button" className="inline-flex items-center justify-center" aria-label="Help about campaign notes">
+                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="max-w-xs">
+                <p>Add specific details, story context, or special requirements. Upload files (PDFs, DOCX) to provide additional reference materials.</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
           <Textarea
             placeholder="Add any additional context or requirements for the campaign..."
             value={notes}
@@ -406,7 +468,19 @@ export function PromptBuilder({
 
         {/* Recent Campaigns */}
         <div className="space-y-2">
-          <Label>Reference Recent Campaigns</Label>
+          <div className="flex items-center gap-1.5">
+            <Label>Reference Recent Campaigns</Label>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button type="button" className="inline-flex items-center justify-center" aria-label="Help about reference campaigns">
+                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="max-w-xs">
+                <p>Select past campaigns to inspire the AI. Useful for maintaining consistency or building on successful messaging patterns.</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
           <ScrollArea className="h-[200px] border rounded-md p-2">
             {recentCampaigns.length === 0 ? (
               <p className="text-sm text-muted-foreground p-2">No recent campaigns</p>
@@ -440,7 +514,19 @@ export function PromptBuilder({
 
         {/* Story Summary */}
         <div className="space-y-3">
-          <Label>Summarize a News Story</Label>
+          <div className="flex items-center gap-1.5">
+            <Label>Summarize a News Story</Label>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button type="button" className="inline-flex items-center justify-center" aria-label="Help about story summarization">
+                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="max-w-xs">
+                <p>Paste an article or URL to generate a concise summary. Perfect for promoting specific stories in your campaigns.</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
           <p className="text-xs text-muted-foreground">Add story context to inform campaign creation</p>
           
           <Tabs value={storyInputType} onValueChange={(v) => setStoryInputType(v as "text" | "url")}>
@@ -517,7 +603,8 @@ export function PromptBuilder({
           )}
         </div>
 
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </TooltipProvider>
   );
 }
