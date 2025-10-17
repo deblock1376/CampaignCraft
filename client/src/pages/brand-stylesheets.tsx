@@ -319,6 +319,11 @@ export default function BrandStylesheets() {
     });
   };
 
+  // Helper function to handle file uploads
+  const handleFileUpload = (fieldName: string, uploadURL: string) => {
+    setMaterialFiles(prev => ({ ...prev, [fieldName]: uploadURL }));
+  };
+
   return (
     <>
       <Sidebar />
@@ -503,8 +508,22 @@ export default function BrandStylesheets() {
                             </div>
                           )}
                           <ObjectUploader
-                            onUpload={(fileRef) => setMaterialFiles(prev => ({ ...prev, brandVoice: fileRef }))}
-                            className="mt-1"
+                            maxNumberOfFiles={1}
+                            maxFileSize={10485760}
+                            onGetUploadParameters={async () => {
+                              const response = await apiRequest("POST", "/api/objects/upload");
+                              const data = await response.json();
+                              return { method: "PUT" as const, url: data.uploadURL };
+                            }}
+                            onComplete={(result) => {
+                              if (result.successful && result.successful.length > 0) {
+                                const file = result.successful[0];
+                                if (file.uploadURL) {
+                                  handleFileUpload("brandVoice", file.uploadURL);
+                                }
+                              }
+                            }}
+                            buttonClassName="h-7 px-3 text-xs mt-1"
                           >
                             <Upload className="w-3 h-3 mr-1" />
                             Upload File
@@ -542,8 +561,22 @@ export default function BrandStylesheets() {
                             </div>
                           )}
                           <ObjectUploader
-                            onUpload={(fileRef) => setMaterialFiles(prev => ({ ...prev, strategyPlaybook: fileRef }))}
-                            className="mt-1"
+                            maxNumberOfFiles={1}
+                            maxFileSize={10485760}
+                            onGetUploadParameters={async () => {
+                              const response = await apiRequest("POST", "/api/objects/upload");
+                              const data = await response.json();
+                              return { method: "PUT" as const, url: data.uploadURL };
+                            }}
+                            onComplete={(result) => {
+                              if (result.successful && result.successful.length > 0) {
+                                const file = result.successful[0];
+                                if (file.uploadURL) {
+                                  handleFileUpload("strategyPlaybook", file.uploadURL);
+                                }
+                              }
+                            }}
+                            buttonClassName="h-7 px-3 text-xs mt-1"
                           >
                             <Upload className="w-3 h-3 mr-1" />
                             Upload File
@@ -581,8 +614,22 @@ export default function BrandStylesheets() {
                             </div>
                           )}
                           <ObjectUploader
-                            onUpload={(fileRef) => setMaterialFiles(prev => ({ ...prev, styleGuide: fileRef }))}
-                            className="mt-1"
+                            maxNumberOfFiles={1}
+                            maxFileSize={10485760}
+                            onGetUploadParameters={async () => {
+                              const response = await apiRequest("POST", "/api/objects/upload");
+                              const data = await response.json();
+                              return { method: "PUT" as const, url: data.uploadURL };
+                            }}
+                            onComplete={(result) => {
+                              if (result.successful && result.successful.length > 0) {
+                                const file = result.successful[0];
+                                if (file.uploadURL) {
+                                  handleFileUpload("styleGuide", file.uploadURL);
+                                }
+                              }
+                            }}
+                            buttonClassName="h-7 px-3 text-xs mt-1"
                           >
                             <Upload className="w-3 h-3 mr-1" />
                             Upload File
@@ -620,8 +667,22 @@ export default function BrandStylesheets() {
                             </div>
                           )}
                           <ObjectUploader
-                            onUpload={(fileRef) => setMaterialFiles(prev => ({ ...prev, aboutUs: fileRef }))}
-                            className="mt-1"
+                            maxNumberOfFiles={1}
+                            maxFileSize={10485760}
+                            onGetUploadParameters={async () => {
+                              const response = await apiRequest("POST", "/api/objects/upload");
+                              const data = await response.json();
+                              return { method: "PUT" as const, url: data.uploadURL };
+                            }}
+                            onComplete={(result) => {
+                              if (result.successful && result.successful.length > 0) {
+                                const file = result.successful[0];
+                                if (file.uploadURL) {
+                                  handleFileUpload("aboutUs", file.uploadURL);
+                                }
+                              }
+                            }}
+                            buttonClassName="h-7 px-3 text-xs mt-1"
                           >
                             <Upload className="w-3 h-3 mr-1" />
                             Upload File
@@ -665,8 +726,22 @@ export default function BrandStylesheets() {
                             </div>
                           )}
                           <ObjectUploader
-                            onUpload={(fileRef) => setMaterialFiles(prev => ({ ...prev, pastCampaigns: fileRef }))}
-                            className="mt-1"
+                            maxNumberOfFiles={1}
+                            maxFileSize={10485760}
+                            onGetUploadParameters={async () => {
+                              const response = await apiRequest("POST", "/api/objects/upload");
+                              const data = await response.json();
+                              return { method: "PUT" as const, url: data.uploadURL };
+                            }}
+                            onComplete={(result) => {
+                              if (result.successful && result.successful.length > 0) {
+                                const file = result.successful[0];
+                                if (file.uploadURL) {
+                                  handleFileUpload("pastCampaigns", file.uploadURL);
+                                }
+                              }
+                            }}
+                            buttonClassName="h-7 px-3 text-xs mt-1"
                           >
                             <Upload className="w-3 h-3 mr-1" />
                             Upload File
@@ -704,8 +779,22 @@ export default function BrandStylesheets() {
                             </div>
                           )}
                           <ObjectUploader
-                            onUpload={(fileRef) => setMaterialFiles(prev => ({ ...prev, impactStories: fileRef }))}
-                            className="mt-1"
+                            maxNumberOfFiles={1}
+                            maxFileSize={10485760}
+                            onGetUploadParameters={async () => {
+                              const response = await apiRequest("POST", "/api/objects/upload");
+                              const data = await response.json();
+                              return { method: "PUT" as const, url: data.uploadURL };
+                            }}
+                            onComplete={(result) => {
+                              if (result.successful && result.successful.length > 0) {
+                                const file = result.successful[0];
+                                if (file.uploadURL) {
+                                  handleFileUpload("impactStories", file.uploadURL);
+                                }
+                              }
+                            }}
+                            buttonClassName="h-7 px-3 text-xs mt-1"
                           >
                             <Upload className="w-3 h-3 mr-1" />
                             Upload File
@@ -743,8 +832,22 @@ export default function BrandStylesheets() {
                             </div>
                           )}
                           <ObjectUploader
-                            onUpload={(fileRef) => setMaterialFiles(prev => ({ ...prev, testimonials: fileRef }))}
-                            className="mt-1"
+                            maxNumberOfFiles={1}
+                            maxFileSize={10485760}
+                            onGetUploadParameters={async () => {
+                              const response = await apiRequest("POST", "/api/objects/upload");
+                              const data = await response.json();
+                              return { method: "PUT" as const, url: data.uploadURL };
+                            }}
+                            onComplete={(result) => {
+                              if (result.successful && result.successful.length > 0) {
+                                const file = result.successful[0];
+                                if (file.uploadURL) {
+                                  handleFileUpload("testimonials", file.uploadURL);
+                                }
+                              }
+                            }}
+                            buttonClassName="h-7 px-3 text-xs mt-1"
                           >
                             <Upload className="w-3 h-3 mr-1" />
                             Upload File
@@ -788,8 +891,22 @@ export default function BrandStylesheets() {
                             </div>
                           )}
                           <ObjectUploader
-                            onUpload={(fileRef) => setMaterialFiles(prev => ({ ...prev, segments: fileRef }))}
-                            className="mt-1"
+                            maxNumberOfFiles={1}
+                            maxFileSize={10485760}
+                            onGetUploadParameters={async () => {
+                              const response = await apiRequest("POST", "/api/objects/upload");
+                              const data = await response.json();
+                              return { method: "PUT" as const, url: data.uploadURL };
+                            }}
+                            onComplete={(result) => {
+                              if (result.successful && result.successful.length > 0) {
+                                const file = result.successful[0];
+                                if (file.uploadURL) {
+                                  handleFileUpload("segments", file.uploadURL);
+                                }
+                              }
+                            }}
+                            buttonClassName="h-7 px-3 text-xs mt-1"
                           >
                             <Upload className="w-3 h-3 mr-1" />
                             Upload File
@@ -827,8 +944,22 @@ export default function BrandStylesheets() {
                             </div>
                           )}
                           <ObjectUploader
-                            onUpload={(fileRef) => setMaterialFiles(prev => ({ ...prev, surveyResponses: fileRef }))}
-                            className="mt-1"
+                            maxNumberOfFiles={1}
+                            maxFileSize={10485760}
+                            onGetUploadParameters={async () => {
+                              const response = await apiRequest("POST", "/api/objects/upload");
+                              const data = await response.json();
+                              return { method: "PUT" as const, url: data.uploadURL };
+                            }}
+                            onComplete={(result) => {
+                              if (result.successful && result.successful.length > 0) {
+                                const file = result.successful[0];
+                                if (file.uploadURL) {
+                                  handleFileUpload("surveyResponses", file.uploadURL);
+                                }
+                              }
+                            }}
+                            buttonClassName="h-7 px-3 text-xs mt-1"
                           >
                             <Upload className="w-3 h-3 mr-1" />
                             Upload File
@@ -866,8 +997,22 @@ export default function BrandStylesheets() {
                             </div>
                           )}
                           <ObjectUploader
-                            onUpload={(fileRef) => setMaterialFiles(prev => ({ ...prev, localDates: fileRef }))}
-                            className="mt-1"
+                            maxNumberOfFiles={1}
+                            maxFileSize={10485760}
+                            onGetUploadParameters={async () => {
+                              const response = await apiRequest("POST", "/api/objects/upload");
+                              const data = await response.json();
+                              return { method: "PUT" as const, url: data.uploadURL };
+                            }}
+                            onComplete={(result) => {
+                              if (result.successful && result.successful.length > 0) {
+                                const file = result.successful[0];
+                                if (file.uploadURL) {
+                                  handleFileUpload("localDates", file.uploadURL);
+                                }
+                              }
+                            }}
+                            buttonClassName="h-7 px-3 text-xs mt-1"
                           >
                             <Upload className="w-3 h-3 mr-1" />
                             Upload File
@@ -911,8 +1056,22 @@ export default function BrandStylesheets() {
                             </div>
                           )}
                           <ObjectUploader
-                            onUpload={(fileRef) => setMaterialFiles(prev => ({ ...prev, surveyResearch: fileRef }))}
-                            className="mt-1"
+                            maxNumberOfFiles={1}
+                            maxFileSize={10485760}
+                            onGetUploadParameters={async () => {
+                              const response = await apiRequest("POST", "/api/objects/upload");
+                              const data = await response.json();
+                              return { method: "PUT" as const, url: data.uploadURL };
+                            }}
+                            onComplete={(result) => {
+                              if (result.successful && result.successful.length > 0) {
+                                const file = result.successful[0];
+                                if (file.uploadURL) {
+                                  handleFileUpload("surveyResearch", file.uploadURL);
+                                }
+                              }
+                            }}
+                            buttonClassName="h-7 px-3 text-xs mt-1"
                           >
                             <Upload className="w-3 h-3 mr-1" />
                             Upload File
@@ -950,8 +1109,22 @@ export default function BrandStylesheets() {
                             </div>
                           )}
                           <ObjectUploader
-                            onUpload={(fileRef) => setMaterialFiles(prev => ({ ...prev, campaignMetrics: fileRef }))}
-                            className="mt-1"
+                            maxNumberOfFiles={1}
+                            maxFileSize={10485760}
+                            onGetUploadParameters={async () => {
+                              const response = await apiRequest("POST", "/api/objects/upload");
+                              const data = await response.json();
+                              return { method: "PUT" as const, url: data.uploadURL };
+                            }}
+                            onComplete={(result) => {
+                              if (result.successful && result.successful.length > 0) {
+                                const file = result.successful[0];
+                                if (file.uploadURL) {
+                                  handleFileUpload("campaignMetrics", file.uploadURL);
+                                }
+                              }
+                            }}
+                            buttonClassName="h-7 px-3 text-xs mt-1"
                           >
                             <Upload className="w-3 h-3 mr-1" />
                             Upload File
