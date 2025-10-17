@@ -8,12 +8,22 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, Plus, Loader2, Newspaper, Send, Upload, X } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { FileText, Plus, Loader2, Newspaper, Send, Upload, X, ChevronDown, Check } from "lucide-react";
 import { useLocation } from "wouter";
 import { useState } from "react";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+
+interface Segment {
+  id: number;
+  newsroomId: number;
+  name: string;
+  description: string;
+  createdAt: string;
+}
 
 interface PromptBuilderProps {
   groundingGuides: any[];
@@ -39,12 +49,6 @@ interface PromptBuilderProps {
   onModelChange?: (model: string) => void;
 }
 
-const SEGMENT_OPTIONS = [
-  { id: "donors", label: "Donors" },
-  { id: "non-donors", label: "Non-Donors" },
-  { id: "highly-engaged", label: "Highly Engaged Users" },
-  { id: "disengaged", label: "Disengaged Users" },
-];
 
 const OBJECTIVE_OPTIONS = [
   { value: "donation", label: "Donation" },
@@ -83,17 +87,37 @@ export function PromptBuilder({
 }: PromptBuilderProps) {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const newsroomId = user?.newsroomId || 1;
   const [storyInputType, setStoryInputType] = useState<"text" | "url">("text");
   const [storyTitle, setStoryTitle] = useState("");
   const [storyText, setStoryText] = useState("");
   const [storyUrl, setStoryUrl] = useState("");
   const [isSummarizing, setIsSummarizing] = useState(false);
+  const [segmentPopoverOpen, setSegmentPopoverOpen] = useState(false);
 
-  const handleSegmentToggle = (segmentId: string) => {
-    const newSegments = segments.includes(segmentId)
-      ? segments.filter(s => s !== segmentId)
-      : [...segments, segmentId];
+  // Fetch segments from API
+  const { data: apiSegments = [] } = useQuery<Segment[]>({
+    queryKey: ["/api/newsrooms", newsroomId, "segments"],
+    enabled: !!newsroomId,
+  });
+
+  const handleSegmentToggle = (segmentId: number) => {
+    const segmentIdStr = segmentId.toString();
+    const newSegments = segments.includes(segmentIdStr)
+      ? segments.filter(s => s !== segmentIdStr)
+      : [...segments, segmentIdStr];
     onSegmentChange(newSegments);
+  };
+
+  const getSelectedSegmentNames = () => {
+    if (segments.length === 0) return "Select segments...";
+    const selectedSegments = apiSegments.filter(s => 
+      segments.includes(s.id.toString())
+    );
+    if (selectedSegments.length === 0) return "Select segments...";
+    if (selectedSegments.length === 1) return selectedSegments[0].name;
+    return `${selectedSegments.length} segments selected`;
   };
 
   const handleCampaignToggle = (campaignId: number) => {
@@ -253,25 +277,59 @@ export function PromptBuilder({
         </div>
 
         {/* Segment Selection */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           <Label>Target Segments</Label>
-          <div className="space-y-2">
-            {SEGMENT_OPTIONS.map((segment) => (
-              <div key={segment.id} className="flex items-center space-x-2">
-                <Checkbox
-                  id={segment.id}
-                  checked={segments.includes(segment.id)}
-                  onCheckedChange={() => handleSegmentToggle(segment.id)}
-                />
-                <label
-                  htmlFor={segment.id}
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  {segment.label}
-                </label>
+          <Popover open={segmentPopoverOpen} onOpenChange={setSegmentPopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={segmentPopoverOpen}
+                className="w-full justify-between font-normal"
+              >
+                <span className="truncate">{getSelectedSegmentNames()}</span>
+                <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0" align="start">
+              <div className="max-h-[300px] overflow-y-auto p-2">
+                {apiSegments.length === 0 ? (
+                  <div className="py-6 text-center text-sm text-muted-foreground">
+                    Loading segments...
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    {apiSegments.map((segment) => (
+                      <div
+                        key={segment.id}
+                        className="flex items-center space-x-2 rounded-sm px-2 py-1.5 cursor-pointer hover:bg-accent hover:text-accent-foreground"
+                        onClick={() => handleSegmentToggle(segment.id)}
+                      >
+                        <Checkbox
+                          id={`segment-${segment.id}`}
+                          checked={segments.includes(segment.id.toString())}
+                          onCheckedChange={() => handleSegmentToggle(segment.id)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <label
+                          htmlFor={`segment-${segment.id}`}
+                          className="flex-1 text-sm font-medium leading-none cursor-pointer"
+                        >
+                          {segment.name}
+                          <p className="text-xs text-muted-foreground font-normal mt-0.5">
+                            {segment.description}
+                          </p>
+                        </label>
+                        {segments.includes(segment.id.toString()) && (
+                          <Check className="h-4 w-4 text-primary" />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
+            </PopoverContent>
+          </Popover>
         </div>
 
         {/* Notes */}
