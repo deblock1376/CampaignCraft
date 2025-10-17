@@ -107,6 +107,21 @@ Preferred communication style: Simple, everyday language.
   - Step-by-step instructions and best practices for each feature
   - Pro tips and visual organization with icons and badges
   - Designed for non-technical users with clear, accessible language
+- **Contextual Help System**: In-context tooltips providing instant guidance throughout the application:
+  - Campaign Builder panel tooltips for all 7 key configuration fields:
+    - Campaign Objective (explains donation, membership, engagement goals)
+    - AI Model selection (GPT-4o, Claude, Gemini use cases)
+    - Grounding Library (brand guidelines integration)
+    - Target Segments (audience tailoring)
+    - Campaign Notes (file upload capabilities)
+    - Reference Recent Campaigns (consistency and inspiration)
+    - Summarize a News Story (article summarization)
+  - HelpCircle icons positioned next to labels for discoverability
+  - Tooltips use clear, non-technical language for newsroom staff
+  - Fully keyboard-accessible with focusable button triggers
+  - Screen reader support via descriptive aria-labels
+  - Consistent right-side positioning for optimal UX
+  - Built with Shadcn/UI Tooltip components for reliability
 
 ### System Design Choices
 - **Development**: Vite development server with Express API integration and hot module replacement.
