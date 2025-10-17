@@ -94,7 +94,7 @@ export default function HelpCenter() {
                     <li><strong>Set your goals:</strong> Use the right panel to configure campaign objective and audience</li>
                     <li><strong>Chat with AI:</strong> Describe your campaign needs in natural language</li>
                     <li><strong>Upload files:</strong> Attach reference materials (PDFs, DOCX) to inform the AI</li>
-                    <li><strong>Select AI model:</strong> Choose between GPT-4o, Claude Sonnet 4, or Gemini 2.5 Flash</li>
+                    <li><strong>Select AI model:</strong> Choose between GPT-5, Claude Sonnet 4, or Gemini 2.5 Flash</li>
                     <li><strong>Generate campaign:</strong> The AI creates multiple draft options for you</li>
                     <li><strong>Refine & iterate:</strong> Ask the AI to adjust tone, length, or messaging</li>
                   </ol>
@@ -388,7 +388,7 @@ export default function HelpCenter() {
                 <div className="space-y-3">
                   <Card>
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-base">GPT-4o (Default)</CardTitle>
+                      <CardTitle className="text-base">GPT-5 (Default)</CardTitle>
                       <CardDescription>OpenAI's most capable model</CardDescription>
                     </CardHeader>
                     <CardContent className="text-sm text-muted-foreground">
