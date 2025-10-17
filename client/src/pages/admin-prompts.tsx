@@ -288,7 +288,7 @@ export default function AdminPrompts() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="gpt-4o">GPT-4o</SelectItem>
+                      <SelectItem value="gpt-5">GPT-5</SelectItem>
                       <SelectItem value="claude-sonnet-4-20250514">Claude Sonnet 4</SelectItem>
                       <SelectItem value="gemini-2.5-flash">Gemini 2.5 Flash</SelectItem>
                     </SelectContent>

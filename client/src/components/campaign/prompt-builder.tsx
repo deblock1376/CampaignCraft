@@ -58,7 +58,7 @@ const OBJECTIVE_OPTIONS = [
 ];
 
 const AI_MODEL_OPTIONS = [
-  { value: "gpt-4o", label: "GPT-4o" },
+  { value: "gpt-5", label: "GPT-5" },
   { value: "claude-sonnet-4", label: "Claude Sonnet 4" },
   { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
 ];
@@ -83,7 +83,7 @@ export function PromptBuilder({
   onSummarySelect,
   onSummarize,
   onSendToChat,
-  aiModel = "gpt-4o",
+  aiModel = "gpt-5",
   onModelChange,
 }: PromptBuilderProps) {
   const [, setLocation] = useLocation();
@@ -244,7 +244,7 @@ export function PromptBuilder({
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="right" className="max-w-xs">
-                  <p>Choose which AI model powers your campaign. GPT-4o is balanced, Claude excels at nuanced messaging, and Gemini is fast for quick iterations.</p>
+                  <p>Choose which AI model powers your campaign. GPT-5 is our flagship model for coding and agentic tasks, Claude excels at nuanced messaging, and Gemini is fast for quick iterations.</p>
                 </TooltipContent>
               </Tooltip>
             </div>

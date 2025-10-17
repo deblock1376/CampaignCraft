@@ -549,7 +549,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="claude-sonnet-4">Claude Sonnet 4 (Recommended)</SelectItem>
-                    <SelectItem value="gpt-4o">GPT-4o</SelectItem>
+                    <SelectItem value="gpt-5">GPT-5</SelectItem>
                     <SelectItem value="gemini-pro">Gemini Pro</SelectItem>
                   </SelectContent>
                 </Select>

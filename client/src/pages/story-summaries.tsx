@@ -87,7 +87,7 @@ export default function StorySummaries() {
           newsroomId,
           text: data.text,
           url: data.url,
-          aiModel: "gpt-4o",
+          aiModel: "gpt-5",
         }),
       });
 

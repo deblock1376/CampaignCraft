@@ -29,7 +29,7 @@ export default function CampaignAssistantTest() {
   const [noteFiles, setNoteFiles] = useState<string[]>([]);
   const [selectedRecentCampaigns, setSelectedRecentCampaigns] = useState<number[]>([]);
   const [selectedStorySummaries, setSelectedStorySummaries] = useState<number[]>([]);
-  const [selectedModel, setSelectedModel] = useState<string>("gpt-4o");
+  const [selectedModel, setSelectedModel] = useState<string>("gpt-5");
 
   // Fetch grounding guides for the chat context
   const { data: groundingGuides = [] } = useQuery({
@@ -95,7 +95,7 @@ export default function CampaignAssistantTest() {
           newsroomId,
           text: data.text,
           url: data.url,
-          aiModel: "gpt-4o",
+          aiModel: "gpt-5",
         }),
       });
 

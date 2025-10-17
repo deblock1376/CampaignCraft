@@ -45,7 +45,7 @@ export default function CampaignPreview({
   onRegenerate,
   onSaveDraft,
   onExport,
-  selectedModel = "gpt-4o",
+  selectedModel = "gpt-5",
   onModelChange
 }: CampaignPreviewProps) {
   const { toast } = useToast();
@@ -193,7 +193,7 @@ export default function CampaignPreview({
                             <SelectValue placeholder="Select AI model" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="gpt-4o">GPT-4o</SelectItem>
+                            <SelectItem value="gpt-5">GPT-5</SelectItem>
                             <SelectItem value="claude-sonnet-4">Claude Sonnet 4</SelectItem>
                             <SelectItem value="gemini-2.5-flash">Gemini 2.5 Flash</SelectItem>
                           </SelectContent>

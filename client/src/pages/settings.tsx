@@ -57,7 +57,7 @@ export default function Settings() {
                       <p className="text-sm text-slate-600">Choose your preferred AI model for campaign generation</p>
                     </div>
                     <select className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
-                      <option value="gpt-4o">OpenAI GPT-4o</option>
+                      <option value="gpt-5">OpenAI GPT-5</option>
                       <option value="claude-sonnet-4">Anthropic Claude Sonnet 4</option>
                       <option value="gemini-pro">Google Gemini Pro</option>
                     </select>

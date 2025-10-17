@@ -31,7 +31,7 @@ export default function CampaignForm() {
   const [useMultiDraft, setUseMultiDraft] = useState(true);
   const [activeTab, setActiveTab] = useState('content');
   const [isConfigOpen, setIsConfigOpen] = useState(true);
-  const [selectedModel, setSelectedModel] = useState<string>("gpt-4o");
+  const [selectedModel, setSelectedModel] = useState<string>("gpt-5");
   const { toast } = useToast();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const newsroomId = user.newsroomId || 1;

@@ -113,7 +113,7 @@ export default function CampaignEvaluate() {
         newsroomId,
         objective: 'engagement',
         context: `Evaluated and rewritten campaign using ${framework} framework`,
-        aiModel: 'gpt-4o',
+        aiModel: 'gpt-5',
       });
       return response.json();
     },
