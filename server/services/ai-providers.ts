@@ -16,8 +16,8 @@ When copying code from this code snippet, ensure you also include this informati
 const DEFAULT_ANTHROPIC_MODEL = "claude-sonnet-4-20250514";
 // </important_do_not_delete>
 
-// the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-const DEFAULT_OPENAI_MODEL = "gpt-4o";
+// the newest OpenAI model is "gpt-5" which is the flagship model for coding and agentic tasks. do not change this unless explicitly requested by the user
+const DEFAULT_OPENAI_MODEL = "gpt-5";
 
 // Prompt cache with TTL (5 minutes)
 interface CachedPrompt {
@@ -138,7 +138,7 @@ class AIProviderService {
     
     let response: CampaignResponse;
     switch (model) {
-      case 'gpt-4o':
+      case 'gpt-5':
         response = await this.generateWithOpenAI(prompt, request);
         break;
       case 'claude-sonnet-4':
@@ -158,7 +158,7 @@ class AIProviderService {
 
   async generateContent(prompt: string, model: string): Promise<string> {
     switch (model) {
-      case 'gpt-4o':
+      case 'gpt-5':
         return this.generateSimpleWithOpenAI(prompt);
       case 'claude-sonnet-4':
       case 'claude-sonnet-4-20250514':
@@ -176,14 +176,14 @@ class AIProviderService {
     newsroomName: string,
     objective: string,
     type: string,
-    model: string = 'gpt-4o'
+    model: string = 'gpt-5'
   ): Promise<CampaignResponse> {
     const prompt = await this.buildMergePrompt(drafts, newsroomName, objective, type);
     const promptKey = 'draft_merge';
     
     let response: CampaignResponse;
     switch (model) {
-      case 'gpt-4o':
+      case 'gpt-5':
         response = await this.generateMergeWithOpenAI(prompt);
         break;
       case 'claude-sonnet-4':
@@ -303,7 +303,7 @@ class AIProviderService {
   private async generateSimpleWithOpenAI(prompt: string): Promise<string> {
     try {
       const response = await this.openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "gpt-5",
         messages: [{ role: "user", content: prompt }],
         temperature: 0.7,
       });
