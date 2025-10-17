@@ -773,7 +773,29 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getSegmentsByNewsroom(newsroomId: number): Promise<Segment[]> {
-    return await db.select().from(segments).where(eq(segments.newsroomId, newsroomId));
+    const existingSegments = await db.select().from(segments).where(eq(segments.newsroomId, newsroomId));
+    
+    // If no segments exist, create default ones
+    if (existingSegments.length === 0) {
+      const defaultSegments = [
+        { name: "Donors", description: "Readers who have previously donated or contributed financially" },
+        { name: "Non-Donors", description: "Engaged readers who have not yet made a financial contribution" },
+        { name: "Highly Engaged Users", description: "Active readers with high open rates and consistent engagement" },
+        { name: "Disengaged Users", description: "Previously active readers showing declining engagement" },
+      ];
+
+      for (const segment of defaultSegments) {
+        await this.createSegment({
+          newsroomId,
+          ...segment,
+        });
+      }
+
+      // Re-fetch to return the newly created segments
+      return await db.select().from(segments).where(eq(segments.newsroomId, newsroomId));
+    }
+
+    return existingSegments;
   }
 
   async createSegment(segment: InsertSegment): Promise<Segment> {
