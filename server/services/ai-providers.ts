@@ -77,7 +77,7 @@ class AIProviderService {
     });
     
     this.anthropic = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY_ENV_VAR || "default_key",
+      apiKey: process.env.CLAUDE_API_KEY || "default_key",
     });
 
     this.gemini = new GoogleGenAI({ 

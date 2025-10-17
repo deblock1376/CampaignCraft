@@ -27,6 +27,8 @@ interface CampaignPreviewProps {
   onRegenerate?: () => void;
   onSaveDraft?: () => void;
   onExport?: () => void;
+  selectedModel?: string;
+  onModelChange?: (model: string) => void;
 }
 
 export default function CampaignPreview({ 
@@ -42,7 +44,9 @@ export default function CampaignPreview({
   setIsConfigOpen,
   onRegenerate,
   onSaveDraft,
-  onExport
+  onExport,
+  selectedModel = "gpt-4o",
+  onModelChange
 }: CampaignPreviewProps) {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
@@ -179,6 +183,23 @@ export default function CampaignPreview({
                         </FormItem>
                       )}
                     />
+
+                    {onModelChange && (
+                      <div className="space-y-2">
+                        <FormLabel>AI Model</FormLabel>
+                        <p className="text-xs text-slate-500 mb-2">Choose which AI model to generate your campaign</p>
+                        <Select value={selectedModel} onValueChange={onModelChange}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select AI model" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="gpt-4o">GPT-4o</SelectItem>
+                            <SelectItem value="claude-sonnet-4">Claude Sonnet 4</SelectItem>
+                            <SelectItem value="gemini-2.5-flash">Gemini 2.5 Flash</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
 
                     <FormField
                       control={form.control}

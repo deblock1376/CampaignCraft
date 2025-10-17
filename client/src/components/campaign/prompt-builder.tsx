@@ -30,6 +30,8 @@ interface PromptBuilderProps {
   onSummarySelect?: (summaryIds: number[]) => void;
   onSummarize?: (data: { text?: string; url?: string }) => Promise<void>;
   onSendToChat?: () => void;
+  aiModel?: string;
+  onModelChange?: (model: string) => void;
 }
 
 const SEGMENT_OPTIONS = [
@@ -43,6 +45,12 @@ const OBJECTIVE_OPTIONS = [
   { value: "donation", label: "Donation" },
   { value: "membership", label: "Membership" },
   { value: "engagement", label: "Engagement" },
+];
+
+const AI_MODEL_OPTIONS = [
+  { value: "gpt-4o", label: "GPT-4o" },
+  { value: "claude-sonnet-4", label: "Claude Sonnet 4" },
+  { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
 ];
 
 export function PromptBuilder({
@@ -63,6 +71,8 @@ export function PromptBuilder({
   onSummarySelect,
   onSummarize,
   onSendToChat,
+  aiModel = "gpt-4o",
+  onModelChange,
 }: PromptBuilderProps) {
   const [, setLocation] = useLocation();
   const [storyInputType, setStoryInputType] = useState<"text" | "url">("text");
@@ -146,6 +156,28 @@ export function PromptBuilder({
             </SelectContent>
           </Select>
         </div>
+
+        {/* AI Model Selector */}
+        {onModelChange && (
+          <div className="space-y-2">
+            <Label>AI Model</Label>
+            <Select 
+              value={aiModel} 
+              onValueChange={onModelChange}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select AI model" />
+              </SelectTrigger>
+              <SelectContent>
+                {AI_MODEL_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         {/* Grounding Library Selector */}
         <div className="space-y-2">

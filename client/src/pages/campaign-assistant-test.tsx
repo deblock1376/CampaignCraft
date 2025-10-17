@@ -28,6 +28,7 @@ export default function CampaignAssistantTest() {
   const [campaignNotes, setCampaignNotes] = useState("");
   const [selectedRecentCampaigns, setSelectedRecentCampaigns] = useState<number[]>([]);
   const [selectedStorySummaries, setSelectedStorySummaries] = useState<number[]>([]);
+  const [selectedModel, setSelectedModel] = useState<string>("gpt-4o");
 
   // Fetch grounding guides for the chat context
   const { data: groundingGuides = [] } = useQuery({
@@ -241,7 +242,7 @@ export default function CampaignAssistantTest() {
           context: enrichedContext,
           brandStylesheetId: brandStylesheetId,
           newsroomId: newsroomId,
-          aiModel: "gpt-4o",
+          aiModel: selectedModel,
         }),
       });
 
@@ -488,6 +489,8 @@ export default function CampaignAssistantTest() {
               onSummarySelect={setSelectedStorySummaries}
               onSummarize={summarizeMutation.mutateAsync}
               onSendToChat={handleSendContextToChat}
+              aiModel={selectedModel}
+              onModelChange={setSelectedModel}
             />
           </div>
         </div>

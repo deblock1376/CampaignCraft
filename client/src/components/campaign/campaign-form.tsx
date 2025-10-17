@@ -31,6 +31,7 @@ export default function CampaignForm() {
   const [useMultiDraft, setUseMultiDraft] = useState(true);
   const [activeTab, setActiveTab] = useState('content');
   const [isConfigOpen, setIsConfigOpen] = useState(true);
+  const [selectedModel, setSelectedModel] = useState<string>("gpt-4o");
   const { toast } = useToast();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const newsroomId = user.newsroomId || 1;
@@ -70,6 +71,7 @@ export default function CampaignForm() {
         brandStylesheetId: parseInt(data.brandStylesheetId),
         newsroomId: newsroomId,
         draftCount: 5,
+        aiModel: selectedModel,
       });
       return response.json();
     },
@@ -209,6 +211,8 @@ export default function CampaignForm() {
           onRegenerate={handleRegenerate}
           onSaveDraft={handleSaveDraft}
           onExport={handleExport}
+          selectedModel={selectedModel}
+          onModelChange={setSelectedModel}
         />
       </div>
 
