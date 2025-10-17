@@ -33,7 +33,7 @@ Preferred communication style: Simple, everyday language.
 - **Frontend**: React with Wouter for routing, TanStack React Query for server state management, and Vite for building.
 - **Backend**: Node.js with Express.js, TypeScript, RESTful API, and Express middleware.
 - **Data Storage**: PostgreSQL database using Drizzle ORM, with Neon Database for serverless PostgreSQL.
-- **AI Integration**: Integrates with OpenAI (GPT-4o, default) and Anthropic (Claude Sonnet 4) for content generation and evaluation.
+- **AI Integration**: Integrates with OpenAI (GPT-5, default) and Anthropic (Claude Sonnet 4) for content generation and evaluation.
 - **Content Generation**: Generates campaign content, CTAs, and performance insights, applying grounding guides for brand consistency.
 - **Campaign Workflow**: Supports "Create Campaign" with multi-draft generation and "Get Feedback" for evaluation using frameworks like BlueLena. Features seamless campaign-to-evaluation flow with auto-population:
   - "Evaluate this campaign" button encodes generated campaign data (subject, body, CTA) in URL parameter
@@ -99,7 +99,7 @@ Preferred communication style: Simple, everyday language.
     - Audience Segments (targeting and personalization)
     - Campaign Evaluation (BlueLena 5-pillar framework)
     - File Uploads & Text Extraction (PDF/DOCX support)
-    - AI Model Selection (GPT-4o, Claude, Gemini)
+    - AI Model Selection (GPT-5, Claude, Gemini)
     - Campaign History (tracking and management)
     - Story Summaries (AI article condensing)
     - Admin Features (user management, prompts, logs)
@@ -110,7 +110,7 @@ Preferred communication style: Simple, everyday language.
 - **Contextual Help System**: In-context tooltips providing instant guidance throughout the application:
   - Campaign Builder panel tooltips for all 7 key configuration fields:
     - Campaign Objective (explains donation, membership, engagement goals)
-    - AI Model selection (GPT-4o, Claude, Gemini use cases)
+    - AI Model selection (GPT-5, Claude, Gemini use cases)
     - Grounding Library (brand guidelines integration)
     - Target Segments (audience tailoring)
     - Campaign Notes (file upload capabilities)
