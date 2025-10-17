@@ -8,9 +8,12 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, Plus, Loader2, Newspaper, Send } from "lucide-react";
+import { FileText, Plus, Loader2, Newspaper, Send, Upload, X } from "lucide-react";
 import { useLocation } from "wouter";
 import { useState } from "react";
+import { ObjectUploader } from "@/components/ObjectUploader";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface PromptBuilderProps {
   groundingGuides: any[];
@@ -22,6 +25,8 @@ interface PromptBuilderProps {
   onSegmentChange: (segments: string[]) => void;
   notes: string;
   onNotesChange: (notes: string) => void;
+  noteFiles?: string[];
+  onNoteFilesChange?: (files: string[]) => void;
   recentCampaigns: any[];
   selectedCampaigns: number[];
   onCampaignSelect: (campaignIds: number[]) => void;
@@ -63,6 +68,8 @@ export function PromptBuilder({
   onSegmentChange,
   notes,
   onNotesChange,
+  noteFiles = [],
+  onNoteFilesChange,
   recentCampaigns,
   selectedCampaigns,
   onCampaignSelect,
@@ -75,6 +82,7 @@ export function PromptBuilder({
   onModelChange,
 }: PromptBuilderProps) {
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
   const [storyInputType, setStoryInputType] = useState<"text" | "url">("text");
   const [storyTitle, setStoryTitle] = useState("");
   const [storyText, setStoryText] = useState("");
@@ -117,6 +125,35 @@ export function PromptBuilder({
       setStoryUrl("");
     } finally {
       setIsSummarizing(false);
+    }
+  };
+
+  const handleFileUpload = async (filename: string, uploadURL: string) => {
+    if (!onNoteFilesChange) return;
+    const fileRef = JSON.stringify({ filename, url: uploadURL });
+    const newFiles = [...noteFiles, fileRef];
+    onNoteFilesChange(newFiles);
+    toast({
+      title: "File uploaded",
+      description: `${filename} added to campaign notes`
+    });
+  };
+
+  const handleFileRemove = (fileIndex: number) => {
+    if (!onNoteFilesChange) return;
+    const newFiles = noteFiles.filter((_, index) => index !== fileIndex);
+    onNoteFilesChange(newFiles);
+    try {
+      const fileData = JSON.parse(noteFiles[fileIndex]);
+      toast({
+        title: "File removed",
+        description: `${fileData.filename} removed from campaign notes`
+      });
+    } catch {
+      toast({
+        title: "File removed",
+        description: "File removed from campaign notes"
+      });
     }
   };
 
@@ -246,6 +283,67 @@ export function PromptBuilder({
             onChange={(e) => onNotesChange(e.target.value)}
             className="min-h-[100px] resize-none"
           />
+          
+          {/* File Upload for Notes */}
+          {onNoteFilesChange && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs text-muted-foreground">Reference Files</Label>
+                <ObjectUploader
+                  maxNumberOfFiles={5}
+                  maxFileSize={10485760}
+                  onGetUploadParameters={async () => {
+                    const response = await apiRequest("POST", "/api/objects/upload");
+                    const data = await response.json();
+                    return {
+                      method: "PUT" as const,
+                      url: data.uploadURL
+                    };
+                  }}
+                  onComplete={async (result) => {
+                    if (result.successful && result.successful.length > 0) {
+                      const uploadedFile = result.successful[0];
+                      if (uploadedFile.name && uploadedFile.uploadURL) {
+                        handleFileUpload(uploadedFile.name, uploadedFile.uploadURL);
+                      }
+                    }
+                  }}
+                  buttonClassName="h-7 px-3 text-xs"
+                >
+                  <Upload className="w-3 h-3 mr-1" />
+                  Add File
+                </ObjectUploader>
+              </div>
+              
+              {noteFiles.length > 0 && (
+                <div className="space-y-1">
+                  {noteFiles.map((fileRef, index) => {
+                    try {
+                      const fileData = JSON.parse(fileRef);
+                      return (
+                        <div key={index} className="flex items-center justify-between text-xs bg-slate-50 rounded px-2 py-1">
+                          <div className="flex items-center">
+                            <FileText className="w-3 h-3 mr-1 text-slate-400" />
+                            <span className="truncate max-w-48">{fileData.filename}</span>
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-4 w-4 p-0 hover:bg-slate-200"
+                            onClick={() => handleFileRemove(index)}
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      );
+                    } catch {
+                      return null;
+                    }
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Recent Campaigns */}

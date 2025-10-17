@@ -26,6 +26,7 @@ export default function CampaignAssistantTest() {
   const [selectedGuideId, setSelectedGuideId] = useState<number | undefined>();
   const [selectedSegments, setSelectedSegments] = useState<string[]>([]);
   const [campaignNotes, setCampaignNotes] = useState("");
+  const [noteFiles, setNoteFiles] = useState<string[]>([]);
   const [selectedRecentCampaigns, setSelectedRecentCampaigns] = useState<number[]>([]);
   const [selectedStorySummaries, setSelectedStorySummaries] = useState<number[]>([]);
   const [selectedModel, setSelectedModel] = useState<string>("gpt-4o");
@@ -128,6 +129,7 @@ export default function CampaignAssistantTest() {
       const enrichedContext = {
         segments: selectedSegments.length > 0 ? selectedSegments : undefined,
         notes: campaignNotes.trim() || undefined,
+        noteFiles: noteFiles.length > 0 ? noteFiles : undefined,
         referenceCampaigns: selectedRecentCampaigns.length > 0 
           ? (recentCampaigns as any[])
               .filter((c: any) => selectedRecentCampaigns.includes(c.id))
@@ -481,6 +483,8 @@ export default function CampaignAssistantTest() {
               onSegmentChange={setSelectedSegments}
               notes={campaignNotes}
               onNotesChange={setCampaignNotes}
+              noteFiles={noteFiles}
+              onNoteFilesChange={setNoteFiles}
               recentCampaigns={recentCampaigns as any[]}
               selectedCampaigns={selectedRecentCampaigns}
               onCampaignSelect={setSelectedRecentCampaigns}

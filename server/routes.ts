@@ -264,6 +264,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         newsroomId: z.number(),
         segments: z.array(z.string()).optional(),
         notes: z.string().optional(),
+        noteFiles: z.array(z.string()).optional(),
         referenceCampaigns: z.array(z.object({
           id: z.number(),
           title: z.string(),
@@ -286,6 +287,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Newsroom not found" });
       }
 
+      // Extract text from note files and combine with notes
+      let combinedNotes = validatedData.notes || '';
+      if (validatedData.noteFiles && validatedData.noteFiles.length > 0) {
+        const { FileExtractorService } = await import('./services/file-extractor');
+        const extractor = new FileExtractorService();
+        
+        for (const filePath of validatedData.noteFiles) {
+          const [filename, fileUrl] = filePath.split(':');
+          try {
+            const extractedText = await extractor.extractTextFromFile(fileUrl);
+            if (extractedText && !extractedText.includes('extraction failed')) {
+              combinedNotes += `\n\n--- Reference from ${filename} ---\n${extractedText.substring(0, 2000)}`;
+            }
+          } catch (error) {
+            console.error(`Error extracting text from ${filename}:`, error);
+          }
+        }
+      }
+
       // Generate campaign using AI
       const campaignRequest = {
         type: validatedData.type,
@@ -300,7 +320,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         newsroomName: brandStylesheet.name.includes("Style") ? newsroom.name : brandStylesheet.name,
         ...(validatedData.segments && { segments: validatedData.segments }),
-        ...(validatedData.notes && { notes: validatedData.notes }),
+        ...(combinedNotes && { notes: combinedNotes }),
         ...(validatedData.referenceCampaigns && { referenceCampaigns: validatedData.referenceCampaigns }),
       };
 
@@ -921,6 +941,7 @@ ${contentToSummarize}`;
         promptContext: z.object({
           segments: z.array(z.string()).optional(),
           notes: z.string().optional(),
+          noteFiles: z.array(z.string()).optional(),
           referenceCampaigns: z.array(z.object({
             id: z.number(),
             title: z.string(),
@@ -993,6 +1014,26 @@ ${contentToSummarize}`;
         if (promptContext.notes) {
           contextInfo += `\nCAMPAIGN NOTES: ${promptContext.notes}`;
         }
+        
+        // Extract and include text from note files
+        if (promptContext.noteFiles && promptContext.noteFiles.length > 0) {
+          const { FileExtractorService } = await import('./services/file-extractor');
+          const extractor = new FileExtractorService();
+          
+          contextInfo += `\n\nREFERENCE FILES:`;
+          for (const fileRef of promptContext.noteFiles) {
+            try {
+              const fileData = JSON.parse(fileRef);
+              const extractedText = await extractor.extractTextFromFile(fileData.url);
+              if (extractedText && !extractedText.includes('extraction failed')) {
+                contextInfo += `\n\n--- ${fileData.filename} ---\n${extractedText.substring(0, 2000)}`;
+              }
+            } catch (error) {
+              console.error(`Error extracting text from file:`, error);
+            }
+          }
+        }
+        
         if (promptContext.referenceCampaigns && promptContext.referenceCampaigns.length > 0) {
           contextInfo += `\nREFERENCE CAMPAIGNS: ${promptContext.referenceCampaigns.map(c => `${c.title} (${c.objective})`).join(', ')}`;
         }
