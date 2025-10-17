@@ -262,7 +262,7 @@ class AIProviderService {
               "estimatedClickRate": number, 
               "estimatedConversion": number
             },
-            "followUpSuggestion": "string with conversational question to keep user engaged"
+            "followUpSuggestion": "REQUIRED: A specific BlueLena best practice tip analyzing THIS merged campaign. Reference one of BlueLena's 5 pillars (Audience Value, Emotional Resonance, Journalistic Impact, Clarity & Readability, Conversion Design). Include a quantified performance improvement estimate (e.g., '10-15% increase in opens', '20% boost in conversions'). Be specific to the merged content, not generic."
           }`,
           responseMimeType: "application/json",
           responseSchema: {
@@ -405,7 +405,16 @@ Generate the merged campaign with:
 4. **cta** (string): The most effective CTA in format [Button]Button text[/Button]
 5. **insights** (array of 3-4 strings): Brief observations about what made each draft effective and how you combined them
 6. **metrics** (object): Performance estimates with estimatedOpenRate, estimatedClickRate, estimatedConversion (as numbers)
-7. **followUpSuggestion** (string): A conversational, question-based suggestion to keep the user engaged (e.g., "Would you like me to create another version with a different emotional hook?" or "Should I try segmenting this for different audience personas?" or "Can I help you develop a follow-up campaign to boost conversions?")
+7. **followUpSuggestion** (string): REQUIRED - A specific BlueLena best practice tip relevant to THIS merged campaign. You MUST:
+   - Analyze the specific merged content you created (subject line, body, CTA placement, narrative flow, etc.)
+   - Reference ONE of BlueLena's 5 pillars: Audience Value, Emotional Resonance, Journalistic Impact, Clarity & Readability, or Conversion Design
+   - Provide an actionable insight specific to this merged campaign (not generic advice)
+   - Include a quantified performance improvement estimate with percentage (e.g., "15% more conversions", "10-15% boost in opens", "20% higher engagement")
+   
+   Examples:
+   - "The merge successfully combines urgency with story - test placing the CTA after paragraph 2 instead of paragraph 4 to capture 15-20% more conversions"
+   - "Strong synthesis of emotional hooks - consider adding specific dollar impact ('Your $50 funds 2 investigative reports') to increase donation conversion by 15%"
+   - "Excellent narrative flow - your subject line is 48 characters, try a shorter 35-character variant for 10% better mobile optimization"
 
 Response must be valid JSON with all fields included.
 `;
@@ -680,7 +689,16 @@ Generate a complete email campaign with:
 4. **cta** (string): Call-to-action in this exact format: [Button]Button text[/Button] (e.g., [Button]Support Local News[/Button])
 5. **insights** (array of 3-4 strings): Brief observations about campaign effectiveness
 6. **metrics** (object): Performance estimates with estimatedOpenRate, estimatedClickRate, estimatedConversion (as numbers)
-7. **followUpSuggestion** (string): A conversational, question-based suggestion to keep the user engaged and guide their next action. Frame as an invitation using audience development expertise (e.g., "Would you like me to create a version targeted at lapsed donors?" or "Should I try another version with a stronger urgency angle?" or "Can I help you create a follow-up campaign for non-openers?" or "Would you like me to segment this for highly engaged vs. new subscribers?")
+7. **followUpSuggestion** (string): REQUIRED - A specific BlueLena best practice tip relevant to THIS campaign. You MUST:
+   - Analyze the specific content you just wrote (subject line, body, CTA placement, etc.)
+   - Reference ONE of BlueLena's 5 pillars: Audience Value, Emotional Resonance, Journalistic Impact, Clarity & Readability, or Conversion Design
+   - Provide an actionable insight specific to this campaign (not generic advice)
+   - Include a quantified performance improvement estimate with percentage (e.g., "10-15% increase in opens", "20% boost in conversions", "15% higher click-through")
+   
+   Examples:
+   - "Your subject line balances urgency with curiosity - consider A/B testing with a benefit-focused variant to potentially increase opens 10-15%"
+   - "Strong emotional hook in paragraph 1 - moving your CTA earlier (before paragraph 3) typically increases conversion by 20%"
+   - "Excellent journalistic impact framing - adding one reader testimonial quote could strengthen trust and increase donations 15%"
 
 CRITICAL: The "content" field must contain a COMPLETE, FULL EMAIL MESSAGE - not just a summary or outline. Write the entire email body copy as it would appear in the subscriber's inbox, with multiple paragraphs, emotional resonance, and complete storytelling.
 
@@ -752,7 +770,7 @@ Response must be valid JSON with all fields included.
               "estimatedClickRate": number, 
               "estimatedConversion": number
             },
-            "followUpSuggestion": "string with conversational question to keep user engaged"
+            "followUpSuggestion": "REQUIRED: A specific BlueLena best practice tip analyzing THIS campaign. Reference one of BlueLena's 5 pillars (Audience Value, Emotional Resonance, Journalistic Impact, Clarity & Readability, Conversion Design). Include a quantified performance improvement estimate (e.g., '10-15% increase in opens', '20% boost in conversions'). Be specific to the campaign content, not generic."
           }`,
           responseMimeType: "application/json",
           responseSchema: {

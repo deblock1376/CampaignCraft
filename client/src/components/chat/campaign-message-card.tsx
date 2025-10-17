@@ -80,13 +80,13 @@ export function CampaignMessageCard({
           </div>
         </div>
 
-        {/* Follow-up Suggestion */}
+        {/* BlueLena Best Practice Tip */}
         {campaign.followUpSuggestion && (
           <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
             <div className="flex items-start gap-2">
               <Lightbulb className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-blue-900 mb-1">Next Step</p>
+                <p className="text-xs font-semibold text-blue-900 mb-1">BlueLena Best Practice</p>
                 <p className="text-sm text-blue-700 break-words">{campaign.followUpSuggestion}</p>
               </div>
             </div>
