@@ -40,6 +40,7 @@ export interface CampaignRequest {
     materials?: any;
   };
   newsroomName: string;
+  newsroomId?: number;
   segments?: string[];
   notes?: string;
   referenceCampaigns?: Array<{
@@ -541,7 +542,7 @@ IMPORTANT: Use these reference materials to:
 `;
   }
 
-  private buildSegmentInstructions(segments?: string[]): string {
+  private async buildSegmentInstructions(segments?: string[], newsroomId?: number): Promise<string> {
     // If no segments selected, target all users
     if (!segments || segments.length === 0) {
       return `
@@ -550,7 +551,44 @@ Write the campaign message to appeal to your full subscriber base, balancing gra
 `;
     }
 
-    // Build segment-specific instructions
+    // Fetch segment details from database if newsroomId is provided
+    if (newsroomId) {
+      try {
+        const { storage } = await import('../storage');
+        const dbSegments = await storage.getSegmentsByNewsroom(newsroomId);
+        
+        // Map segment IDs to their descriptions
+        const segmentDetails = segments
+          .map(segId => {
+            const segment = dbSegments.find(s => s.id.toString() === segId);
+            return segment ? `**${segment.name}:** ${segment.description}` : null;
+          })
+          .filter(Boolean);
+
+        if (segmentDetails.length > 0) {
+          const segmentNames = segments
+            .map(segId => {
+              const segment = dbSegments.find(s => s.id.toString() === segId);
+              return segment?.name;
+            })
+            .filter(Boolean);
+
+          return `
+🎯 Target Segment Messaging Guidelines
+Based on the selected segment${segments.length > 1 ? 's' : ''}: ${segmentNames.join(', ')}
+
+${segmentDetails.join('\n\n')}
+
+Apply these segment-specific principles to craft your campaign message, ensuring it resonates with the target audience's characteristics and relationship to the newsroom.
+`;
+        }
+      } catch (error) {
+        console.error('Error fetching segments:', error);
+        // Fall through to legacy mapping if database fetch fails
+      }
+    }
+
+    // Legacy fallback: Build segment-specific instructions using hardcoded mapping
     const segmentMap: { [key: string]: string } = {
       'donors': `**Donors:**
 - Express gratitude and show how their past support made an impact
@@ -620,7 +658,7 @@ Breaking News Story/Context: ${request.context}`;
       ? await this.buildMaterialsContext(request.brandStylesheet.materials)
       : '';
     
-    const segmentInstructions = this.buildSegmentInstructions(request.segments);
+    const segmentInstructions = await this.buildSegmentInstructions(request.segments, (request as any).newsroomId);
     
     try {
       const dbPrompt = await this.getPromptByKey('campaign_generate', {
