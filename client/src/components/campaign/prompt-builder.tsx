@@ -185,14 +185,14 @@ export function PromptBuilder({
   return (
     <TooltipProvider>
       <Card className="h-full flex flex-col">
-        <CardHeader className="border-b px-6 py-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex-1">
-              <CardTitle className="text-lg">Campaign Builder</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">Set your goals and audience</p>
+        <CardHeader className="border-b pb-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <CardTitle className="text-lg mb-1.5">Campaign Builder</CardTitle>
+              <p className="text-sm text-muted-foreground">Set your goals and audience</p>
             </div>
             {onSendToChat && (
-              <Button onClick={onSendToChat} size="sm" className="shrink-0">
+              <Button onClick={onSendToChat} size="sm">
                 <Send className="h-4 w-4 mr-2" />
                 Send to Chat
               </Button>
