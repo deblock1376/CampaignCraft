@@ -12,6 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertBrandStylesheetSchema } from "@shared/schema";
@@ -24,6 +25,19 @@ import { Upload, FileText, X } from "lucide-react";
 
 const formSchema = insertBrandStylesheetSchema.extend({
   keyMessagesText: z.string().optional(),
+  // Materials fields
+  brandVoiceText: z.string().optional(),
+  strategyPlaybookText: z.string().optional(),
+  styleGuideText: z.string().optional(),
+  aboutUsText: z.string().optional(),
+  pastCampaignsText: z.string().optional(),
+  impactStoriesText: z.string().optional(),
+  testimonialsText: z.string().optional(),
+  segmentsText: z.string().optional(),
+  surveyResponsesText: z.string().optional(),
+  localDatesText: z.string().optional(),
+  surveyResearchText: z.string().optional(),
+  campaignMetricsText: z.string().optional(),
 }).omit({
   newsroomId: true,
 });
@@ -102,6 +116,19 @@ export default function BrandStylesheets() {
       keyMessagesText: "",
       guidelines: "",
       isDefault: false,
+      // Materials fields
+      brandVoiceText: "",
+      strategyPlaybookText: "",
+      styleGuideText: "",
+      aboutUsText: "",
+      pastCampaignsText: "",
+      impactStoriesText: "",
+      testimonialsText: "",
+      segmentsText: "",
+      surveyResponsesText: "",
+      localDatesText: "",
+      surveyResearchText: "",
+      campaignMetricsText: "",
     },
   });
 
@@ -110,9 +137,34 @@ export default function BrandStylesheets() {
       ? data.keyMessagesText.split('\n').filter((msg: string) => msg.trim())
       : [];
     
+    // Build materials structure from text fields
+    const materials = {
+      brandFoundation: {
+        brandVoice: data.brandVoiceText ? { text: data.brandVoiceText } : undefined,
+        strategyPlaybook: data.strategyPlaybookText ? { text: data.strategyPlaybookText } : undefined,
+        styleGuide: data.styleGuideText ? { text: data.styleGuideText } : undefined,
+        aboutUs: data.aboutUsText ? { text: data.aboutUsText } : undefined,
+      },
+      campaignExamples: {
+        pastCampaigns: data.pastCampaignsText ? { text: data.pastCampaignsText } : undefined,
+        impactStories: data.impactStoriesText ? { text: data.impactStoriesText } : undefined,
+        testimonials: data.testimonialsText ? { text: data.testimonialsText } : undefined,
+      },
+      audienceIntelligence: {
+        segments: data.segmentsText ? { text: data.segmentsText } : undefined,
+        surveyResponses: data.surveyResponsesText ? { text: data.surveyResponsesText } : undefined,
+        localDates: data.localDatesText ? { text: data.localDatesText } : undefined,
+      },
+      performanceData: {
+        surveyResearch: data.surveyResearchText ? { text: data.surveyResearchText } : undefined,
+        campaignMetrics: data.campaignMetricsText ? { text: data.campaignMetricsText } : undefined,
+      },
+    };
+    
     const submitData = {
       ...data,
       keyMessages,
+      materials,
       newsroomId: 1,
       colorPalette: {
         primary: "#2563EB",
@@ -125,7 +177,20 @@ export default function BrandStylesheets() {
       },
     };
     
+    // Remove text fields from submit data
     delete submitData.keyMessagesText;
+    delete submitData.brandVoiceText;
+    delete submitData.strategyPlaybookText;
+    delete submitData.styleGuideText;
+    delete submitData.aboutUsText;
+    delete submitData.pastCampaignsText;
+    delete submitData.impactStoriesText;
+    delete submitData.testimonialsText;
+    delete submitData.segmentsText;
+    delete submitData.surveyResponsesText;
+    delete submitData.localDatesText;
+    delete submitData.surveyResearchText;
+    delete submitData.campaignMetricsText;
     
     // Only handle update, create is done through Marketing Assistant
     if (editingStylesheet) {
@@ -135,6 +200,14 @@ export default function BrandStylesheets() {
 
   const handleEdit = (stylesheet: any) => {
     setEditingStylesheet(stylesheet);
+    
+    // Extract materials text from the materials object
+    const materials = stylesheet.materials || {};
+    const brandFoundation = materials.brandFoundation || {};
+    const campaignExamples = materials.campaignExamples || {};
+    const audienceIntelligence = materials.audienceIntelligence || {};
+    const performanceData = materials.performanceData || {};
+    
     form.reset({
       name: stylesheet.name,
       description: stylesheet.description || "",
@@ -143,6 +216,19 @@ export default function BrandStylesheets() {
       keyMessagesText: stylesheet.keyMessages ? stylesheet.keyMessages.join('\n') : "",
       guidelines: stylesheet.guidelines || "",
       isDefault: stylesheet.isDefault,
+      // Materials fields
+      brandVoiceText: brandFoundation.brandVoice?.text || "",
+      strategyPlaybookText: brandFoundation.strategyPlaybook?.text || "",
+      styleGuideText: brandFoundation.styleGuide?.text || "",
+      aboutUsText: brandFoundation.aboutUs?.text || "",
+      pastCampaignsText: campaignExamples.pastCampaigns?.text || "",
+      impactStoriesText: campaignExamples.impactStories?.text || "",
+      testimonialsText: campaignExamples.testimonials?.text || "",
+      segmentsText: audienceIntelligence.segments?.text || "",
+      surveyResponsesText: audienceIntelligence.surveyResponses?.text || "",
+      localDatesText: audienceIntelligence.localDates?.text || "",
+      surveyResearchText: performanceData.surveyResearch?.text || "",
+      campaignMetricsText: performanceData.campaignMetrics?.text || "",
     });
   };
 
@@ -167,133 +253,376 @@ export default function BrandStylesheets() {
         />
         
         <Dialog open={!!editingStylesheet} onOpenChange={handleCloseDialog}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Edit Grounding Guide</DialogTitle>
+              <DialogTitle>Edit Grounding Library</DialogTitle>
+              <DialogDescription>
+                Update the materials and guidelines that shape your AI-generated campaigns
+              </DialogDescription>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Metro Daily - Default Style" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Brief description of this stylesheet" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="tone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tone</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., Professional yet approachable" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <Tabs defaultValue="basic" className="w-full">
+                  <TabsList className="grid w-full grid-cols-5">
+                    <TabsTrigger value="basic">Basic Info</TabsTrigger>
+                    <TabsTrigger value="brand">Brand Foundation</TabsTrigger>
+                    <TabsTrigger value="campaigns">Campaign Examples</TabsTrigger>
+                    <TabsTrigger value="audience">Audience Intel</TabsTrigger>
+                    <TabsTrigger value="performance">Performance Data</TabsTrigger>
+                  </TabsList>
                   
-                  <FormField
-                    control={form.control}
-                    name="voice"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Voice</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., Informative, trustworthy" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                  <TabsContent value="basic" className="space-y-4 mt-4">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Metro Daily - Default Style" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Brief description of this stylesheet" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="tone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Tone</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g., Professional yet approachable" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="voice"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Voice</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g., Informative, trustworthy" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <FormField
+                      control={form.control}
+                      name="keyMessagesText"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Key Messages (one per line)</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Independent local journalism matters&#10;Community-driven news coverage&#10;Transparency in reporting"
+                              rows={4}
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="guidelines"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Writing Guidelines</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Additional writing guidelines and instructions..."
+                              rows={3}
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="isDefault"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">Default Stylesheet</FormLabel>
+                            <div className="text-sm text-muted-foreground">
+                              Use this as the default stylesheet for new campaigns
+                            </div>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="brand" className="space-y-4 mt-4">
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Foundational materials that define your brand's identity and voice
+                    </p>
+                    <FormField
+                      control={form.control}
+                      name="brandVoiceText"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Brand Voice & Mission</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Describe your brand's voice, mission, and core values..."
+                              rows={4}
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="strategyPlaybookText"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Strategy Playbook</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Your strategic approach, editorial philosophy, and content strategy..."
+                              rows={4}
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="styleGuideText"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Brand/Style Guide</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Stylistic guidelines, formatting rules, and brand standards..."
+                              rows={4}
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="aboutUsText"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>About Us Statement</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Your newsroom's story, history, and what makes you unique..."
+                              rows={4}
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="campaigns" className="space-y-4 mt-4">
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Examples of successful campaigns and impactful stories that demonstrate your approach
+                    </p>
+                    <FormField
+                      control={form.control}
+                      name="pastCampaignsText"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Past Campaigns</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Examples of successful past marketing campaigns and their strategies..."
+                              rows={4}
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="impactStoriesText"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Impact News Stories</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Stories that had significant community impact or exemplify your journalism..."
+                              rows={4}
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="testimonialsText"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Reader Testimonials</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Feedback from readers, subscriber testimonials, and community responses..."
+                              rows={4}
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="audience" className="space-y-4 mt-4">
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Information about your audience and community that helps tailor campaigns
+                    </p>
+                    <FormField
+                      control={form.control}
+                      name="segmentsText"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Audience Segments</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Describe your key audience segments, demographics, and reader personas..."
+                              rows={4}
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="surveyResponsesText"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Audience Survey Responses</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Insights from reader surveys, feedback forms, and audience research..."
+                              rows={4}
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="localDatesText"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Key Local Dates</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Important local events, community dates, and regional milestones..."
+                              rows={4}
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="performance" className="space-y-4 mt-4">
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Data and metrics that inform campaign effectiveness and strategy
+                    </p>
+                    <FormField
+                      control={form.control}
+                      name="surveyResearchText"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Survey & Research Data</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Market research findings, survey data, and analytical insights..."
+                              rows={4}
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="campaignMetricsText"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Performance Metrics & Analytics</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Campaign performance data, engagement metrics, and KPIs..."
+                              rows={4}
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TabsContent>
+                </Tabs>
                 
-                <FormField
-                  control={form.control}
-                  name="keyMessagesText"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Key Messages (one per line)</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Independent local journalism matters&#10;Community-driven news coverage&#10;Transparency in reporting"
-                          rows={4}
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="guidelines"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Writing Guidelines</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Additional writing guidelines and instructions..."
-                          rows={3}
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="isDefault"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">Default Stylesheet</FormLabel>
-                        <div className="text-sm text-muted-foreground">
-                          Use this as the default stylesheet for new campaigns
-                        </div>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="flex justify-end space-x-2">
+                <div className="flex justify-end space-x-2 pt-4 border-t">
                   <Button type="button" variant="outline" onClick={handleCloseDialog}>
                     Cancel
                   </Button>
                   <Button type="submit" disabled={updateMutation.isPending}>
-                    {updateMutation.isPending ? "Updating..." : "Update Grounding Guide"}
+                    {updateMutation.isPending ? "Updating..." : "Update Grounding Library"}
                   </Button>
                 </div>
               </form>
