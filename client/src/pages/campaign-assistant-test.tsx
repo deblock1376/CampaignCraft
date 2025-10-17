@@ -308,7 +308,7 @@ export default function CampaignAssistantTest() {
           type: "email",
           objective: campaignParams.objective || "engagement",
           context: campaignParams.context || "",
-          aiModel: "gpt-4o",
+          aiModel: selectedModel,
           content: JSON.stringify(campaign),
         }),
       });
