@@ -24,8 +24,9 @@ Preferred communication style: Simple, everyday language.
   5. Audience Segments
   6. Story Summaries
   7. Settings
-  8. Admin Control (admin only)
-  9. Marketing Assistant (gradient box at bottom for quick-start templates)
+  8. Help & Guides (comprehensive documentation)
+  9. Admin Control (admin only)
+  10. Marketing Assistant (gradient box at bottom for quick-start templates)
 - **Featured Campaign Builder**: Prominently displayed with gradient background, "Recommended" badge, and enhanced visual styling in Marketing Assistant page.
 
 ### Technical Implementations
@@ -89,6 +90,23 @@ Preferred communication style: Simple, everyday language.
     - Campaign Evaluation (evaluation results)
   - Backend returns promptKey in all AI service responses for tracking
   - Helps validate prompt management system and monitor AI usage patterns
+- **Help Center & Documentation**: Comprehensive in-app documentation system for user guidance:
+  - Dedicated Help & Guides page accessible from sidebar navigation
+  - 10 collapsible sections covering all major features:
+    - Getting Started (quick introduction and workflow)
+    - Campaign Builder (conversational AI creation)
+    - Grounding Library (brand materials with 11 material types)
+    - Audience Segments (targeting and personalization)
+    - Campaign Evaluation (BlueLena 5-pillar framework)
+    - File Uploads & Text Extraction (PDF/DOCX support)
+    - AI Model Selection (GPT-4o, Claude, Gemini)
+    - Campaign History (tracking and management)
+    - Story Summaries (AI article condensing)
+    - Admin Features (user management, prompts, logs)
+    - Settings & Preferences
+  - Step-by-step instructions and best practices for each feature
+  - Pro tips and visual organization with icons and badges
+  - Designed for non-technical users with clear, accessible language
 
 ### System Design Choices
 - **Development**: Vite development server with Express API integration and hot module replacement.
