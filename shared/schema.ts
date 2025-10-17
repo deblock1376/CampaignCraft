@@ -117,7 +117,7 @@ export const prompts = pgTable("prompts", {
   promptText: text("prompt_text").notNull(),
   systemMessage: text("system_message"),
   variables: jsonb("variables"),
-  aiModel: text("ai_model").notNull().default("gpt-4o"),
+  aiModel: text("ai_model").notNull().default("gpt-5"),
   status: text("status").notNull().default("active"),
   version: text("version").notNull().default("1.0"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
