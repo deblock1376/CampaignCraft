@@ -89,6 +89,12 @@ Preferred communication style: Simple, everyday language.
 - **Production**: Optimized React bundle and bundled Express server.
 - **Environment Configuration**: Utilizes environment variables for sensitive information.
 - **Grounding Library Workflow**: Streamlined materials-first approach for library creation, collecting 11 material types across 4 categories (Brand Foundation, Campaign Examples, Audience Intelligence, Performance Data).
+- **Grounding Library Edit Interface**: Enhanced tabbed edit dialog allowing users to view and edit all collected materials:
+  - 5-tab interface: Basic Info, Brand Foundation, Campaign Examples, Audience Intel, Performance Data
+  - Each material type has dedicated text area for editing text content
+  - Materials structure preserved in database and properly passed to AI generation
+  - Supports both text input and file upload for each material type
+  - Form validation with Zod ensures data integrity during save/load operations
 
 ## External Dependencies
 
