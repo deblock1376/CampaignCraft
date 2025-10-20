@@ -24,47 +24,72 @@ export async function seedPrompts() {
   console.log('🌱 Seeding prompt categories and prompts...');
 
   try {
-    // Seed categories first
+    const { eq } = await import('drizzle-orm');
+    
+    // Seed categories first (upsert logic)
     const categoryMap = new Map<string, number>();
     
     for (const category of promptCatalog.categories) {
-      const [insertedCategory] = await db
-        .insert(promptCategories)
-        .values({
-          name: category.name,
-          description: category.description,
-        })
-        .returning();
+      // Check if category already exists
+      const existing = await db
+        .select()
+        .from(promptCategories)
+        .where(eq(promptCategories.name, category.name))
+        .limit(1);
       
-      categoryMap.set(category.name, insertedCategory.id);
-      console.log(`✓ Created category: ${category.name}`);
+      if (existing.length > 0) {
+        categoryMap.set(category.name, existing[0].id);
+        console.log(`✓ Category exists: ${category.name}`);
+      } else {
+        const [insertedCategory] = await db
+          .insert(promptCategories)
+          .values({
+            name: category.name,
+            description: category.description,
+          })
+          .returning();
+        
+        categoryMap.set(category.name, insertedCategory.id);
+        console.log(`✓ Created category: ${category.name}`);
+      }
     }
 
-    // Seed prompts
+    // Seed prompts (upsert logic)
     let totalPrompts = 0;
     for (const category of promptCatalog.categories) {
       const categoryId = categoryMap.get(category.name);
       if (!categoryId) continue;
 
       for (const prompt of category.prompts) {
-        await db.insert(prompts).values({
-          categoryId,
-          name: prompt.name,
-          description: prompt.description,
-          promptKey: prompt.key,
-          promptText: prompt.promptText,
-          systemMessage: prompt.systemMessage,
-          variables: prompt.variables,
-          aiModel: prompt.model,
-          status: 'active',
-          version: '1.0',
-        });
+        // Check if prompt already exists
+        const existing = await db
+          .select()
+          .from(prompts)
+          .where(eq(prompts.promptKey, prompt.key))
+          .limit(1);
+        
+        if (existing.length > 0) {
+          console.log(`  ✓ Prompt exists: ${prompt.name}`);
+        } else {
+          await db.insert(prompts).values({
+            categoryId,
+            name: prompt.name,
+            description: prompt.description,
+            promptKey: prompt.key,
+            promptText: prompt.promptText,
+            systemMessage: prompt.systemMessage,
+            variables: prompt.variables,
+            aiModel: prompt.model,
+            status: 'active',
+            version: '1.0',
+          });
+          console.log(`  ✓ Created prompt: ${prompt.name}`);
+        }
         totalPrompts++;
-        console.log(`  ✓ Created prompt: ${prompt.name}`);
       }
     }
 
-    console.log(`✅ Successfully seeded ${promptCatalog.categories.length} categories and ${totalPrompts} prompts`);
+    console.log(`✅ Successfully processed ${promptCatalog.categories.length} categories and ${totalPrompts} prompts`);
   } catch (error) {
     console.error('❌ Error seeding prompts:', error);
     throw error;
