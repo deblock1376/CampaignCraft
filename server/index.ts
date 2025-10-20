@@ -93,4 +93,29 @@ app.use((req, res, next) => {
   } catch (error: any) {
     log(`⚠️ Prompt seeding check error: ${error.message}`);
   }
+
+  // Auto-migrate old prompt keys to new keys
+  try {
+    const { eq } = await import('drizzle-orm');
+    
+    // Update campaign_generation_main -> campaign_generate
+    const updated1 = await db
+      .update(prompts)
+      .set({ promptKey: 'campaign_generate' })
+      .where(eq(prompts.promptKey, 'campaign_generation_main'))
+      .returning();
+    
+    // Update draft_merge_main -> draft_merge
+    const updated2 = await db
+      .update(prompts)
+      .set({ promptKey: 'draft_merge' })
+      .where(eq(prompts.promptKey, 'draft_merge_main'))
+      .returning();
+    
+    if (updated1.length > 0 || updated2.length > 0) {
+      log(`✅ Migrated ${updated1.length + updated2.length} prompt keys to new format`);
+    }
+  } catch (error: any) {
+    log(`⚠️ Prompt migration error: ${error.message}`);
+  }
 })();
