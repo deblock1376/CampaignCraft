@@ -2,6 +2,9 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { cleanupOldLogs } from "./storage";
+import { seedPrompts } from "./data/seed-prompts";
+import { db } from "./db";
+import { prompts } from "@shared/schema";
 
 const app = express();
 app.use(express.json());
@@ -76,4 +79,18 @@ app.use((req, res, next) => {
   setInterval(() => {
     cleanupOldLogs().catch((err: any) => log(`Scheduled log cleanup error: ${err.message}`));
   }, 24 * 60 * 60 * 1000);
+
+  // Seed AI prompts if they don't exist
+  try {
+    const existingPrompts = await db.select().from(prompts).limit(1);
+    if (existingPrompts.length === 0) {
+      log('🌱 No prompts found, seeding prompts...');
+      await seedPrompts();
+      log('✅ Prompts seeded successfully');
+    } else {
+      log('✓ Prompts already exist, skipping seed');
+    }
+  } catch (error: any) {
+    log(`⚠️ Prompt seeding check error: ${error.message}`);
+  }
 })();
