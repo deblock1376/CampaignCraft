@@ -35,6 +35,8 @@ Preferred communication style: Simple, everyday language.
 - **Backend**: Node.js with Express.js, TypeScript, RESTful API, and Express middleware.
 - **Data Storage**: PostgreSQL database using Drizzle ORM, with Neon Database for serverless PostgreSQL.
 - **AI Integration**: Integrates with OpenAI (GPT-5, default) and Anthropic (Claude Sonnet 4) for content generation and evaluation.
+  - **GPT-5 Configuration**: Uses default temperature (1.0) as GPT-5 does not support custom temperature values
+  - **CSP Headers**: Content Security Policy configured for both development (Vite HMR) and production with 'unsafe-eval' support for required tooling
 - **Content Generation**: Generates campaign content, CTAs, and performance insights, applying grounding guides for brand consistency.
 - **Campaign Workflow**: Supports "Create Campaign" with multi-draft generation and "Get Feedback" for evaluation using frameworks like BlueLena. Features seamless campaign-to-evaluation flow with auto-population:
   - "Evaluate this campaign" button encodes generated campaign data (subject, body, CTA) in URL parameter

@@ -40,6 +40,22 @@ export async function setupVite(app: Express, server: Server) {
     appType: "custom",
   });
 
+  // Add CSP headers for development mode (needed for Vite HMR and Replit banner)
+  app.use((_req, res, next) => {
+    res.setHeader(
+      'Content-Security-Policy',
+      [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://replit.com",
+        "style-src 'self' 'unsafe-inline'",
+        "connect-src 'self' ws: wss: https:",
+        "img-src 'self' data: blob: https:",
+        "font-src 'self' data:",
+      ].join('; ')
+    );
+    next();
+  });
+
   app.use(vite.middlewares);
   app.use("*", async (req, res, next) => {
     const url = req.originalUrl;
