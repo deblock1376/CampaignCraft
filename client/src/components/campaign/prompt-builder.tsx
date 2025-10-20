@@ -48,6 +48,8 @@ interface PromptBuilderProps {
   onSendToChat?: () => void;
   aiModel?: string;
   onModelChange?: (model: string) => void;
+  selectedCampaignPlan?: number;
+  onCampaignPlanSelect?: (planId: number | undefined) => void;
 }
 
 
@@ -85,6 +87,8 @@ export function PromptBuilder({
   onSendToChat,
   aiModel = "gpt-5",
   onModelChange,
+  selectedCampaignPlan,
+  onCampaignPlanSelect,
 }: PromptBuilderProps) {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -100,6 +104,12 @@ export function PromptBuilder({
   // Fetch segments from API
   const { data: apiSegments = [] } = useQuery<Segment[]>({
     queryKey: ["/api/newsrooms", newsroomId, "segments"],
+    enabled: !!newsroomId,
+  });
+
+  // Fetch campaign plans from API
+  const { data: campaignPlans = [] } = useQuery<any[]>({
+    queryKey: ["/api/newsrooms", newsroomId, "campaign-plans"],
     enabled: !!newsroomId,
   });
 
@@ -464,6 +474,44 @@ export function PromptBuilder({
               )}
             </div>
           )}
+        </div>
+
+        {/* Campaign Plan Reference */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5">
+            <Label>Reference Campaign Plan</Label>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button type="button" className="inline-flex items-center justify-center" aria-label="Help about campaign plans">
+                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="max-w-xs">
+                <p>Select a strategic campaign plan to guide the AI. The plan's themes, messaging, and strategy will inform campaign content generation.</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <Select 
+            value={selectedCampaignPlan?.toString() || ""} 
+            onValueChange={(value) => onCampaignPlanSelect?.(value ? parseInt(value) : undefined)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select a campaign plan..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">None</SelectItem>
+              {campaignPlans.map((plan: any) => (
+                <SelectItem key={plan.id} value={plan.id.toString()}>
+                  <div className="flex flex-col">
+                    <span className="font-medium">{plan.inputs?.campaignGoal || 'Campaign Plan'}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(plan.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Recent Campaigns */}

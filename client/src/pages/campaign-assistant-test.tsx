@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import Sidebar from "@/components/layout/sidebar";
 import Header from "@/components/layout/header";
@@ -30,6 +30,20 @@ export default function CampaignAssistantTest() {
   const [selectedRecentCampaigns, setSelectedRecentCampaigns] = useState<number[]>([]);
   const [selectedStorySummaries, setSelectedStorySummaries] = useState<number[]>([]);
   const [selectedModel, setSelectedModel] = useState<string>("gpt-5");
+  const [selectedCampaignPlan, setSelectedCampaignPlan] = useState<number | undefined>();
+
+  // Check URL for planId parameter
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const planId = params.get('planId');
+    if (planId) {
+      setSelectedCampaignPlan(parseInt(planId));
+      toast({
+        title: "Campaign Plan Loaded",
+        description: "The selected campaign plan has been loaded and will inform AI generation.",
+      });
+    }
+  }, [toast]);
 
   // Fetch grounding guides for the chat context
   const { data: groundingGuides = [] } = useQuery({
@@ -122,6 +136,23 @@ export default function CampaignAssistantTest() {
     },
   });
 
+  // Fetch campaign plans
+  const { data: campaignPlans = [] } = useQuery({
+    queryKey: [`/api/newsrooms/${newsroomId}/campaign-plans`],
+    queryFn: async () => {
+      const response = await fetch(`/api/newsrooms/${newsroomId}/campaign-plans`, {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch campaign plans");
+      }
+      return response.json();
+    },
+    enabled: !!newsroomId,
+  });
+
   // Chat mutation
   const chatMutation = useMutation({
     mutationFn: async ({ message, files }: { message: string; files?: string[] }) => {
@@ -138,6 +169,16 @@ export default function CampaignAssistantTest() {
                 title: c.title,
                 objective: c.objective,
               }))
+          : undefined,
+        campaignPlan: selectedCampaignPlan
+          ? (() => {
+              const plan = (campaignPlans as any[]).find((p: any) => p.id === selectedCampaignPlan);
+              return plan ? {
+                id: plan.id,
+                plan: plan.generatedPlan,
+                inputs: plan.inputs,
+              } : undefined;
+            })()
           : undefined,
         storySummaries: selectedStorySummaries.length > 0
           ? (storySummaries as any[])
@@ -489,6 +530,8 @@ export default function CampaignAssistantTest() {
               recentCampaigns={recentCampaigns as any[]}
               selectedCampaigns={selectedRecentCampaigns}
               onCampaignSelect={setSelectedRecentCampaigns}
+              selectedCampaignPlan={selectedCampaignPlan}
+              onCampaignPlanSelect={setSelectedCampaignPlan}
               storySummaries={storySummaries as any[]}
               selectedSummaries={selectedStorySummaries}
               onSummarySelect={setSelectedStorySummaries}

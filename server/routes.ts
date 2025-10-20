@@ -1022,6 +1022,11 @@ ${contentToSummarize}`;
             title: z.string(),
             objective: z.string(),
           })).optional(),
+          campaignPlan: z.object({
+            id: z.number(),
+            plan: z.string(),
+            inputs: z.any(),
+          }).optional(),
           storySummaries: z.array(z.object({
             id: z.number(),
             title: z.string(),
@@ -1109,6 +1114,18 @@ ${contentToSummarize}`;
           }
         }
         
+        if (promptContext.campaignPlan) {
+          contextInfo += `\n\n=== STRATEGIC CAMPAIGN PLAN ===\n`;
+          contextInfo += `Goal: ${promptContext.campaignPlan.inputs?.campaignGoal || 'Fundraising campaign'}\n`;
+          if (promptContext.campaignPlan.inputs?.totalGoal) {
+            contextInfo += `Target: ${promptContext.campaignPlan.inputs.totalGoal}\n`;
+          }
+          if (promptContext.campaignPlan.inputs?.timeframeType) {
+            contextInfo += `Timeframe: ${promptContext.campaignPlan.inputs.timeframeType}\n`;
+          }
+          contextInfo += `\nPLAN DETAILS:\n${promptContext.campaignPlan.plan.substring(0, 3000)}`;
+          contextInfo += `\n\n[Use this strategic plan to guide campaign content. Align with the themes, messaging, and calendar outlined above.]`;
+        }
         if (promptContext.referenceCampaigns && promptContext.referenceCampaigns.length > 0) {
           contextInfo += `\nREFERENCE CAMPAIGNS: ${promptContext.referenceCampaigns.map(c => `${c.title} (${c.objective})`).join(', ')}`;
         }

@@ -436,6 +436,13 @@ export default function CampaignPlanner() {
                       Generated on {new Date(selectedPlan.createdAt).toLocaleDateString()} with {selectedPlan.aiModel === 'gpt-5' ? 'GPT-5' : selectedPlan.aiModel === 'claude-sonnet-4' ? 'Claude Sonnet 4' : 'Gemini 2.5 Flash'}
                     </p>
                   </div>
+                  <Button 
+                    onClick={() => window.location.href = `/campaigns/assistant-test?planId=${selectedPlan.id}`}
+                    size="lg"
+                  >
+                    <FileText className="h-5 w-5 mr-2" />
+                    Generate Campaign from This Plan
+                  </Button>
                 </div>
 
                 <Card>
