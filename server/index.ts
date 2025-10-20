@@ -41,11 +41,20 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const server = await registerRoutes(app);
+  try {
+    const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
+    
+    // Log the full error for debugging
+    console.error('Error details:', {
+      status,
+      message,
+      stack: err.stack,
+      error: err
+    });
 
     res.status(status).json({ message });
     throw err;
@@ -117,5 +126,10 @@ app.use((req, res, next) => {
     }
   } catch (error: any) {
     log(`⚠️ Prompt migration error: ${error.message}`);
+  }
+  } catch (error: any) {
+    console.error('❌ Fatal server startup error:', error);
+    log(`❌ Server failed to start: ${error.message}`);
+    process.exit(1);
   }
 })();
