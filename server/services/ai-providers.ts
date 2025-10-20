@@ -1170,7 +1170,6 @@ Please create a comprehensive campaign plan based on these inputs.`;
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt }
           ],
-          temperature: 0.7,
         });
         plan = openaiResponse.choices[0]?.message?.content || '';
         break;
