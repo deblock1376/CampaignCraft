@@ -207,7 +207,6 @@ class AIProviderService {
         model: DEFAULT_OPENAI_MODEL,
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" },
-        temperature: 0.7,
       });
 
       const result = JSON.parse(response.choices[0].message.content || '{}');
@@ -305,7 +304,6 @@ class AIProviderService {
       const response = await this.openai.chat.completions.create({
         model: "gpt-5",
         messages: [{ role: "user", content: prompt }],
-        temperature: 0.7,
       });
 
       return response.choices[0]?.message?.content || '';
@@ -756,7 +754,6 @@ Response must be valid JSON with all fields included.
         model: DEFAULT_OPENAI_MODEL,
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" },
-        temperature: 0.7,
       });
 
       const result = JSON.parse(response.choices[0].message.content || '{}');
