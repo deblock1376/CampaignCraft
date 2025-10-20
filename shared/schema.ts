@@ -162,6 +162,17 @@ export const userFlags = pgTable("user_flags", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const campaignPlans = pgTable("campaign_plans", {
+  id: serial("id").primaryKey(),
+  newsroomId: integer("newsroom_id").notNull(),
+  title: text("title").notNull(),
+  inputs: jsonb("inputs").notNull(), // Campaign planning inputs (goals, timeframe, segments, etc.)
+  generatedPlan: text("generated_plan").notNull(), // Markdown output from Lou
+  aiModel: text("ai_model").notNull().default("gpt-5"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const insertNewsroomSchema = createInsertSchema(newsrooms).omit({
   id: true,
   createdAt: true,
@@ -232,6 +243,12 @@ export const insertUserFlagSchema = createInsertSchema(userFlags).omit({
   updatedAt: true,
 });
 
+export const insertCampaignPlanSchema = createInsertSchema(campaignPlans).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertNewsroom = z.infer<typeof insertNewsroomSchema>;
 export type InsertBrandStylesheet = z.infer<typeof insertBrandStylesheetSchema>;
@@ -245,6 +262,7 @@ export type InsertPrompt = z.infer<typeof insertPromptSchema>;
 export type InsertPromptVersion = z.infer<typeof insertPromptVersionSchema>;
 export type InsertClientLog = z.infer<typeof insertClientLogSchema>;
 export type InsertUserFlag = z.infer<typeof insertUserFlagSchema>;
+export type InsertCampaignPlan = z.infer<typeof insertCampaignPlanSchema>;
 
 export type User = typeof users.$inferSelect;
 export type Newsroom = typeof newsrooms.$inferSelect;
@@ -259,3 +277,4 @@ export type Prompt = typeof prompts.$inferSelect;
 export type PromptVersion = typeof promptVersions.$inferSelect;
 export type ClientLog = typeof clientLogs.$inferSelect;
 export type UserFlag = typeof userFlags.$inferSelect;
+export type CampaignPlan = typeof campaignPlans.$inferSelect;
