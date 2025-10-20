@@ -810,6 +810,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Campaign Planner
+  app.post("/api/campaign-plans", authenticateToken, async (req: any, res) => {
+    try {
+      const schema = z.object({
+        newsroomId: z.number(),
+        title: z.string().min(1),
+        inputs: z.object({
+          organizationProfile: z.string().optional(),
+          brandVoice: z.string().optional(),
+          campaignGoal: z.string().optional(),
+          totalGoal: z.string().optional(),
+          timeframeType: z.string().optional(),
+          startDate: z.string().optional(),
+          endDate: z.string().optional(),
+          audienceNotes: z.string().optional(),
+          segments: z.array(z.string()).optional(),
+          keyStories: z.string().optional(),
+          matchDetails: z.string().optional(),
+          constraints: z.string().optional(),
+          tools: z.string().optional(),
+        }),
+        aiModel: z.string().optional(),
+      });
+
+      const { newsroomId, title, inputs, aiModel } = schema.parse(req.body);
+
+      // Generate the campaign plan using Lou
+      const result = await aiProviderService.generateCampaignPlan(inputs, aiModel || 'gpt-5');
+
+      // Save the plan to the database
+      const savedPlan = await storage.createCampaignPlan({
+        newsroomId,
+        title,
+        inputs,
+        generatedPlan: result.plan,
+        aiModel: aiModel || 'gpt-5',
+      });
+
+      res.json(savedPlan);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error('Campaign planner error:', error);
+      res.status(500).json({ message: "Failed to generate campaign plan", error: String(error) });
+    }
+  });
+
+  app.get("/api/newsrooms/:newsroomId/campaign-plans", authenticateToken, async (req: any, res) => {
+    try {
+      const newsroomId = parseInt(req.params.newsroomId);
+      const plans = await storage.getCampaignPlansByNewsroom(newsroomId);
+      res.json(plans);
+    } catch (error) {
+      console.error('Get campaign plans error:', error);
+      res.status(500).json({ message: "Failed to fetch campaign plans" });
+    }
+  });
+
+  app.get("/api/campaign-plans/:id", authenticateToken, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const plan = await storage.getCampaignPlan(id);
+      if (!plan) {
+        return res.status(404).json({ message: "Campaign plan not found" });
+      }
+      res.json(plan);
+    } catch (error) {
+      console.error('Get campaign plan error:', error);
+      res.status(500).json({ message: "Failed to fetch campaign plan" });
+    }
+  });
+
   // Story Summaries
   app.post("/api/story-summaries", authenticateToken, async (req: any, res) => {
     try {

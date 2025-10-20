@@ -7,6 +7,7 @@ import {
   segments,
   campaignEvaluations,
   storySummaries,
+  campaignPlans,
   promptCategories,
   prompts,
   promptVersions,
@@ -20,6 +21,7 @@ import {
   type Segment,
   type CampaignEvaluation,
   type StorySummary,
+  type CampaignPlan,
   type PromptCategory,
   type Prompt,
   type PromptVersion,
@@ -33,6 +35,7 @@ import {
   type InsertSegment,
   type InsertCampaignEvaluation,
   type InsertStorySummary,
+  type InsertCampaignPlan,
   type InsertPromptCategory,
   type InsertPrompt,
   type InsertPromptVersion,
@@ -121,6 +124,11 @@ export interface IStorage {
   createClientLogs(logs: InsertClientLog[]): Promise<void>;
   getClientLogs(filters: { userId?: number; newsroomId?: number; level?: string; limit?: number; offset?: number }): Promise<ClientLog[]>;
   deleteOldLogs(daysToKeep: number): Promise<void>;
+  
+  // Campaign Plans
+  getCampaignPlan(id: number): Promise<CampaignPlan | undefined>;
+  getCampaignPlansByNewsroom(newsroomId: number): Promise<CampaignPlan[]>;
+  createCampaignPlan(plan: InsertCampaignPlan): Promise<CampaignPlan>;
   
   // User Flags
   createUserFlag(flag: InsertUserFlag): Promise<UserFlag>;
@@ -565,6 +573,17 @@ export class MemStorage implements IStorage {
     throw new Error('MemStorage not implemented');
   }
   
+  // Campaign Plans (stub for MemStorage - not used in production)
+  async getCampaignPlan(id: number): Promise<CampaignPlan | undefined> {
+    return undefined;
+  }
+  async getCampaignPlansByNewsroom(newsroomId: number): Promise<CampaignPlan[]> {
+    return [];
+  }
+  async createCampaignPlan(plan: InsertCampaignPlan): Promise<CampaignPlan> {
+    throw new Error('MemStorage not implemented');
+  }
+  
   // User Flags (stub for MemStorage - not used in production)
   async createUserFlag(flag: InsertUserFlag): Promise<UserFlag> {
     throw new Error('MemStorage not implemented');
@@ -949,6 +968,21 @@ export class DatabaseStorage implements IStorage {
     cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
     
     await db.delete(clientLogs).where(eq(clientLogs.createdAt, cutoffDate));
+  }
+  
+  // Campaign Plans
+  async getCampaignPlan(id: number): Promise<CampaignPlan | undefined> {
+    const [plan] = await db.select().from(campaignPlans).where(eq(campaignPlans.id, id));
+    return plan || undefined;
+  }
+  
+  async getCampaignPlansByNewsroom(newsroomId: number): Promise<CampaignPlan[]> {
+    return await db.select().from(campaignPlans).where(eq(campaignPlans.newsroomId, newsroomId)).orderBy(desc(campaignPlans.createdAt));
+  }
+  
+  async createCampaignPlan(plan: InsertCampaignPlan): Promise<CampaignPlan> {
+    const [newPlan] = await db.insert(campaignPlans).values(plan).returning();
+    return newPlan;
   }
   
   // User Flags
