@@ -20,13 +20,14 @@ Preferred communication style: Simple, everyday language.
   1. Dashboard (top)
   2. Campaign Builder (conversational AI campaign creation)
   3. Campaign History
-  4. Grounding Library
-  5. Audience Segments
-  6. Story Summaries
-  7. Settings
-  8. Help & Guides (comprehensive documentation)
-  9. Admin Control (admin only)
-  10. Marketing Assistant (gradient box at bottom for quick-start templates)
+  4. Campaign Planner (comprehensive fundraising campaign planning)
+  5. Grounding Library
+  6. Audience Segments
+  7. Story Summaries
+  8. Settings
+  9. Help & Guides (comprehensive documentation)
+  10. Admin Control (admin only)
+  11. Marketing Assistant (gradient box at bottom for quick-start templates)
 - **Featured Campaign Builder**: Prominently displayed with gradient background, "Recommended" badge, and enhanced visual styling in Marketing Assistant page.
 
 ### Technical Implementations
@@ -122,6 +123,19 @@ Preferred communication style: Simple, everyday language.
   - Screen reader support via descriptive aria-labels
   - Consistent right-side positioning for optimal UX
   - Built with Shadcn/UI Tooltip components for reliability
+- **Campaign Planner**: Comprehensive fundraising campaign planning tool powered by "Lou" AI system for nonprofit newsrooms:
+  - Multi-step form interface collecting organization profile, fundraising goals, timeframe, audience segments, and campaign details
+  - AI-generated strategic campaign plans with structured Markdown output including:
+    - Campaign themes and messaging frameworks tailored to organization mission
+    - Detailed dated calendar with day-by-day activities and milestones
+    - Segment-specific messaging strategies for different donor audiences
+    - Comprehensive assets checklist (graphics, content, technical requirements)
+    - 3 starter email drafts with subject lines, body copy, and CTAs
+  - Supports all 3 AI models (GPT-5 default, Claude Sonnet 4, Gemini 2.5 Flash)
+  - Campaign plans stored in database (campaignPlans table) with inputs as JSONB and generated plan as TEXT
+  - Backend API endpoints for creating and retrieving campaign plans (/api/newsrooms/:newsroomId/campaign-plans)
+  - Accessible from sidebar navigation and Marketing Assistant quick-start templates
+  - Designed for complete fundraising campaign strategy development (10-15 minute workflow)
 
 ### System Design Choices
 - **Development**: Vite development server with Express API integration and hot module replacement.
