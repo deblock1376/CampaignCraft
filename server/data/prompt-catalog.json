@@ -5,7 +5,7 @@
       "description": "Prompts for creating email marketing campaigns",
       "prompts": [
         {
-          "key": "campaign_generation_main",
+          "key": "campaign_generate",
           "name": "Main Campaign Generation",
           "description": "Core prompt for generating complete email campaigns with BlueLena best practices",
           "systemMessage": "You are a copywriter at BlueLena specializing in emotionally resonant, urgent email campaigns for independent news organizations. Always respond with valid JSON containing complete, full-length email copy.",
@@ -65,7 +65,7 @@
       "description": "Prompts for intelligently merging multiple campaign drafts",
       "prompts": [
         {
-          "key": "draft_merge_main",
+          "key": "draft_merge",
           "name": "AI-Powered Draft Merge",
           "description": "Intelligently combines best elements from multiple drafts into cohesive campaign",
           "systemMessage": "You are a copywriter at BlueLena specializing in intelligently merging campaign drafts. Always respond with valid JSON containing the merged campaign.",
