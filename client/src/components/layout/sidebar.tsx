@@ -15,6 +15,7 @@ export default function Sidebar() {
     { href: "/", icon: "fas fa-home", label: "Dashboard" },
     { href: "/campaigns/assistant-test", icon: "fas fa-comments", label: "Campaign Builder" },
     { href: "/campaigns/history", icon: "fas fa-history", label: "Campaign History" },
+    { href: "/campaign-planner", icon: "fas fa-calendar-alt", label: "Campaign Planner" },
     { href: "/stylesheets", icon: "fas fa-palette", label: "Grounding Library" },
     { href: "/segments", icon: "fas fa-users", label: "Audience Segments" },
     { href: "/story-summaries", icon: "fas fa-newspaper", label: "Story Summaries" },

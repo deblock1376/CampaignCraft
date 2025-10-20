@@ -197,6 +197,16 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
       steps: []
     },
     {
+      id: 'campaign-planner',
+      title: 'Campaign Planner',
+      description: 'Map out complete fundraising campaigns with dated calendars, asset checklists, and starter copy',
+      icon: Target,
+      category: 'campaign',
+      estimatedTime: '10-15 minutes',
+      directLink: '/campaign-planner',
+      steps: []
+    },
+    {
       id: 'breaking-news',
       title: 'Breaking News Campaign',
       description: 'Create urgent campaigns for breaking news stories',

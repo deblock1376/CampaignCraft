@@ -21,6 +21,7 @@ import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 import CampaignAssistantTest from "@/pages/campaign-assistant-test";
 import StorySummaries from "@/pages/story-summaries";
+import CampaignPlanner from "@/pages/campaign-planner";
 import HelpCenter from "@/pages/help-center";
 
 function Router() {
@@ -50,6 +51,7 @@ function Router() {
       <Route path="/campaigns/assistant-test" component={CampaignAssistantTest} />
       <Route path="/campaigns/evaluate" component={CampaignEvaluate} />
       <Route path="/campaigns/history" component={CampaignHistory} />
+      <Route path="/campaign-planner" component={CampaignPlanner} />
       <Route path="/assistant" component={GuidedAssistant} />
       <Route path="/stylesheets" component={BrandStylesheets} />
       <Route path="/story-summaries" component={StorySummaries} />
