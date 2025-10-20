@@ -23,7 +23,7 @@ export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
     middlewareMode: true,
     hmr: { server },
-    allowedHosts: true,
+    allowedHosts: true as const,
   };
 
   const vite = await createViteServer({
@@ -75,6 +75,22 @@ export function serveStatic(app: Express) {
       `Could not find the build directory: ${distPath}, make sure to build the client first`,
     );
   }
+
+  // Add CSP headers for production builds
+  app.use((_req, res, next) => {
+    res.setHeader(
+      'Content-Security-Policy',
+      [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://replit.com",
+        "style-src 'self' 'unsafe-inline'",
+        "connect-src 'self' https:",
+        "img-src 'self' data: blob: https:",
+        "font-src 'self' data:",
+      ].join('; ')
+    );
+    next();
+  });
 
   app.use(express.static(distPath));
 
