@@ -492,14 +492,14 @@ export function PromptBuilder({
             </Tooltip>
           </div>
           <Select 
-            value={selectedCampaignPlan?.toString() || ""} 
-            onValueChange={(value) => onCampaignPlanSelect?.(value ? parseInt(value) : undefined)}
+            value={selectedCampaignPlan?.toString() || "__none__"} 
+            onValueChange={(value) => onCampaignPlanSelect?.(value && value !== "__none__" ? parseInt(value) : undefined)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select a campaign plan..." />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">None</SelectItem>
+              <SelectItem value="__none__">None</SelectItem>
               {campaignPlans.map((plan: any) => (
                 <SelectItem key={plan.id} value={plan.id.toString()}>
                   <div className="flex flex-col">
