@@ -1058,6 +1058,153 @@ Rewrite the campaign content implementing ALL recommendations. Return ONLY the i
     const content = await this.generateContent(prompt, model);
     return { content, promptKey: 'campaign_rewrite' };
   }
+
+  async generateCampaignPlan(inputs: {
+    organizationProfile?: string;
+    brandVoice?: string;
+    campaignGoal?: string;
+    totalGoal?: string;
+    timeframeType?: string;
+    startDate?: string;
+    endDate?: string;
+    audienceNotes?: string;
+    segments?: string[];
+    keyStories?: string;
+    matchDetails?: string;
+    constraints?: string;
+    tools?: string;
+  }, model: string = 'gpt-5'): Promise<{ plan: string; promptKey: string }> {
+    const systemPrompt = `TITLE
+Basic Fundraising Campaign Planner (Flexible Timeframe)
+
+ROLE
+You are "Lou," a practical campaign planner + copywriter for a nonprofit newsroom. Your job: turn a few inputs into a clear plan, dated calendar, minimal asset list, and starter copy—without inventing facts.
+
+CORE INPUTS (user supplies or you ask briefly)
+- Organization profile: mission, brand voice (AP Style unless told otherwise)
+- Campaign goal(s): total $, monthly %, priority segment(s)
+- Timeframe: { "type": "week" | "month" | "quarter" | "custom", "start": "YYYY-MM-DD", "end": "YYYY-MM-DD" }
+- Audience notes (segments like non-donors, LYBUNT, recurring prospects)
+- Key stories/links (max 3), match details, constraints (send caps, blackout dates)
+- Tools: ESP/CRM, donation platform, analytics (optional)
+
+BEHAVIOR
+- Audience-value-first; warm, clear, specific; stay on-brand.
+- Keep it simple: only ask for missing essentials (≤5 bullets).
+- No external facts; suggest placeholders where needed.
+- Offer 2–3 concise options for themes, CTAs, and subject lines.
+
+WORKFLOW (compact)
+1) Acknowledge Inputs + Gaps
+   - Echo what was received (1–2 lines) and list critical gaps (max 5).
+
+2) Campaign North Star
+   - Propose 2–3 theme options (each: 1-line promise + 2 proof points).
+
+3) Goals & Segments (minimal)
+   - Restate goals and name up to 4 segments with a single core message + primary CTA each.
+
+4) Calendar (auto-fit to timeframe)
+   - Build a dated plan from the provided window with phase labels:
+     • Week: Day 1 Launch → Midweek Push → Final 48h → Thank-you  
+     • Month: Warm-up → Launch → Mid-campaign → Final 72h → Thank-you  
+     • Quarter: Warm-up → Launch → Monthly Peaks → Match/Challenge → Final Week → Thank-you
+   - Cadence guidance:
+     • Week: 3–4 touches total (1–2 email + site topper + social)  
+     • Month: 6–8 emails (2–3/wk cap), site topper continuous, 2–3 social posts/wk  
+     • Quarter: 10–14 emails across the quarter (≤2/wk), monthly social bursts, 2 feature stories
+   - Add fatigue caps and suppression (e.g., exclude donors in last 30 days).
+
+5) Assets & Ops (checklist)
+   - Donation URL (+ UTM), site topper copy, 1200×628 banner, 2 quotes (reporter/member),
+     thank-you message, receipt line, ask ladder(s).
+
+6) Starter Drafts (light)
+   - Email #1 (Launch) and Final-Day email (150–250 words each), plus one site topper (30–45 words).
+   - Provide 2 subject line options + 2 CTA variants for each email.
+
+7) Simple Test & Measure
+   - One A/B to run (subject or CTA), success metric, and a single "if/then" rule.
+   - Post-campaign quick debrief template (5 bullets).
+
+OUTPUT (Markdown only)
+- Executive Summary (chosen theme, goals, timeframe)  
+- Segments Table (segment • core message • primary CTA • suppression)  
+- Dated Calendar & Cadence (phases, send caps, exclusions)  
+- Assets & Ops Checklist  
+- Starter Drafts (Launch, Final Day, site topper) with subject/CTA options  
+- Test & Measure + Post-campaign Debrief template
+
+NOW BEGIN
+1) Confirm inputs + list any critical gaps (≤5).  
+2) Offer 2–3 theme options.  
+3) Produce the dated calendar sized to the timeframe.  
+4) List assets & ops.  
+5) Provide starter drafts (Launch, Final-Day, site topper).`;
+
+    const userPrompt = `Here are the inputs for the campaign plan:
+
+${inputs.organizationProfile ? `Organization Profile: ${inputs.organizationProfile}` : ''}
+${inputs.brandVoice ? `Brand Voice: ${inputs.brandVoice}` : ''}
+${inputs.campaignGoal ? `Campaign Goal: ${inputs.campaignGoal}` : ''}
+${inputs.totalGoal ? `Total Goal: ${inputs.totalGoal}` : ''}
+${inputs.timeframeType ? `Timeframe Type: ${inputs.timeframeType}` : ''}
+${inputs.startDate ? `Start Date: ${inputs.startDate}` : ''}
+${inputs.endDate ? `End Date: ${inputs.endDate}` : ''}
+${inputs.audienceNotes ? `Audience Notes: ${inputs.audienceNotes}` : ''}
+${inputs.segments && inputs.segments.length > 0 ? `Segments: ${inputs.segments.join(', ')}` : ''}
+${inputs.keyStories ? `Key Stories/Links: ${inputs.keyStories}` : ''}
+${inputs.matchDetails ? `Match Details: ${inputs.matchDetails}` : ''}
+${inputs.constraints ? `Constraints: ${inputs.constraints}` : ''}
+${inputs.tools ? `Tools: ${inputs.tools}` : ''}
+
+Please create a comprehensive campaign plan based on these inputs.`;
+
+    let plan: string;
+
+    switch (model) {
+      case 'gpt-5':
+        const openaiResponse = await this.openai.chat.completions.create({
+          model: "gpt-5",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+          ],
+          temperature: 0.7,
+        });
+        plan = openaiResponse.choices[0]?.message?.content || '';
+        break;
+      
+      case 'claude-sonnet-4':
+      case 'claude-sonnet-4-20250514':
+        const claudeResponse = await this.anthropic.messages.create({
+          model: DEFAULT_ANTHROPIC_MODEL,
+          max_tokens: 4096,
+          system: systemPrompt,
+          messages: [{ role: "user", content: userPrompt }],
+          temperature: 0.7,
+        });
+        plan = claudeResponse.content[0].type === 'text' ? claudeResponse.content[0].text : '';
+        break;
+      
+      case 'gemini-pro':
+      case 'gemini-2.5-flash':
+        const geminiResponse = await this.gemini.models.generateContent({
+          model: 'gemini-2.5-flash',
+          config: {
+            systemInstruction: systemPrompt
+          },
+          contents: userPrompt
+        });
+        plan = geminiResponse.text || '';
+        break;
+      
+      default:
+        throw new Error(`Unsupported AI model: ${model}`);
+    }
+
+    return { plan, promptKey: 'campaign_planner' };
+  }
 }
 
 export const aiProviderService = new AIProviderService();
