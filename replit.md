@@ -138,6 +138,16 @@ Preferred communication style: Simple, everyday language.
   - Backend API endpoints for creating and retrieving campaign plans (/api/newsrooms/:newsroomId/campaign-plans)
   - Accessible from sidebar navigation and Marketing Assistant quick-start templates
   - Designed for complete fundraising campaign strategy development (10-15 minute workflow)
+- **Plan-Guided Campaign Generation**: Strategic framework directing AI campaign generation when Campaign Plan is selected:
+  - Detects when Campaign Plan is selected and routes to dedicated plan-guided prompt pathway
+  - Establishes context hierarchy: Campaign Plan as PRIMARY DIRECTIVE, grounding library/notes as supporting materials
+  - AI explicitly instructed to align all campaign elements with plan's themes, timeline, and segment strategies
+  - Parses plan inputs (goal, target, timeframe) and full strategic plan Markdown
+  - Requires AI to cite specific plan sections and verify compliance against plan objectives
+  - Plan becomes governing strategy rather than optional context
+  - Auto-fills Campaign Builder sidebar fields when "Generate Campaign from This Plan" is clicked
+  - URL parameter support for seamless plan-to-generation workflow
+  - Evaluation metrics include plan alignment quality in followUpSuggestion field
 
 ### System Design Choices
 - **Development**: Vite development server with Express API integration and hot module replacement.
