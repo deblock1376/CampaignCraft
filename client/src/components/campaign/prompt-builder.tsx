@@ -229,9 +229,15 @@ export function PromptBuilder({
               value={selectedCampaignPlan?.toString() || "__none__"} 
               onValueChange={(value) => onCampaignPlanSelect?.(value && value !== "__none__" ? parseInt(value) : undefined)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a campaign plan...">
-                  {selectedCampaignPlan && campaignPlans.find((p: any) => p.id === selectedCampaignPlan)?.title}
+                  {selectedCampaignPlan ? (
+                    <span className="truncate block">
+                      {campaignPlans.find((p: any) => p.id === selectedCampaignPlan)?.title || 'Campaign Plan'}
+                    </span>
+                  ) : (
+                    "Select a campaign plan..."
+                  )}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
