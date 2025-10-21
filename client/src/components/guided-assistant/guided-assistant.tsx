@@ -80,6 +80,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
   const [currentGoal, setCurrentGoal] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
   
   // Auto-select goal from URL parameter
   useEffect(() => {
@@ -474,6 +475,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
           const brandState = wizardState.brandSetup;
           const token = localStorage.getItem("token");
           
+          setIsGenerating(true);
           try {
             const response = await fetch('/api/quickstart/grounding-library', {
               method: 'POST',
@@ -509,6 +511,8 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
               variant: "destructive",
             });
             return; // Don't mark as completed if it failed
+          } finally {
+            setIsGenerating(false);
           }
         }
       }
@@ -1140,7 +1144,7 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
             <div className="flex gap-3">
               <Button 
                 onClick={executeCurrentStep}
-                disabled={completedSteps.includes(selectedGoal.steps[currentStep].id) || !isStepValid(selectedGoal.id, selectedGoal.steps[currentStep].id) || generateCampaignMutation.isPending}
+                disabled={completedSteps.includes(selectedGoal.steps[currentStep].id) || !isStepValid(selectedGoal.id, selectedGoal.steps[currentStep].id) || generateCampaignMutation.isPending || isGenerating}
                 className="flex-1"
                 data-testid={`execute-step-${selectedGoal.steps[currentStep].id}`}
               >
@@ -1153,6 +1157,11 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
                   <>
                     <MessageSquare className="w-4 h-4 mr-2 animate-spin" />
                     Generating Campaign...
+                  </>
+                ) : isGenerating && selectedGoal.id === 'brand-setup' && selectedGoal.steps[currentStep].id === 'generate-guidelines' ? (
+                  <>
+                    <BookOpen className="w-4 h-4 mr-2 animate-spin" />
+                    Generating Library...
                   </>
                 ) : (
                   <>
