@@ -785,8 +785,9 @@ Apply these segment-specific principles to craft your campaign message, ensuring
     const planTimeframe = plan.inputs?.timeframeType || '';
 
     // Build supporting context (grounding library, notes, segments)
+    // Use text-only version (skip file extraction) since the plan already contains strategic direction
     const materialsContext = request.brandStylesheet.materials 
-      ? await this.buildMaterialsContext(request.brandStylesheet.materials)
+      ? this.buildMaterialsContextTextOnly(request.brandStylesheet.materials)
       : '';
     
     const segmentInstructions = await this.buildSegmentInstructions(request.segments, (request as any).newsroomId);
