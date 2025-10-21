@@ -32,19 +32,6 @@ export default function CampaignAssistantTest() {
   const [selectedModel, setSelectedModel] = useState<string>("gpt-5");
   const [selectedCampaignPlan, setSelectedCampaignPlan] = useState<number | undefined>();
 
-  // Check URL for planId parameter
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const planId = params.get('planId');
-    if (planId) {
-      setSelectedCampaignPlan(parseInt(planId));
-      toast({
-        title: "Campaign Plan Loaded",
-        description: "The selected campaign plan has been loaded and will inform AI generation.",
-      });
-    }
-  }, [toast]);
-
   // Fetch grounding guides for the chat context
   const { data: groundingGuides = [] } = useQuery({
     queryKey: [`/api/newsrooms/${newsroomId}/stylesheets`],
@@ -152,6 +139,53 @@ export default function CampaignAssistantTest() {
     },
     enabled: !!newsroomId,
   });
+
+  // Check URL for planId parameter and autofill sidebar
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const planId = params.get('planId');
+    if (planId && campaignPlans.length > 0) {
+      const plan = (campaignPlans as any[]).find((p: any) => p.id === parseInt(planId));
+      if (plan && plan.inputs) {
+        // Set campaign plan
+        setSelectedCampaignPlan(parseInt(planId));
+        
+        // Autofill sidebar fields from plan inputs
+        if (plan.inputs.groundingLibraryId) {
+          setSelectedGuideId(plan.inputs.groundingLibraryId);
+        }
+        
+        if (plan.inputs.campaignGoal) {
+          // Map campaign goal to objective if possible
+          const goal = plan.inputs.campaignGoal.toLowerCase();
+          if (goal.includes('donation') || goal.includes('fundrais')) {
+            setSelectedObjective('donation');
+          } else if (goal.includes('member')) {
+            setSelectedObjective('membership');
+          } else if (goal.includes('engage') || goal.includes('event')) {
+            setSelectedObjective('engagement');
+          }
+        }
+        
+        if (plan.inputs.campaignNotes) {
+          setCampaignNotes(plan.inputs.campaignNotes);
+        }
+        
+        if (plan.inputs.campaignNoteFiles && Array.isArray(plan.inputs.campaignNoteFiles)) {
+          setNoteFiles(plan.inputs.campaignNoteFiles);
+        }
+        
+        if (plan.aiModel) {
+          setSelectedModel(plan.aiModel);
+        }
+        
+        toast({
+          title: "Campaign Plan Loaded",
+          description: "Campaign settings have been auto-filled from your plan.",
+        });
+      }
+    }
+  }, [toast, campaignPlans]);
 
   // Chat mutation
   const chatMutation = useMutation({
