@@ -49,6 +49,11 @@ export interface CampaignRequest {
     objective: string;
     content?: any;
   }>;
+  campaignPlan?: {
+    id: number;
+    plan: string;
+    inputs?: any;
+  };
 }
 
 export interface CampaignResponse {
@@ -627,7 +632,106 @@ Apply these segment-specific principles to craft your campaign message, ensuring
 `;
   }
 
+  private async buildPlanGuidedPrompt(request: CampaignRequest): Promise<string> {
+    const plan = request.campaignPlan!;
+    const objectiveMap = {
+      subscription: 'subscriptions',
+      donation: 'donations', 
+      membership: 'memberships',
+      engagement: 'reader support'
+    };
+
+    // Parse plan structure for key directives
+    const planGoal = plan.inputs?.campaignGoal || 'Campaign Goal';
+    const planTarget = plan.inputs?.totalGoal || '';
+    const planTimeframe = plan.inputs?.timeframeType || '';
+
+    // Build supporting context (grounding library, notes, segments)
+    const materialsContext = request.brandStylesheet.materials 
+      ? await this.buildMaterialsContext(request.brandStylesheet.materials)
+      : '';
+    
+    const segmentInstructions = await this.buildSegmentInstructions(request.segments, (request as any).newsroomId);
+
+    let supportingDetails = '';
+    if (request.notes) {
+      supportingDetails += `\nAdditional Notes: ${request.notes}`;
+    }
+    if (request.referenceCampaigns && request.referenceCampaigns.length > 0) {
+      supportingDetails += `\nReference Campaigns: ${request.referenceCampaigns.map(c => c.title).join(', ')}`;
+    }
+
+    return `
+🎯 PRIMARY DIRECTIVE: CAMPAIGN PLAN ALIGNMENT
+You are generating a campaign that MUST align with the strategic Campaign Plan below. This plan is your governing strategy - all campaign elements must support its themes, timeline, and objectives.
+
+📋 STRATEGIC CAMPAIGN PLAN
+Goal: ${planGoal}
+${planTarget ? `Target: ${planTarget}` : ''}
+${planTimeframe ? `Timeframe: ${planTimeframe}` : ''}
+
+FULL PLAN:
+${plan.plan}
+
+⚠️ CRITICAL REQUIREMENTS:
+1. **Plan Alignment**: Every element of your campaign must directly support the strategic plan above
+2. **Theme Consistency**: Use the messaging themes and frameworks outlined in the plan
+3. **Timeline Awareness**: Position this campaign within the plan's calendar and milestones
+4. **Segment Targeting**: Align with the segment strategies defined in the plan
+5. **Cite Plan Elements**: Reference specific plan sections (themes, timeline, strategies) in your campaign
+
+📌 CURRENT CAMPAIGN CONTEXT
+Publisher: ${request.newsroomName}
+Campaign Type: ${request.type}
+Specific Focus: ${request.context}
+${supportingDetails}
+
+🎨 BRAND VOICE & SUPPORTING MATERIALS
+Tone: ${request.brandStylesheet.tone}
+Voice: ${request.brandStylesheet.voice}
+Key Messages: ${request.brandStylesheet.keyMessages.join(', ')}
+Guidelines: ${request.brandStylesheet.guidelines}
+
+${materialsContext}
+${segmentInstructions}
+
+✅ OUTPUT REQUIREMENTS
+Generate a complete email campaign following the standard format:
+
+1. **subject** (string, MAXIMUM 50 characters): Subject line aligned with plan themes
+2. **previewText** (string, MAXIMUM 90 characters): Preview text supporting the plan
+3. **content** (string): FULL EMAIL BODY that:
+   - Opens with messaging aligned to plan themes
+   - References the strategic plan's value proposition
+   - Positions this campaign within the plan's timeline
+   - Uses language consistent with plan's messaging framework
+   - 200-400 words, complete paragraphs
+4. **cta** (string): Format [Button]Text[/Button] - aligned with plan objectives
+5. **insights** (array of 3-4 strings): Include how this campaign fits the strategic plan
+6. **metrics** (object): estimatedOpenRate, estimatedClickRate, estimatedConversion
+7. **followUpSuggestion** (string): REQUIRED - Evaluate against plan alignment:
+   - Does the campaign support the plan's strategic themes?
+   - Is messaging consistent with the plan's framework?
+   - Does it fit within the timeline and milestones?
+   - Provide one actionable recommendation for stronger plan alignment
+
+🔍 PLAN COMPLIANCE CHECK
+Before finalizing your campaign, verify:
+✓ Campaign messaging uses themes from the strategic plan
+✓ Timeline references align with plan milestones
+✓ Segment targeting matches plan strategies
+✓ Overall tone and approach support plan objectives
+
+Response must be valid JSON with all fields included.
+`;
+  }
+
   private async buildCampaignPrompt(request: CampaignRequest): Promise<string> {
+    // Check if we have a Campaign Plan - if so, use plan-guided generation
+    if (request.campaignPlan && request.campaignPlan.plan) {
+      return this.buildPlanGuidedPrompt(request);
+    }
+
     const objectiveMap = {
       subscription: 'subscriptions',
       donation: 'donations', 

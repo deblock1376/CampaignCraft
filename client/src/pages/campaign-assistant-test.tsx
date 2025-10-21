@@ -307,6 +307,18 @@ export default function CampaignAssistantTest() {
         enrichedContext += `\n\nReference similar campaigns: ${refCampaigns}`;
       }
       
+      // Get campaign plan data if selected
+      const campaignPlanData = selectedCampaignPlan 
+        ? (() => {
+            const plan = (campaignPlans as any[]).find((p: any) => p.id === selectedCampaignPlan);
+            return plan ? {
+              id: plan.id,
+              plan: plan.generatedPlan,
+              inputs: plan.inputs,
+            } : undefined;
+          })()
+        : undefined;
+
       const response = await fetch(`/api/campaigns/generate`, {
         method: "POST",
         headers: {
@@ -321,6 +333,7 @@ export default function CampaignAssistantTest() {
           newsroomId: newsroomId,
           aiModel: selectedModel,
           noteFiles: noteFiles.length > 0 ? noteFiles : undefined,
+          campaignPlan: campaignPlanData,
         }),
       });
 

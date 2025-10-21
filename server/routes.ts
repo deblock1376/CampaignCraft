@@ -271,6 +271,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           objective: z.string(),
           content: z.any().optional(),
         })).optional(),
+        campaignPlan: z.object({
+          id: z.number(),
+          plan: z.string(),
+          inputs: z.any().optional(),
+        }).optional(),
       });
 
       const validatedData = schema.parse(req.body);
@@ -323,6 +328,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...(validatedData.segments && { segments: validatedData.segments }),
         ...(combinedNotes && { notes: combinedNotes }),
         ...(validatedData.referenceCampaigns && { referenceCampaigns: validatedData.referenceCampaigns }),
+        ...(validatedData.campaignPlan && { campaignPlan: validatedData.campaignPlan }),
       };
 
       const generatedCampaign = await aiProviderService.generateCampaign(
