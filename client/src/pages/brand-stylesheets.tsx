@@ -327,7 +327,7 @@ export default function BrandStylesheets() {
   return (
     <>
       <Sidebar />
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1 overflow-y-auto">
         <Header 
           title="Grounding Library" 
           subtitle="Manage your newsroom's brand voice and messaging guidelines"
@@ -1149,7 +1149,7 @@ export default function BrandStylesheets() {
           </DialogContent>
         </Dialog>
         
-        <div className="flex-1 overflow-y-auto p-8 max-h-screen">
+        <div className="p-8">
           <div className="max-w-7xl mx-auto">
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
