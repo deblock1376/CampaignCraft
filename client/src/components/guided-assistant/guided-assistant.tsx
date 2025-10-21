@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -80,6 +80,15 @@ export default function GuidedAssistant({ onToolSelect }: GuidedAssistantProps) 
   const [currentGoal, setCurrentGoal] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
+  
+  // Auto-select goal from URL parameter
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const goalParam = params.get('goal');
+    if (goalParam && !currentGoal) {
+      setCurrentGoal(goalParam);
+    }
+  }, [currentGoal]);
   const [wizardState, setWizardState] = useState<WizardState>({
     breakingNews: { fullArticle: '', aiModel: 'claude-sonnet-4', generatedSummary: '', urgency: 'high', brandStylesheetId: '' },
     audienceTargeting: { campaignId: '', segments: [{ name: '', description: '' }] },
