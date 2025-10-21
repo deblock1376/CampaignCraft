@@ -210,10 +210,10 @@ export function PromptBuilder({
           </div>
         </CardHeader>
         <CardContent className="flex-1 overflow-auto p-6 space-y-6">
-          {/* Campaign Plan Reference */}
+          {/* Campaign Plan */}
           <div className="space-y-2">
             <div className="flex items-center gap-1.5">
-              <Label>Reference Campaign Plan</Label>
+              <Label>Campaign Plan</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button type="button" className="inline-flex items-center justify-center" aria-label="Help about campaign plans">
@@ -230,7 +230,9 @@ export function PromptBuilder({
               onValueChange={(value) => onCampaignPlanSelect?.(value && value !== "__none__" ? parseInt(value) : undefined)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select a campaign plan..." />
+                <SelectValue placeholder="Select a campaign plan...">
+                  {selectedCampaignPlan && campaignPlans.find((p: any) => p.id === selectedCampaignPlan)?.title}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__none__">None</SelectItem>
