@@ -7,9 +7,22 @@ import mammoth from 'mammoth';
  */
 export class FileExtractorService {
   private objectStorageService: ObjectStorageService;
+  private readonly FILE_FETCH_TIMEOUT_MS = 3000; // 3 second timeout
 
   constructor() {
     this.objectStorageService = new ObjectStorageService();
+  }
+
+  /**
+   * Wraps a promise with a timeout.
+   */
+  private withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+    return Promise.race([
+      promise,
+      new Promise<T>((_, reject) =>
+        setTimeout(() => reject(new Error(`Operation timed out after ${timeoutMs}ms`)), timeoutMs)
+      )
+    ]);
   }
 
   /**
@@ -111,7 +124,10 @@ export class FileExtractorService {
 
     try {
       const fileType = this.getFileType(fileUrl);
-      const buffer = await this.fetchFileBuffer(fileUrl);
+      const buffer = await this.withTimeout(
+        this.fetchFileBuffer(fileUrl),
+        this.FILE_FETCH_TIMEOUT_MS
+      );
 
       switch (fileType) {
         case 'pdf':
