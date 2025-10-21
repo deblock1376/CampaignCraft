@@ -8,9 +8,11 @@ import {
   Users, 
   FileText,
   ArrowRight,
-  TrendingUp
+  TrendingUp,
+  Loader2
 } from "lucide-react";
 import { useLocation } from "wouter";
+import { useState } from "react";
 
 interface NextStepsProps {
   campaign: {
@@ -40,6 +42,7 @@ interface Suggestion {
 
 export function NextSteps({ campaign, context }: NextStepsProps) {
   const [, setLocation] = useLocation();
+  const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
 
   const generateSmartSuggestions = (): Suggestion[] => {
     const suggestions: Suggestion[] = [];
@@ -181,25 +184,38 @@ export function NextSteps({ campaign, context }: NextStepsProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {suggestions.map((suggestion, index) => (
-          <Button
-            key={index}
-            variant={suggestion.variant}
-            className="w-full justify-start h-auto py-3 px-4"
-            onClick={suggestion.action}
-          >
-            <div className="flex items-start gap-3 w-full">
-              <suggestion.icon className="h-5 w-5 mt-0.5 shrink-0" />
-              <div className="flex-1 text-left">
-                <div className="font-semibold">{suggestion.title}</div>
-                <div className="text-sm opacity-80 font-normal">
-                  {suggestion.description}
+        {suggestions.map((suggestion, index) => {
+          const isLoading = loadingIndex === index;
+          return (
+            <Button
+              key={index}
+              variant={suggestion.variant}
+              className="w-full justify-start h-auto py-3 px-4"
+              disabled={isLoading}
+              onClick={() => {
+                setLoadingIndex(index);
+                suggestion.action();
+              }}
+            >
+              <div className="flex items-start gap-3 w-full">
+                {isLoading ? (
+                  <Loader2 className="h-5 w-5 mt-0.5 shrink-0 animate-spin" />
+                ) : (
+                  <suggestion.icon className="h-5 w-5 mt-0.5 shrink-0" />
+                )}
+                <div className="flex-1 text-left">
+                  <div className="font-semibold">
+                    {isLoading ? "Loading..." : suggestion.title}
+                  </div>
+                  <div className="text-sm opacity-80 font-normal">
+                    {suggestion.description}
+                  </div>
                 </div>
+                {!isLoading && <ArrowRight className="h-4 w-4 mt-1 shrink-0 opacity-50" />}
               </div>
-              <ArrowRight className="h-4 w-4 mt-1 shrink-0 opacity-50" />
-            </div>
-          </Button>
-        ))}
+            </Button>
+          );
+        })}
       </CardContent>
     </Card>
   );
