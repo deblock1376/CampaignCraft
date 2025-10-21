@@ -26,6 +26,7 @@ interface NextStepsProps {
     groundingGuideIds?: number[];
     storySummaryIds?: number[];
     hasReferenceMaterials?: boolean;
+    campaignPlanId?: number;
   };
 }
 
@@ -43,7 +44,18 @@ export function NextSteps({ campaign, context }: NextStepsProps) {
   const generateSmartSuggestions = (): Suggestion[] => {
     const suggestions: Suggestion[] = [];
 
-    // Always add evaluation as first option
+    // If campaign plan exists, prioritize "next campaign in plan" option
+    if (context?.campaignPlanId) {
+      suggestions.push({
+        icon: FileText,
+        title: "Write the next campaign in the plan",
+        description: "Continue implementing your strategic campaign plan",
+        action: () => setLocation(`/campaigns/assistant-test?planId=${context.campaignPlanId}`),
+        variant: "default"
+      });
+    }
+
+    // Always add evaluation as first or second option
     suggestions.push({
       icon: CheckCircle,
       title: "Evaluate this campaign",
@@ -56,7 +68,7 @@ export function NextSteps({ campaign, context }: NextStepsProps) {
         }));
         setLocation(`/campaigns/evaluate?campaign=${encodedCampaign}`);
       },
-      variant: "default"
+      variant: context?.campaignPlanId ? "outline" : "default"
     });
 
     // Context-aware suggestions based on objective

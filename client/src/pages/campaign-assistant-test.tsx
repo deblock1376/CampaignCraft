@@ -368,6 +368,7 @@ export default function CampaignAssistantTest() {
           groundingGuideIds: selectedGuideId ? [selectedGuideId] : undefined,
           storySummaryIds: selectedStorySummaries.length > 0 ? selectedStorySummaries : undefined,
           hasReferenceMaterials: selectedRecentCampaigns.length > 0,
+          campaignPlanId: selectedCampaignPlan,
         },
       };
       setMessages(prev => [...prev, campaignMessage]);
