@@ -1,8 +1,6 @@
 import { db } from '../db';
-import { promptCategories, prompts, insertPromptCategorySchema, insertPromptSchema } from '../../shared/schema';
+import { promptCategories, prompts } from '../../shared/schema';
 import * as promptCatalogData from './prompt-catalog.json';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 
 const promptCatalog = promptCatalogData as {
   categories: Array<{
@@ -96,21 +94,5 @@ export async function seedPrompts() {
   }
 }
 
-// Setup for detecting if script is run directly
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Check if this module is the main module
-const isMainModule = import.meta.url === `file://${process.argv[1]}`;
-
-if (isMainModule) {
-  seedPrompts()
-    .then(() => {
-      console.log('Seed complete!');
-      process.exit(0);
-    })
-    .catch((error) => {
-      console.error('Seed failed:', error);
-      process.exit(1);
-    });
-}
+// Removed standalone execution block to prevent process.exit() in production
+// The seedPrompts() function is called directly from server/index.ts
