@@ -1537,7 +1537,7 @@ Please respond with just the summary text, no additional formatting or explanati
       
       Return as JSON with keys: tone, voice, keyMessages (array), guidelines`;
 
-      const response = await aiProviderService.generateContent(prompt, 'gpt-4o');
+      const response = await aiProviderService.generateContent(prompt, 'gpt-5');
       
       let brandGuide;
       try {
