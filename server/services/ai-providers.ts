@@ -1056,21 +1056,80 @@ Rewrite the campaign content implementing ALL recommendations. Return ONLY the i
     return { content, promptKey: 'campaign_rewrite' };
   }
 
-  async generateCampaignPlan(inputs: {
-    organizationProfile?: string;
-    brandVoice?: string;
+  async generateCampaignPlan(newsroomId: number, inputs: {
+    groundingLibraryId?: number;
     campaignGoal?: string;
     totalGoal?: string;
     timeframeType?: string;
     startDate?: string;
     endDate?: string;
-    audienceNotes?: string;
+    campaignNotes?: string;
+    campaignNoteFiles?: string[];
     segments?: string[];
     keyStories?: string;
+    keyStoryFiles?: string[];
     matchDetails?: string;
     constraints?: string;
-    tools?: string;
   }, model: string = 'gpt-5'): Promise<{ plan: string; promptKey: string }> {
+    const fileExtractor = new FileExtractorService();
+    
+    // Fetch grounding library if provided
+    let groundingContext = '';
+    if (inputs.groundingLibraryId) {
+      try {
+        const library = await storage.getBrandStylesheet(inputs.groundingLibraryId);
+        if (library && library.materials) {
+          groundingContext = `\n\n=== BRAND GUIDELINES ===\n`;
+          groundingContext += `Organization: ${library.name}\n\n`;
+          
+          const materials = typeof library.materials === 'string' 
+            ? JSON.parse(library.materials) 
+            : library.materials;
+
+          if (materials.tagline) groundingContext += `Tagline: ${materials.tagline}\n`;
+          if (materials.missionStatement) groundingContext += `Mission: ${materials.missionStatement}\n`;
+          if (materials.valueProposition) groundingContext += `Value Proposition: ${materials.valueProposition}\n`;
+          if (materials.brandVoice) groundingContext += `Brand Voice: ${materials.brandVoice}\n`;
+          if (materials.toneGuidelines) groundingContext += `Tone: ${materials.toneGuidelines}\n`;
+          if (materials.editorialGuidance) groundingContext += `Editorial Guidance: ${materials.editorialGuidance}\n`;
+        }
+      } catch (error) {
+        console.error('Failed to fetch grounding library:', error);
+      }
+    }
+
+    // Extract text from campaign note files
+    let campaignNoteFilesContent = '';
+    if (inputs.campaignNoteFiles && inputs.campaignNoteFiles.length > 0) {
+      for (const fileRef of inputs.campaignNoteFiles) {
+        try {
+          const fileData = JSON.parse(fileRef);
+          const extractedText = await fileExtractor.extractTextFromFile(fileData.url);
+          if (extractedText) {
+            campaignNoteFilesContent += `\n--- Reference: ${fileData.filename} ---\n${extractedText}\n`;
+          }
+        } catch (error) {
+          console.error('Failed to extract campaign note file:', error);
+        }
+      }
+    }
+
+    // Extract text from key story files
+    let keyStoryFilesContent = '';
+    if (inputs.keyStoryFiles && inputs.keyStoryFiles.length > 0) {
+      for (const fileRef of inputs.keyStoryFiles) {
+        try {
+          const fileData = JSON.parse(fileRef);
+          const extractedText = await fileExtractor.extractTextFromFile(fileData.url);
+          if (extractedText) {
+            keyStoryFilesContent += `\n--- Story Reference: ${fileData.filename} ---\n${extractedText}\n`;
+          }
+        } catch (error) {
+          console.error('Failed to extract key story file:', error);
+        }
+      }
+    }
+
     const systemPrompt = `TITLE
 Basic Fundraising Campaign Planner (Flexible Timeframe)
 
@@ -1078,18 +1137,18 @@ ROLE
 You are "Lou," a practical campaign planner + copywriter for a nonprofit newsroom. Your job: turn a few inputs into a clear plan, dated calendar, minimal asset list, and starter copy—without inventing facts.
 
 CORE INPUTS (user supplies or you ask briefly)
-- Organization profile: mission, brand voice (AP Style unless told otherwise)
+- Brand guidelines: mission, brand voice, tone (if provided via grounding library)
 - Campaign goal(s): total $, monthly %, priority segment(s)
 - Timeframe: { "type": "week" | "month" | "quarter" | "custom", "start": "YYYY-MM-DD", "end": "YYYY-MM-DD" }
-- Audience notes (segments like non-donors, LYBUNT, recurring prospects)
-- Key stories/links (max 3), match details, constraints (send caps, blackout dates)
-- Tools: ESP/CRM, donation platform, analytics (optional)
+- Campaign notes and reference materials (if provided)
+- Key stories/links (with reference files if provided), match details, constraints (send caps, blackout dates)
 
 BEHAVIOR
 - Audience-value-first; warm, clear, specific; stay on-brand.
 - Keep it simple: only ask for missing essentials (≤5 bullets).
 - No external facts; suggest placeholders where needed.
 - Offer 2–3 concise options for themes, CTAs, and subject lines.
+- Use provided brand guidelines to ensure messaging stays on-brand.
 
 WORKFLOW (compact)
 1) Acknowledge Inputs + Gaps
@@ -1141,19 +1200,19 @@ NOW BEGIN
 
     const userPrompt = `Here are the inputs for the campaign plan:
 
-${inputs.organizationProfile ? `Organization Profile: ${inputs.organizationProfile}` : ''}
-${inputs.brandVoice ? `Brand Voice: ${inputs.brandVoice}` : ''}
+${groundingContext}
 ${inputs.campaignGoal ? `Campaign Goal: ${inputs.campaignGoal}` : ''}
 ${inputs.totalGoal ? `Total Goal: ${inputs.totalGoal}` : ''}
 ${inputs.timeframeType ? `Timeframe Type: ${inputs.timeframeType}` : ''}
 ${inputs.startDate ? `Start Date: ${inputs.startDate}` : ''}
 ${inputs.endDate ? `End Date: ${inputs.endDate}` : ''}
-${inputs.audienceNotes ? `Audience Notes: ${inputs.audienceNotes}` : ''}
+${inputs.campaignNotes ? `\nCampaign Notes: ${inputs.campaignNotes}` : ''}
+${campaignNoteFilesContent}
 ${inputs.segments && inputs.segments.length > 0 ? `Segments: ${inputs.segments.join(', ')}` : ''}
-${inputs.keyStories ? `Key Stories/Links: ${inputs.keyStories}` : ''}
+${inputs.keyStories ? `\nKey Stories/Links: ${inputs.keyStories}` : ''}
+${keyStoryFilesContent}
 ${inputs.matchDetails ? `Match Details: ${inputs.matchDetails}` : ''}
 ${inputs.constraints ? `Constraints: ${inputs.constraints}` : ''}
-${inputs.tools ? `Tools: ${inputs.tools}` : ''}
 
 Please create a comprehensive campaign plan based on these inputs.`;
 

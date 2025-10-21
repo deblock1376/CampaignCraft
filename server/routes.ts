@@ -818,19 +818,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         newsroomId: z.number(),
         title: z.string().min(1),
         inputs: z.object({
-          organizationProfile: z.string().optional(),
-          brandVoice: z.string().optional(),
+          groundingLibraryId: z.number().optional(),
           campaignGoal: z.string().optional(),
           totalGoal: z.string().optional(),
           timeframeType: z.string().optional(),
           startDate: z.string().optional(),
           endDate: z.string().optional(),
-          audienceNotes: z.string().optional(),
+          campaignNotes: z.string().optional(),
+          campaignNoteFiles: z.array(z.string()).optional(),
           segments: z.array(z.string()).optional(),
           keyStories: z.string().optional(),
+          keyStoryFiles: z.array(z.string()).optional(),
           matchDetails: z.string().optional(),
           constraints: z.string().optional(),
-          tools: z.string().optional(),
         }),
         aiModel: z.string().optional(),
       });
@@ -838,7 +838,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { newsroomId, title, inputs, aiModel } = schema.parse(req.body);
 
       // Generate the campaign plan using Lou
-      const result = await aiProviderService.generateCampaignPlan(inputs, aiModel || 'gpt-5');
+      const result = await aiProviderService.generateCampaignPlan(newsroomId, inputs, aiModel || 'gpt-5');
 
       // Save the plan to the database
       const savedPlan = await storage.createCampaignPlan({

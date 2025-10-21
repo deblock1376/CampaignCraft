@@ -9,9 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import Sidebar from "@/components/layout/sidebar";
 import Header from "@/components/layout/header";
-import { Calendar, Loader2, FileText, ChevronLeft } from "lucide-react";
+import { Calendar, Loader2, FileText, ChevronLeft, Upload, X } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ReactMarkdown from 'react-markdown';
+import { ObjectUploader } from "@/components/ObjectUploader";
+import { apiRequest } from "@/lib/queryClient";
 
 interface CampaignPlan {
   id: number;
@@ -33,18 +35,18 @@ export default function CampaignPlanner() {
 
   // Form state
   const [title, setTitle] = useState("");
-  const [organizationProfile, setOrganizationProfile] = useState("");
-  const [brandVoice, setBrandVoice] = useState("AP Style");
+  const [groundingLibraryId, setGroundingLibraryId] = useState<number | undefined>(undefined);
   const [campaignGoal, setCampaignGoal] = useState("");
   const [totalGoal, setTotalGoal] = useState("");
   const [timeframeType, setTimeframeType] = useState("month");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [audienceNotes, setAudienceNotes] = useState("");
+  const [campaignNotes, setCampaignNotes] = useState("");
+  const [campaignNoteFiles, setCampaignNoteFiles] = useState<string[]>([]);
   const [keyStories, setKeyStories] = useState("");
+  const [keyStoryFiles, setKeyStoryFiles] = useState<string[]>([]);
   const [matchDetails, setMatchDetails] = useState("");
   const [constraints, setConstraints] = useState("");
-  const [tools, setTools] = useState("");
   const [aiModel, setAiModel] = useState("gpt-5");
 
   const { data: plans = [], refetch } = useQuery({
@@ -63,6 +65,22 @@ export default function CampaignPlanner() {
     enabled: !!newsroomId,
   });
 
+  const { data: groundingLibraries = [] } = useQuery<Array<{id: number; name: string}>>({
+    queryKey: ["/api/newsrooms", newsroomId, "stylesheets"],
+    queryFn: async () => {
+      const response = await fetch(`/api/newsrooms/${newsroomId}/stylesheets`, {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch grounding libraries");
+      }
+      return response.json();
+    },
+    enabled: !!newsroomId,
+  });
+
   const createPlanMutation = useMutation({
     mutationFn: async () => {
       const response = await fetch("/api/campaign-plans", {
@@ -75,18 +93,18 @@ export default function CampaignPlanner() {
           newsroomId,
           title: title || "Campaign Plan",
           inputs: {
-            organizationProfile,
-            brandVoice,
+            groundingLibraryId,
             campaignGoal,
             totalGoal,
             timeframeType,
             startDate,
             endDate,
-            audienceNotes,
+            campaignNotes,
+            campaignNoteFiles,
             keyStories,
+            keyStoryFiles,
             matchDetails,
             constraints,
-            tools,
           },
           aiModel,
         }),
@@ -120,19 +138,71 @@ export default function CampaignPlanner() {
 
   const resetForm = () => {
     setTitle("");
-    setOrganizationProfile("");
-    setBrandVoice("AP Style");
+    setGroundingLibraryId(undefined);
     setCampaignGoal("");
     setTotalGoal("");
     setTimeframeType("month");
     setStartDate("");
     setEndDate("");
-    setAudienceNotes("");
+    setCampaignNotes("");
+    setCampaignNoteFiles([]);
     setKeyStories("");
+    setKeyStoryFiles([]);
     setMatchDetails("");
     setConstraints("");
-    setTools("");
     setAiModel("gpt-5");
+  };
+
+  const handleCampaignNoteFileUpload = async (filename: string, uploadURL: string) => {
+    const fileRef = JSON.stringify({ filename, url: uploadURL });
+    setCampaignNoteFiles([...campaignNoteFiles, fileRef]);
+    toast({
+      title: "File uploaded",
+      description: `${filename} added to campaign notes`
+    });
+  };
+
+  const handleCampaignNoteFileRemove = (fileIndex: number) => {
+    const newFiles = campaignNoteFiles.filter((_, index) => index !== fileIndex);
+    setCampaignNoteFiles(newFiles);
+    try {
+      const fileData = JSON.parse(campaignNoteFiles[fileIndex]);
+      toast({
+        title: "File removed",
+        description: `${fileData.filename} removed from campaign notes`
+      });
+    } catch {
+      toast({
+        title: "File removed",
+        description: "File removed from campaign notes"
+      });
+    }
+  };
+
+  const handleKeyStoryFileUpload = async (filename: string, uploadURL: string) => {
+    const fileRef = JSON.stringify({ filename, url: uploadURL });
+    setKeyStoryFiles([...keyStoryFiles, fileRef]);
+    toast({
+      title: "File uploaded",
+      description: `${filename} added to key stories`
+    });
+  };
+
+  const handleKeyStoryFileRemove = (fileIndex: number) => {
+    const newFiles = keyStoryFiles.filter((_, index) => index !== fileIndex);
+    setKeyStoryFiles(newFiles);
+    try {
+      const fileData = JSON.parse(keyStoryFiles[fileIndex]);
+      toast({
+        title: "File removed",
+        description: `${fileData.filename} removed from key stories`
+      });
+    } catch {
+      toast({
+        title: "File removed",
+        description: "File removed from key stories"
+      });
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -157,7 +227,7 @@ export default function CampaignPlanner() {
     <div className="flex h-screen overflow-hidden bg-gray-50">
       <Sidebar />
       <div className="flex flex-col flex-1 overflow-hidden">
-        <Header />
+        <Header title="Campaign Planner" subtitle="Plan comprehensive fundraising campaigns with AI" />
         <main className="flex-1 overflow-auto p-6">
           <div className="max-w-7xl mx-auto">
             {view === "list" && (
@@ -244,18 +314,26 @@ export default function CampaignPlanner() {
                         />
                       </div>
 
-                      <div className="grid md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <Label htmlFor="organizationProfile">Organization Profile</Label>
-                          <Textarea
-                            id="organizationProfile"
-                            placeholder="Your newsroom's mission and value proposition..."
-                            value={organizationProfile}
-                            onChange={(e) => setOrganizationProfile(e.target.value)}
-                            className="min-h-[100px]"
-                          />
-                        </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="groundingLibrary">Grounding Library</Label>
+                        <Select 
+                          value={groundingLibraryId?.toString()} 
+                          onValueChange={(value) => setGroundingLibraryId(Number(value))}
+                        >
+                          <SelectTrigger id="groundingLibrary">
+                            <SelectValue placeholder="Select a grounding library (optional)" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {groundingLibraries.map((lib: any) => (
+                              <SelectItem key={lib.id} value={lib.id.toString()}>
+                                {lib.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
 
+                      <div className="grid md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                           <Label htmlFor="campaignGoal">Campaign Goal</Label>
                           <Textarea
@@ -266,9 +344,7 @@ export default function CampaignPlanner() {
                             className="min-h-[100px]"
                           />
                         </div>
-                      </div>
 
-                      <div className="grid md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                           <Label htmlFor="totalGoal">Fundraising Goal</Label>
                           <Input
@@ -276,16 +352,7 @@ export default function CampaignPlanner() {
                             placeholder="e.g., $50,000 or 100 new members"
                             value={totalGoal}
                             onChange={(e) => setTotalGoal(e.target.value)}
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="brandVoice">Brand Voice</Label>
-                          <Input
-                            id="brandVoice"
-                            placeholder="e.g., AP Style, conversational, formal"
-                            value={brandVoice}
-                            onChange={(e) => setBrandVoice(e.target.value)}
+                            className="mt-8"
                           />
                         </div>
                       </div>
@@ -328,25 +395,143 @@ export default function CampaignPlanner() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="audienceNotes">Audience Notes</Label>
+                        <Label htmlFor="campaignNotes">Campaign Notes</Label>
                         <Textarea
-                          id="audienceNotes"
-                          placeholder="Describe your audience segments (e.g., non-donors, LYBUNT, recurring prospects)"
-                          value={audienceNotes}
-                          onChange={(e) => setAudienceNotes(e.target.value)}
+                          id="campaignNotes"
+                          placeholder="Add any additional context or requirements for the campaign..."
+                          value={campaignNotes}
+                          onChange={(e) => setCampaignNotes(e.target.value)}
                           className="min-h-[80px]"
                         />
+                        
+                        {/* File Upload for Campaign Notes */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs text-muted-foreground">Reference Files</Label>
+                            <ObjectUploader
+                              maxNumberOfFiles={5}
+                              maxFileSize={10485760}
+                              onGetUploadParameters={async () => {
+                                const response = await apiRequest("POST", "/api/objects/upload");
+                                const data = await response.json();
+                                return {
+                                  method: "PUT" as const,
+                                  url: data.uploadURL
+                                };
+                              }}
+                              onComplete={async (result) => {
+                                if (result.successful && result.successful.length > 0) {
+                                  const uploadedFile = result.successful[0];
+                                  if (uploadedFile.name && uploadedFile.uploadURL) {
+                                    handleCampaignNoteFileUpload(uploadedFile.name, uploadedFile.uploadURL);
+                                  }
+                                }
+                              }}
+                              buttonClassName="h-7 px-3 text-xs"
+                            >
+                              <Upload className="w-3 h-3 mr-1" />
+                              Add File
+                            </ObjectUploader>
+                          </div>
+                          
+                          {campaignNoteFiles.length > 0 && (
+                            <div className="space-y-1">
+                              {campaignNoteFiles.map((fileRef, index) => {
+                                try {
+                                  const fileData = JSON.parse(fileRef);
+                                  return (
+                                    <div key={index} className="flex items-center justify-between text-xs bg-slate-50 rounded px-2 py-1">
+                                      <div className="flex items-center">
+                                        <FileText className="w-3 h-3 mr-1 text-slate-400" />
+                                        <span className="truncate max-w-48">{fileData.filename}</span>
+                                      </div>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        className="h-4 w-4 p-0 hover:bg-slate-200"
+                                        onClick={() => handleCampaignNoteFileRemove(index)}
+                                      >
+                                        <X className="w-3 h-3" />
+                                      </Button>
+                                    </div>
+                                  );
+                                } catch {
+                                  return null;
+                                }
+                              })}
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="keyStories">Key Stories/Links (max 3)</Label>
+                        <Label htmlFor="keyStories">Key Stories/Links</Label>
                         <Textarea
                           id="keyStories"
-                          placeholder="List up to 3 key stories or article links relevant to this campaign..."
+                          placeholder="List key stories or article links relevant to this campaign..."
                           value={keyStories}
                           onChange={(e) => setKeyStories(e.target.value)}
                           className="min-h-[80px]"
                         />
+                        
+                        {/* File Upload for Key Stories */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs text-muted-foreground">Reference Files</Label>
+                            <ObjectUploader
+                              maxNumberOfFiles={5}
+                              maxFileSize={10485760}
+                              onGetUploadParameters={async () => {
+                                const response = await apiRequest("POST", "/api/objects/upload");
+                                const data = await response.json();
+                                return {
+                                  method: "PUT" as const,
+                                  url: data.uploadURL
+                                };
+                              }}
+                              onComplete={async (result) => {
+                                if (result.successful && result.successful.length > 0) {
+                                  const uploadedFile = result.successful[0];
+                                  if (uploadedFile.name && uploadedFile.uploadURL) {
+                                    handleKeyStoryFileUpload(uploadedFile.name, uploadedFile.uploadURL);
+                                  }
+                                }
+                              }}
+                              buttonClassName="h-7 px-3 text-xs"
+                            >
+                              <Upload className="w-3 h-3 mr-1" />
+                              Add File
+                            </ObjectUploader>
+                          </div>
+                          
+                          {keyStoryFiles.length > 0 && (
+                            <div className="space-y-1">
+                              {keyStoryFiles.map((fileRef, index) => {
+                                try {
+                                  const fileData = JSON.parse(fileRef);
+                                  return (
+                                    <div key={index} className="flex items-center justify-between text-xs bg-slate-50 rounded px-2 py-1">
+                                      <div className="flex items-center">
+                                        <FileText className="w-3 h-3 mr-1 text-slate-400" />
+                                        <span className="truncate max-w-48">{fileData.filename}</span>
+                                      </div>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        className="h-4 w-4 p-0 hover:bg-slate-200"
+                                        onClick={() => handleKeyStoryFileRemove(index)}
+                                      >
+                                        <X className="w-3 h-3" />
+                                      </Button>
+                                    </div>
+                                  );
+                                } catch {
+                                  return null;
+                                }
+                              })}
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                       <div className="grid md:grid-cols-2 gap-6">
@@ -373,30 +558,18 @@ export default function CampaignPlanner() {
                         </div>
                       </div>
 
-                      <div className="grid md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <Label htmlFor="tools">Tools & Platforms</Label>
-                          <Input
-                            id="tools"
-                            placeholder="e.g., Mailchimp, Salesforce, Google Analytics"
-                            value={tools}
-                            onChange={(e) => setTools(e.target.value)}
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="aiModel">AI Model</Label>
-                          <Select value={aiModel} onValueChange={setAiModel}>
-                            <SelectTrigger id="aiModel">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="gpt-5">GPT-5</SelectItem>
-                              <SelectItem value="claude-sonnet-4">Claude Sonnet 4</SelectItem>
-                              <SelectItem value="gemini-2.5-flash">Gemini 2.5 Flash</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="aiModel">AI Model</Label>
+                        <Select value={aiModel} onValueChange={setAiModel}>
+                          <SelectTrigger id="aiModel">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="gpt-5">GPT-5</SelectItem>
+                            <SelectItem value="claude-sonnet-4">Claude Sonnet 4</SelectItem>
+                            <SelectItem value="gemini-2.5-flash">Gemini 2.5 Flash</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </CardContent>
                   </Card>
