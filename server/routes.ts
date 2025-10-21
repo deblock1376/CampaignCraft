@@ -1122,7 +1122,7 @@ ${contentToSummarize}`;
         }
         
         if (promptContext.campaignPlan) {
-          contextInfo += `\n\n=== STRATEGIC CAMPAIGN PLAN ===\n`;
+          contextInfo += `\n\n🎯 PRIMARY DIRECTIVE: STRATEGIC CAMPAIGN PLAN\n`;
           contextInfo += `Goal: ${promptContext.campaignPlan.inputs?.campaignGoal || 'Fundraising campaign'}\n`;
           if (promptContext.campaignPlan.inputs?.totalGoal) {
             contextInfo += `Target: ${promptContext.campaignPlan.inputs.totalGoal}\n`;
@@ -1130,8 +1130,8 @@ ${contentToSummarize}`;
           if (promptContext.campaignPlan.inputs?.timeframeType) {
             contextInfo += `Timeframe: ${promptContext.campaignPlan.inputs.timeframeType}\n`;
           }
-          contextInfo += `\nPLAN DETAILS:\n${promptContext.campaignPlan.plan.substring(0, 3000)}`;
-          contextInfo += `\n\n[Use this strategic plan to guide campaign content. Align with the themes, messaging, and calendar outlined above.]`;
+          contextInfo += `\nFULL PLAN:\n${promptContext.campaignPlan.plan.substring(0, 5000)}`;
+          contextInfo += `\n\n⚠️ THIS CAMPAIGN PLAN IS YOUR GOVERNING STRATEGY. All campaigns must align with this plan's themes, messaging frameworks, timeline, and segment strategies. Reference specific sections of the plan when gathering campaign details.`;
         }
         if (promptContext.referenceCampaigns && promptContext.referenceCampaigns.length > 0) {
           contextInfo += `\nREFERENCE CAMPAIGNS: ${promptContext.referenceCampaigns.map(c => `${c.title} (${c.objective})`).join(', ')}`;
@@ -1144,7 +1144,30 @@ ${contentToSummarize}`;
         }
       }
 
-      const systemPrompt = `You are a helpful campaign assistant for ${newsroom.name}, a newsroom. 
+      // Detect if campaign plan is present to change system prompt behavior
+      const hasCampaignPlan = promptContext?.campaignPlan;
+      
+      const systemPrompt = hasCampaignPlan 
+        ? `You are a helpful campaign assistant for ${newsroom.name}, a newsroom.
+A STRATEGIC CAMPAIGN PLAN has been selected. Your role is to help users create campaigns that align with this plan's themes, messaging, and timeline.
+
+AVAILABLE GROUNDING GUIDES: ${groundingGuides.map(g => g.name).join(', ') || 'None available yet'}
+${selectedGuide ? `\nSELECTED GUIDE: ${selectedGuide.name}${materialsPreview}` : ''}
+${contextInfo}
+
+YOUR APPROACH WITH THE CAMPAIGN PLAN:
+- Acknowledge that the user has selected the strategic plan
+- Ask what specific campaign or message from the plan they want to create (e.g., "Which part of the ${promptContext?.campaignPlan?.inputs?.campaignGoal || 'plan'} would you like to focus on?")
+- Reference the plan's themes, timeline milestones, and messaging frameworks in your questions
+- Help identify which story, date, or campaign milestone from the plan they're working on
+- When gathering details, ensure they align with the plan's strategic direction
+- When user confirms they want to generate, respond with this EXACT format:
+  GENERATE_CAMPAIGN
+  Objective: [subscription/donation/membership/engagement]
+  Context: [brief context including reference to the plan section]
+  BrandStylesheetId: [ID of the grounding guide, or null]
+- Keep responses concise (2-3 sentences max) and focused on implementing the strategic plan`
+        : `You are a helpful campaign assistant for ${newsroom.name}, a newsroom. 
 Your role is to guide users through creating effective marketing campaigns via a structured workflow.
 
 WORKFLOW STAGES:
