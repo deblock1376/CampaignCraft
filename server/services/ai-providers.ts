@@ -431,7 +431,6 @@ Response must be valid JSON with all fields included.
     if (!materials) return '';
     
     const fileExtractor = new FileExtractorService();
-    const sections: string[] = [];
     
     // Helper function to get content from both text and file
     const getContent = async (material: any): Promise<string> => {
@@ -455,77 +454,112 @@ Response must be valid JSON with all fields included.
       return parts.join('\n\n');
     };
     
+    // Collect all material extraction promises for parallel execution
+    interface MaterialTask {
+      label: string;
+      promise: Promise<string>;
+    }
+    
+    const tasks: MaterialTask[] = [];
+    
     // Brand Foundation materials
     if (materials.brandFoundation) {
-      const brandVoice = await getContent(materials.brandFoundation.brandVoice);
-      if (brandVoice) {
-        sections.push(`📝 BRAND VOICE & MISSION:\n${brandVoice}`);
+      if (materials.brandFoundation.brandVoice) {
+        tasks.push({
+          label: '📝 BRAND VOICE & MISSION',
+          promise: getContent(materials.brandFoundation.brandVoice)
+        });
       }
-      
-      const strategyPlaybook = await getContent(materials.brandFoundation.strategyPlaybook);
-      if (strategyPlaybook) {
-        sections.push(`📊 STRATEGY PLAYBOOK:\n${strategyPlaybook}`);
+      if (materials.brandFoundation.strategyPlaybook) {
+        tasks.push({
+          label: '📊 STRATEGY PLAYBOOK',
+          promise: getContent(materials.brandFoundation.strategyPlaybook)
+        });
       }
-      
-      const brandStyleGuide = await getContent(materials.brandFoundation.brandStyleGuide);
-      if (brandStyleGuide) {
-        sections.push(`🎨 BRAND STYLE GUIDE:\n${brandStyleGuide}`);
+      if (materials.brandFoundation.brandStyleGuide) {
+        tasks.push({
+          label: '🎨 BRAND STYLE GUIDE',
+          promise: getContent(materials.brandFoundation.brandStyleGuide)
+        });
       }
-      
-      const aboutUs = await getContent(materials.brandFoundation.aboutUs);
-      if (aboutUs) {
-        sections.push(`ℹ️ ABOUT US:\n${aboutUs}`);
+      if (materials.brandFoundation.aboutUs) {
+        tasks.push({
+          label: 'ℹ️ ABOUT US',
+          promise: getContent(materials.brandFoundation.aboutUs)
+        });
       }
     }
     
     // Campaign Examples materials
     if (materials.campaignExamples) {
-      const pastCampaigns = await getContent(materials.campaignExamples.pastCampaigns);
-      if (pastCampaigns) {
-        sections.push(`📧 PAST SUCCESSFUL CAMPAIGNS:\n${pastCampaigns}`);
+      if (materials.campaignExamples.pastCampaigns) {
+        tasks.push({
+          label: '📧 PAST SUCCESSFUL CAMPAIGNS',
+          promise: getContent(materials.campaignExamples.pastCampaigns)
+        });
       }
-      
-      const impactStories = await getContent(materials.campaignExamples.impactStories);
-      if (impactStories) {
-        sections.push(`📰 IMPACT NEWS STORIES:\n${impactStories}`);
+      if (materials.campaignExamples.impactStories) {
+        tasks.push({
+          label: '📰 IMPACT NEWS STORIES',
+          promise: getContent(materials.campaignExamples.impactStories)
+        });
       }
-      
-      const testimonials = await getContent(materials.campaignExamples.testimonials);
-      if (testimonials) {
-        sections.push(`💬 READER TESTIMONIALS:\n${testimonials}`);
+      if (materials.campaignExamples.testimonials) {
+        tasks.push({
+          label: '💬 READER TESTIMONIALS',
+          promise: getContent(materials.campaignExamples.testimonials)
+        });
       }
     }
     
     // Audience Intelligence materials
     if (materials.audienceIntelligence) {
-      const segments = await getContent(materials.audienceIntelligence.segments);
-      if (segments) {
-        sections.push(`👥 AUDIENCE SEGMENTS:\n${segments}`);
+      if (materials.audienceIntelligence.segments) {
+        tasks.push({
+          label: '👥 AUDIENCE SEGMENTS',
+          promise: getContent(materials.audienceIntelligence.segments)
+        });
       }
-      
-      const surveyResponses = await getContent(materials.audienceIntelligence.surveyResponses);
-      if (surveyResponses) {
-        sections.push(`📋 SURVEY RESPONSES:\n${surveyResponses}`);
+      if (materials.audienceIntelligence.surveyResponses) {
+        tasks.push({
+          label: '📋 SURVEY RESPONSES',
+          promise: getContent(materials.audienceIntelligence.surveyResponses)
+        });
       }
-      
-      const localDates = await getContent(materials.audienceIntelligence.localDates);
-      if (localDates) {
-        sections.push(`📅 KEY LOCAL DATES:\n${localDates}`);
+      if (materials.audienceIntelligence.localDates) {
+        tasks.push({
+          label: '📅 KEY LOCAL DATES',
+          promise: getContent(materials.audienceIntelligence.localDates)
+        });
       }
     }
     
     // Performance Data materials
     if (materials.performanceData) {
-      const surveyData = await getContent(materials.performanceData.surveyData);
-      if (surveyData) {
-        sections.push(`📈 SURVEY & RESEARCH DATA:\n${surveyData}`);
+      if (materials.performanceData.surveyData) {
+        tasks.push({
+          label: '📈 SURVEY & RESEARCH DATA',
+          promise: getContent(materials.performanceData.surveyData)
+        });
       }
-      
-      const metrics = await getContent(materials.performanceData.metrics);
-      if (metrics) {
-        sections.push(`📊 PERFORMANCE METRICS:\n${metrics}`);
+      if (materials.performanceData.metrics) {
+        tasks.push({
+          label: '📊 PERFORMANCE METRICS',
+          promise: getContent(materials.performanceData.metrics)
+        });
       }
     }
+    
+    // Execute all content extraction in parallel
+    const results = await Promise.all(tasks.map(task => task.promise));
+    
+    // Build sections from results
+    const sections: string[] = [];
+    results.forEach((content, index) => {
+      if (content) {
+        sections.push(`${tasks[index].label}:\n${content}`);
+      }
+    });
     
     if (sections.length === 0) return '';
     
