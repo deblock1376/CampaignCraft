@@ -579,6 +579,110 @@ IMPORTANT: Use these reference materials to:
 `;
   }
 
+  /**
+   * Builds materials context using ONLY text content, skipping all file extraction.
+   * This is significantly faster for plan-guided generation where the plan already contains strategic direction.
+   */
+  private buildMaterialsContextTextOnly(materials: any): string {
+    if (!materials) return '';
+    
+    const sections: string[] = [];
+    
+    // Helper to get text-only content (ignores files completely)
+    const getTextOnly = (material: any): string => {
+      return material?.text || '';
+    };
+    
+    // Brand Foundation materials
+    if (materials.brandFoundation) {
+      const brandVoice = getTextOnly(materials.brandFoundation.brandVoice);
+      if (brandVoice) {
+        sections.push(`📝 BRAND VOICE & MISSION:\n${brandVoice}`);
+      }
+      
+      const strategyPlaybook = getTextOnly(materials.brandFoundation.strategyPlaybook);
+      if (strategyPlaybook) {
+        sections.push(`📊 STRATEGY PLAYBOOK:\n${strategyPlaybook}`);
+      }
+      
+      const brandStyleGuide = getTextOnly(materials.brandFoundation.brandStyleGuide);
+      if (brandStyleGuide) {
+        sections.push(`🎨 BRAND STYLE GUIDE:\n${brandStyleGuide}`);
+      }
+      
+      const aboutUs = getTextOnly(materials.brandFoundation.aboutUs);
+      if (aboutUs) {
+        sections.push(`ℹ️ ABOUT US:\n${aboutUs}`);
+      }
+    }
+    
+    // Campaign Examples materials
+    if (materials.campaignExamples) {
+      const pastCampaigns = getTextOnly(materials.campaignExamples.pastCampaigns);
+      if (pastCampaigns) {
+        sections.push(`📧 PAST SUCCESSFUL CAMPAIGNS:\n${pastCampaigns}`);
+      }
+      
+      const impactStories = getTextOnly(materials.campaignExamples.impactStories);
+      if (impactStories) {
+        sections.push(`📰 IMPACT NEWS STORIES:\n${impactStories}`);
+      }
+      
+      const testimonials = getTextOnly(materials.campaignExamples.testimonials);
+      if (testimonials) {
+        sections.push(`💬 READER TESTIMONIALS:\n${testimonials}`);
+      }
+    }
+    
+    // Audience Intelligence materials
+    if (materials.audienceIntelligence) {
+      const segments = getTextOnly(materials.audienceIntelligence.segments);
+      if (segments) {
+        sections.push(`👥 AUDIENCE SEGMENTS:\n${segments}`);
+      }
+      
+      const surveyResponses = getTextOnly(materials.audienceIntelligence.surveyResponses);
+      if (surveyResponses) {
+        sections.push(`📋 SURVEY RESPONSES:\n${surveyResponses}`);
+      }
+      
+      const localDates = getTextOnly(materials.audienceIntelligence.localDates);
+      if (localDates) {
+        sections.push(`📅 KEY LOCAL DATES:\n${localDates}`);
+      }
+    }
+    
+    // Performance Data materials
+    if (materials.performanceData) {
+      const surveyData = getTextOnly(materials.performanceData.surveyData);
+      if (surveyData) {
+        sections.push(`📈 SURVEY & RESEARCH DATA:\n${surveyData}`);
+      }
+      
+      const metrics = getTextOnly(materials.performanceData.metrics);
+      if (metrics) {
+        sections.push(`📊 PERFORMANCE METRICS:\n${metrics}`);
+      }
+    }
+    
+    if (sections.length === 0) return '';
+    
+    return `
+📚 REFERENCE MATERIALS FROM GROUNDING LIBRARY
+
+${sections.join('\n\n---\n\n')}
+
+IMPORTANT: Use these reference materials to:
+- Match the specific voice, tone, and style demonstrated in past campaigns
+- Reference impact stories and reader testimonials when appropriate
+- Tailor messaging to the documented audience segments and insights
+- Apply proven strategies and patterns from past successful campaigns
+- Incorporate local context and key dates when relevant
+- Learn from performance data to optimize subject lines, CTAs, and content structure
+
+`;
+  }
+
   private async buildSegmentInstructions(segments?: string[], newsroomId?: number): Promise<string> {
     // If no segments selected, target all users
     if (!segments || segments.length === 0) {
