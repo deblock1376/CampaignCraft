@@ -488,12 +488,17 @@ export default function CampaignAssistantTest() {
     );
   }
 
+  // Get selected campaign plan details for title
+  const selectedPlanDetails = selectedCampaignPlan 
+    ? (campaignPlans as any[]).find((p: any) => p.id === selectedCampaignPlan)
+    : null;
+
   return (
     <>
       <Sidebar />
       <main className="flex-1 flex flex-col overflow-hidden">
         <Header 
-          title="Campaign Assistant" 
+          title={selectedPlanDetails?.title || "Campaign Assistant"} 
           subtitle="Chat with AI to create your campaign"
         />
         
