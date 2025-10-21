@@ -448,6 +448,14 @@ export default function CampaignAssistantTest() {
       message += `📋 Grounding Library: ${selectedGuide.name}\n`;
     }
     
+    // Add campaign plan
+    if (selectedCampaignPlan) {
+      const plan = campaignPlans.find((p: any) => p.id === selectedCampaignPlan);
+      if (plan) {
+        message += `📅 Campaign Plan: ${plan.title}\n`;
+      }
+    }
+    
     // Add segments
     if (selectedSegments.length > 0) {
       const segmentLabels = selectedSegments.map(s => 
