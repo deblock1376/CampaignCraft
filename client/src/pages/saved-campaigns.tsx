@@ -25,9 +25,18 @@ export default function SavedCampaigns() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const newsroomId = user.newsroomId;
 
-  const { data: conversations, isLoading } = useQuery<Conversation[]>({
+  const { data: conversations, isLoading, error } = useQuery<Conversation[]>({
     queryKey: [`/api/newsrooms/${newsroomId}/conversations`],
     enabled: !!newsroomId,
+    retry: false,
+    onError: (error: any) => {
+      // If unauthorized, clear localStorage and reload to show login
+      if (error?.message?.includes('401') || error?.message?.includes('403')) {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        window.location.reload();
+      }
+    },
   });
 
   const { data: campaignPlans } = useQuery({
@@ -60,6 +69,25 @@ export default function SavedCampaigns() {
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
+      ) : error ? (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center py-8">
+              <MessageSquare className="h-12 w-12 mx-auto text-red-400 mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Unable to Load Saved Campaigns</h3>
+              <p className="text-muted-foreground mb-4">
+                There was an error loading your conversations. Please try logging in again.
+              </p>
+              <Button onClick={() => {
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+              }}>
+                Go to Login
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       ) : sortedConversations.length === 0 ? (
         <Card>
           <CardContent className="pt-6">
