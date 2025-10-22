@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -23,8 +22,8 @@ interface Conversation {
 }
 
 export default function SavedCampaigns() {
-  const { user } = useAuth();
-  const newsroomId = user?.newsroomId;
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const newsroomId = user.newsroomId;
 
   const { data: conversations, isLoading } = useQuery<Conversation[]>({
     queryKey: ['/api/newsrooms', newsroomId, 'conversations'],
