@@ -138,13 +138,13 @@ export default function ChatAssistant({
                   <div className="flex-1 space-y-2">
                     {message.content && (
                       <div
-                        className={`rounded-lg p-3 ${
+                        className={`rounded-lg p-3 overflow-hidden ${
                           message.role === "assistant"
                             ? "bg-slate-100 text-slate-900"
                             : "bg-primary text-white"
                         }`}
                       >
-                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                        <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
                       </div>
                     )}
                     {message.campaign && message.role === "assistant" && (
