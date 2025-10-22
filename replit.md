@@ -28,6 +28,7 @@ Preferred communication style: Simple, everyday language.
 - **BlueLena Copywriting Integration**: AI generation adheres to BlueLena professional copywriting guidelines.
 - **AI-Powered Merge**: Intelligently combines elements from multiple drafts into a unified campaign.
 - **Conversational Campaign Assistant**: AI-guided chat interface for structured campaign creation with persistent conversations saved to the database.
+- **Saved Campaigns**: Dedicated page displaying all saved campaign building conversations with auto-generated titles, dates, objectives, linked plans, and easy resume functionality via bookmarkable URLs.
 - **AI Prompt Management System**: Admin-facing system for cataloging, updating, and managing AI prompts without code changes, featuring database storage, versioning, variable interpolation, caching, and a robust fallback mechanism.
 - **Production Logging & Quality Assurance**: Comprehensive client-side logging, user tracking, and an admin logs page for debugging and QA.
 - **Prompt Auditing System**: Admin-only visual indicators to monitor which AI prompt powers each generation.
