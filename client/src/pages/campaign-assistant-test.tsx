@@ -504,6 +504,11 @@ export default function CampaignAssistantTest() {
         },
       };
       setMessages(prev => [...prev, campaignMessage]);
+      
+      // Automatically save the campaign to the database
+      if (campaignMessage.campaign) {
+        saveCampaignMutation.mutate(campaignMessage.campaign);
+      }
     },
     onError: (error) => {
       console.error('Campaign generation error:', error);
@@ -542,8 +547,8 @@ export default function CampaignAssistantTest() {
     },
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Campaign saved successfully",
+        title: "Campaign Saved",
+        description: "Your campaign has been saved to Campaign History",
       });
     },
     onError: () => {
