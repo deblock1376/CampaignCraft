@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import Sidebar from "@/components/layout/sidebar";
 import Header from "@/components/layout/header";
-import { Calendar, Loader2, FileText, ChevronLeft, Upload, X } from "lucide-react";
+import { Calendar, Loader2, FileText, ChevronLeft, Upload, X, Edit, Save } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ReactMarkdown from 'react-markdown';
 import { ObjectUploader } from "@/components/ObjectUploader";
@@ -32,6 +32,8 @@ export default function CampaignPlanner() {
 
   const [view, setView] = useState<"form" | "list" | "view">("list");
   const [selectedPlan, setSelectedPlan] = useState<CampaignPlan | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedPlanContent, setEditedPlanContent] = useState("");
 
   // Form state
   const [title, setTitle] = useState("");
@@ -131,6 +133,46 @@ export default function CampaignPlanner() {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to generate campaign plan",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updatePlanMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedPlan) throw new Error("No plan selected");
+      
+      const response = await fetch(`/api/campaign-plans/${selectedPlan.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          generatedPlan: editedPlanContent,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to update campaign plan");
+      }
+
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Plan Updated",
+        description: "Your changes have been saved successfully",
+      });
+      setSelectedPlan(data);
+      setIsEditing(false);
+      refetch();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update campaign plan",
         variant: "destructive",
       });
     },
@@ -599,7 +641,10 @@ export default function CampaignPlanner() {
             {view === "view" && selectedPlan && (
               <div className="space-y-6">
                 <div className="flex items-center gap-4">
-                  <Button variant="ghost" onClick={() => setView("list")}>
+                  <Button variant="ghost" onClick={() => {
+                    setView("list");
+                    setIsEditing(false);
+                  }}>
                     <ChevronLeft className="h-4 w-4 mr-2" />
                     Back to Plans
                   </Button>
@@ -609,22 +654,81 @@ export default function CampaignPlanner() {
                       Generated on {new Date(selectedPlan.createdAt).toLocaleDateString()} with {selectedPlan.aiModel === 'gpt-5' ? 'GPT-5' : selectedPlan.aiModel === 'claude-sonnet-4' ? 'Claude Sonnet 4' : 'Gemini 2.5 Flash'}
                     </p>
                   </div>
-                  <Button 
-                    onClick={() => window.location.href = `/campaigns/assistant-test?planId=${selectedPlan.id}`}
-                    size="lg"
-                  >
-                    <FileText className="h-5 w-5 mr-2" />
-                    Generate Campaign from This Plan
-                  </Button>
+                  <div className="flex gap-2">
+                    {isEditing ? (
+                      <>
+                        <Button 
+                          variant="outline"
+                          onClick={() => {
+                            setIsEditing(false);
+                            setEditedPlanContent("");
+                          }}
+                          disabled={updatePlanMutation.isPending}
+                        >
+                          <X className="h-4 w-4 mr-2" />
+                          Cancel
+                        </Button>
+                        <Button 
+                          onClick={() => updatePlanMutation.mutate()}
+                          disabled={updatePlanMutation.isPending}
+                        >
+                          {updatePlanMutation.isPending ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            <>
+                              <Save className="h-4 w-4 mr-2" />
+                              Save Changes
+                            </>
+                          )}
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button 
+                          variant="outline"
+                          onClick={() => {
+                            setIsEditing(true);
+                            setEditedPlanContent(selectedPlan.generatedPlan);
+                          }}
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit Plan
+                        </Button>
+                        <Button 
+                          onClick={() => window.location.href = `/campaigns/assistant-test?planId=${selectedPlan.id}`}
+                        >
+                          <FileText className="h-5 w-5 mr-2" />
+                          Generate Campaign from This Plan
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
 
                 <Card>
                   <CardContent className="p-8">
-                    <ScrollArea className="h-[calc(100vh-300px)]">
-                      <div className="prose prose-slate max-w-none">
-                        <ReactMarkdown>{selectedPlan.generatedPlan}</ReactMarkdown>
+                    {isEditing ? (
+                      <div className="space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                          Edit your campaign plan below. The content supports Markdown formatting.
+                        </p>
+                        <Textarea 
+                          value={editedPlanContent}
+                          onChange={(e) => setEditedPlanContent(e.target.value)}
+                          className="min-h-[calc(100vh-350px)] font-mono text-sm"
+                          placeholder="Enter your campaign plan content..."
+                        />
                       </div>
-                    </ScrollArea>
+                    ) : (
+                      <ScrollArea className="h-[calc(100vh-300px)]">
+                        <div className="prose prose-slate max-w-none">
+                          <ReactMarkdown>{selectedPlan.generatedPlan}</ReactMarkdown>
+                        </div>
+                      </ScrollArea>
+                    )}
                   </CardContent>
                 </Card>
               </div>

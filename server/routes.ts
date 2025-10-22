@@ -890,6 +890,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/campaign-plans/:id", authenticateToken, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const schema = z.object({
+        title: z.string().optional(),
+        generatedPlan: z.string().optional(),
+      });
+
+      const updates = schema.parse(req.body);
+      
+      const updatedPlan = await storage.updateCampaignPlan(id, updates);
+      if (!updatedPlan) {
+        return res.status(404).json({ message: "Campaign plan not found" });
+      }
+      
+      res.json(updatedPlan);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error('Update campaign plan error:', error);
+      res.status(500).json({ message: "Failed to update campaign plan" });
+    }
+  });
+
   // Story Summaries
   app.post("/api/story-summaries", authenticateToken, async (req: any, res) => {
     try {

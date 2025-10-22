@@ -129,6 +129,7 @@ export interface IStorage {
   getCampaignPlan(id: number): Promise<CampaignPlan | undefined>;
   getCampaignPlansByNewsroom(newsroomId: number): Promise<CampaignPlan[]>;
   createCampaignPlan(plan: InsertCampaignPlan): Promise<CampaignPlan>;
+  updateCampaignPlan(id: number, updates: Partial<Pick<CampaignPlan, 'title' | 'generatedPlan'>>): Promise<CampaignPlan | undefined>;
   
   // User Flags
   createUserFlag(flag: InsertUserFlag): Promise<UserFlag>;
@@ -583,6 +584,9 @@ export class MemStorage implements IStorage {
   async createCampaignPlan(plan: InsertCampaignPlan): Promise<CampaignPlan> {
     throw new Error('MemStorage not implemented');
   }
+  async updateCampaignPlan(id: number, updates: Partial<Pick<CampaignPlan, 'title' | 'generatedPlan'>>): Promise<CampaignPlan | undefined> {
+    throw new Error('MemStorage not implemented');
+  }
   
   // User Flags (stub for MemStorage - not used in production)
   async createUserFlag(flag: InsertUserFlag): Promise<UserFlag> {
@@ -983,6 +987,15 @@ export class DatabaseStorage implements IStorage {
   async createCampaignPlan(plan: InsertCampaignPlan): Promise<CampaignPlan> {
     const [newPlan] = await db.insert(campaignPlans).values(plan).returning();
     return newPlan;
+  }
+  
+  async updateCampaignPlan(id: number, updates: Partial<Pick<CampaignPlan, 'title' | 'generatedPlan'>>): Promise<CampaignPlan | undefined> {
+    const [updatedPlan] = await db
+      .update(campaignPlans)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(campaignPlans.id, id))
+      .returning();
+    return updatedPlan || undefined;
   }
   
   // User Flags
