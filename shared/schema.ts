@@ -175,9 +175,9 @@ export const campaignPlans = pgTable("campaign_plans", {
 
 export const conversations = pgTable("conversations", {
   id: serial("id").primaryKey(),
-  newsroomId: integer("newsroom_id").notNull(),
-  userId: integer("user_id").notNull(),
-  campaignPlanId: integer("campaign_plan_id"), // Optional: linked to campaign plan
+  newsroomId: integer("newsroom_id").notNull().references(() => newsrooms.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  campaignPlanId: integer("campaign_plan_id").references(() => campaignPlans.id), // Optional: linked to campaign plan
   title: text("title"), // Auto-generated from first message or user-set
   context: jsonb("context"), // Campaign builder state (objective, segments, etc.)
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -186,7 +186,7 @@ export const conversations = pgTable("conversations", {
 
 export const conversationMessages = pgTable("conversation_messages", {
   id: serial("id").primaryKey(),
-  conversationId: integer("conversation_id").notNull(),
+  conversationId: integer("conversation_id").notNull().references(() => conversations.id),
   role: text("role").notNull(), // 'user' or 'assistant'
   content: text("content").notNull(),
   metadata: jsonb("metadata"), // Campaign data for assistant messages, etc.

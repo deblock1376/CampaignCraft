@@ -197,36 +197,85 @@ export default function CampaignAssistantTest() {
     if (convId && !conversationLoaded) {
       const loadConversation = async () => {
         try {
-          // Fetch conversation messages
-          const response = await fetch(`/api/conversations/${convId}/messages`, {
+          // Fetch conversation record (includes context)
+          const conversationResponse = await fetch(`/api/conversations/${convId}`, {
             headers: {
               "Authorization": `Bearer ${localStorage.getItem("token")}`,
             },
           });
           
-          if (response.ok) {
-            const dbMessages = await response.json();
-            
-            // Convert database messages to ChatMessage format
-            const loadedMessages: ChatMessage[] = dbMessages.map((msg: any) => ({
-              id: msg.id.toString(),
-              role: msg.role,
-              content: msg.content,
-              timestamp: new Date(msg.createdAt),
-              campaign: msg.metadata?.campaign,
-            }));
-            
-            setMessages(loadedMessages);
-            setConversationId(parseInt(convId));
-            setConversationLoaded(true);
-            
+          if (!conversationResponse.ok) {
             toast({
-              title: "Conversation Loaded",
-              description: "Your previous conversation has been restored.",
+              title: "Error",
+              description: "Failed to load conversation. It may have been deleted.",
+              variant: "destructive",
             });
+            return;
           }
+          
+          const conversation = await conversationResponse.json();
+          
+          // Fetch conversation messages
+          const messagesResponse = await fetch(`/api/conversations/${convId}/messages`, {
+            headers: {
+              "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            },
+          });
+          
+          if (!messagesResponse.ok) {
+            toast({
+              title: "Error",
+              description: "Failed to load conversation messages.",
+              variant: "destructive",
+            });
+            return;
+          }
+          
+          const dbMessages = await messagesResponse.json();
+          
+          // Convert database messages to ChatMessage format
+          const loadedMessages: ChatMessage[] = dbMessages.map((msg: any) => ({
+            id: msg.id.toString(),
+            role: msg.role,
+            content: msg.content,
+            timestamp: new Date(msg.createdAt),
+            campaign: msg.metadata?.campaign,
+          }));
+          
+          setMessages(loadedMessages);
+          setConversationId(parseInt(convId));
+          
+          // Restore Campaign Builder context
+          if (conversation.context) {
+            if (conversation.context.objective) {
+              setSelectedObjective(conversation.context.objective);
+            }
+            if (conversation.context.guideId) {
+              setSelectedGuideId(conversation.context.guideId);
+            }
+            if (conversation.context.segments && Array.isArray(conversation.context.segments)) {
+              setSelectedSegments(conversation.context.segments);
+            }
+          }
+          
+          // Restore campaign plan if linked
+          if (conversation.campaignPlanId) {
+            setSelectedCampaignPlan(conversation.campaignPlanId);
+          }
+          
+          setConversationLoaded(true);
+          
+          toast({
+            title: "Conversation Loaded",
+            description: "Your previous conversation and settings have been restored.",
+          });
         } catch (error) {
           console.error('Failed to load conversation:', error);
+          toast({
+            title: "Error",
+            description: "An unexpected error occurred loading the conversation.",
+            variant: "destructive",
+          });
         }
       };
       
