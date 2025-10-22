@@ -26,12 +26,12 @@ export default function SavedCampaigns() {
   const newsroomId = user.newsroomId;
 
   const { data: conversations, isLoading } = useQuery<Conversation[]>({
-    queryKey: ['/api/newsrooms', newsroomId, 'conversations'],
+    queryKey: [`/api/newsrooms/${newsroomId}/conversations`],
     enabled: !!newsroomId,
   });
 
   const { data: campaignPlans } = useQuery({
-    queryKey: ['/api/campaign-plans', newsroomId],
+    queryKey: [`/api/newsrooms/${newsroomId}/campaign-plans`],
     enabled: !!newsroomId,
   });
 
