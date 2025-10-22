@@ -232,14 +232,14 @@ export default function CampaignPlanner() {
           <div className="max-w-7xl mx-auto">
             {view === "list" && (
               <div className="space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                  <div className="flex-1">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
                     <h1 className="text-3xl font-bold">Campaign Planner</h1>
                     <p className="text-muted-foreground mt-1">
                       Map out fundraising campaigns with AI
                     </p>
                   </div>
-                  <Button onClick={() => setView("form")} size="lg" className="sm:shrink-0">
+                  <Button onClick={() => setView("form")} size="lg" className="shrink-0">
                     <Calendar className="h-5 w-5 mr-2" />
                     Create New Plan
                   </Button>
