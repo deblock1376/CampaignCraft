@@ -36,6 +36,7 @@ Preferred communication style: Simple, everyday language.
 - **Contextual Help System**: In-context tooltips provide instant guidance throughout the application, especially in the Campaign Builder.
 - **Campaign Planner**: AI-powered tool for comprehensive fundraising campaign planning, generating strategic plans, calendars, messaging, and email drafts.
 - **Plan-Guided Campaign Generation**: AI campaign generation is strategically directed by selected Campaign Plans, making the plan the primary directive for AI content creation.
+- **Auto-Continue Campaign Series** (V1): When working from a Campaign Plan, the AI suggests the next email in sequence when user indicates readiness to continue, enabling smoother batch generation of email series.
 
 ### System Design Choices
 - **Development & Production**: Vite development server with Express API integration and optimized React bundle for production.

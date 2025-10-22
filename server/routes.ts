@@ -1259,13 +1259,47 @@ ${contentToSummarize}`;
       // Detect if campaign plan is present to change system prompt behavior
       const hasCampaignPlan = promptContext?.campaignPlan;
       
+      // AUTO-CONTINUE: Check if we should suggest the next email from campaign plan
+      let nextEmailSuggestion = '';
+      if (hasCampaignPlan && promptContext.campaignPlan && (
+          message.toLowerCase().includes('yes') || 
+          message.toLowerCase().includes('continue') || 
+          message.toLowerCase().includes('next'))) {
+        const { parseCampaignPlanEmails, getNextEmail } = await import('./utils/campaign-plan-parser');
+        
+        try {
+          // Parse the plan to extract email sequence
+          const planEmails = parseCampaignPlanEmails(promptContext.campaignPlan.plan);
+          
+          if (planEmails.length > 0) {
+            // Extract what's been generated from conversation history by looking for user requests
+            const generatedDescriptions = conversationHistory
+              .filter(m => m.role === 'user')
+              .map(m => m.content.toLowerCase())
+              .filter(c => c.includes('create') || c.includes('generate') || c.includes('write'));
+            
+            // Find next email
+            const nextEmail = getNextEmail(planEmails, generatedDescriptions);
+            
+            if (nextEmail) {
+              nextEmailSuggestion = `\n\n🔄 AUTO-CONTINUE ACTIVE:\nThe next email in the campaign plan is: **${nextEmail.description}** (${nextEmail.date}, ${nextEmail.phase} phase).\n\nSince the user seems ready to continue, proactively offer to generate this next email. Say something friendly like: "Perfect! Would you like me to create the next email - the **${nextEmail.description}** for ${nextEmail.date}?"`;
+            } else if (generatedDescriptions.length > 0) {
+              nextEmailSuggestion = `\n\n✅ PLAN EMAILS COMPLETE:\nIt appears all planned emails may have been generated. Acknowledge their progress and ask if they need revisions or want to work on other campaign materials.`;
+            }
+          }
+        } catch (error) {
+          console.error('Auto-continue parsing error:', error);
+          // Gracefully degrade - don't add suggestion if parsing fails
+        }
+      }
+      
       const systemPrompt = hasCampaignPlan 
         ? `You are a helpful campaign assistant for ${newsroom.name}, a newsroom.
 A STRATEGIC CAMPAIGN PLAN has been selected. Your role is to help users create campaigns that align with this plan's themes, messaging, and timeline.
 
 AVAILABLE GROUNDING GUIDES: ${groundingGuides.map(g => g.name).join(', ') || 'None available yet'}
 ${selectedGuide ? `\nSELECTED GUIDE: ${selectedGuide.name}${materialsPreview}` : ''}
-${contextInfo}
+${contextInfo}${nextEmailSuggestion}
 
 YOUR APPROACH WITH THE CAMPAIGN PLAN:
 - Acknowledge that the user has selected the strategic plan
