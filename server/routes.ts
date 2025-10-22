@@ -1002,6 +1002,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update conversation context (e.g., to track generated plan emails)
+  app.patch("/api/conversations/:id", authenticateToken, async (req: any, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const schema = z.object({
+        context: z.any().optional(),
+      });
+
+      const data = schema.parse(req.body);
+      const updated = await storage.updateConversation(conversationId, data);
+      res.json(updated);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error('Update conversation error:', error);
+      res.status(500).json({ message: "Failed to update conversation" });
+    }
+  });
+
   // Story Summaries
   app.post("/api/story-summaries", authenticateToken, async (req: any, res) => {
     try {
@@ -1261,10 +1281,9 @@ ${contentToSummarize}`;
       
       // AUTO-CONTINUE: Check if we should suggest the next email from campaign plan
       let nextEmailSuggestion = '';
-      if (hasCampaignPlan && promptContext.campaignPlan && (
-          message.toLowerCase().includes('yes') || 
-          message.toLowerCase().includes('continue') || 
-          message.toLowerCase().includes('next'))) {
+      let generatedPlanEmails: string[] = [];
+      
+      if (hasCampaignPlan && promptContext.campaignPlan) {
         const { parseCampaignPlanEmails, getNextEmail } = await import('./utils/campaign-plan-parser');
         
         try {
@@ -1272,19 +1291,21 @@ ${contentToSummarize}`;
           const planEmails = parseCampaignPlanEmails(promptContext.campaignPlan.plan);
           
           if (planEmails.length > 0) {
-            // Extract what's been generated from conversation history by looking for user requests
-            const generatedDescriptions = conversationHistory
-              .filter(m => m.role === 'user')
-              .map(m => m.content.toLowerCase())
-              .filter(c => c.includes('create') || c.includes('generate') || c.includes('write'));
+            // Load generated email IDs from conversation context (if available)
+            generatedPlanEmails = (promptContext as any).generatedPlanEmails || [];
             
-            // Find next email
-            const nextEmail = getNextEmail(planEmails, generatedDescriptions);
+            // Find next email using metadata
+            const nextEmail = getNextEmail(planEmails, generatedPlanEmails);
             
-            if (nextEmail) {
-              nextEmailSuggestion = `\n\n🔄 AUTO-CONTINUE ACTIVE:\nThe next email in the campaign plan is: **${nextEmail.description}** (${nextEmail.date}, ${nextEmail.phase} phase).\n\nSince the user seems ready to continue, proactively offer to generate this next email. Say something friendly like: "Perfect! Would you like me to create the next email - the **${nextEmail.description}** for ${nextEmail.date}?"`;
-            } else if (generatedDescriptions.length > 0) {
-              nextEmailSuggestion = `\n\n✅ PLAN EMAILS COMPLETE:\nIt appears all planned emails may have been generated. Acknowledge their progress and ask if they need revisions or want to work on other campaign materials.`;
+            // Show suggestion if user wants to continue
+            const wantsToContinue = message.toLowerCase().includes('yes') || 
+                                   message.toLowerCase().includes('continue') || 
+                                   message.toLowerCase().includes('next');
+            
+            if (nextEmail && wantsToContinue) {
+              nextEmailSuggestion = `\n\n🔄 AUTO-CONTINUE ACTIVE:\nProgress: ${generatedPlanEmails.length} of ${planEmails.length} emails generated.\nNext email: **${nextEmail.description}** (${nextEmail.date}, ${nextEmail.phase} phase).\n\nSince the user wants to continue, proactively offer to generate this next email. Say: "Perfect! Would you like me to create the next email - the **${nextEmail.description}** for ${nextEmail.date}?"`;
+            } else if (!nextEmail && generatedPlanEmails.length > 0) {
+              nextEmailSuggestion = `\n\n✅ PLAN SERIES COMPLETE:\nAll ${planEmails.length} emails from the campaign plan have been generated! Congratulate the user and ask if they need revisions or want to work on other aspects.`;
             }
           }
         } catch (error) {
@@ -1381,6 +1402,21 @@ YOUR APPROACH:
         
         console.log('Parsed params:', { objective, context, brandStylesheetId });
         
+        // Try to match this generation to a plan email
+        let matchedEmailId: string | null = null;
+        if (hasCampaignPlan && promptContext.campaignPlan) {
+          try {
+            const { parseCampaignPlanEmails, matchMessageToEmail } = await import('./utils/campaign-plan-parser');
+            const planEmails = parseCampaignPlanEmails(promptContext.campaignPlan.plan);
+            matchedEmailId = matchMessageToEmail(message + ' ' + context, planEmails);
+            if (matchedEmailId) {
+              console.log('Matched campaign to plan email:', matchedEmailId);
+            }
+          } catch (error) {
+            console.error('Error matching campaign to plan email:', error);
+          }
+        }
+        
         return res.json({
           message: "Perfect! Let me generate your campaign now...",
           shouldGenerate: true,
@@ -1388,7 +1424,8 @@ YOUR APPROACH:
             objective: objective as any,
             context: context,
             brandStylesheetId: brandStylesheetId && brandStylesheetId !== "null" ? parseInt(brandStylesheetId) : null,
-          }
+          },
+          planEmailId: matchedEmailId, // Include matched email ID if found
         });
       }
 

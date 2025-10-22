@@ -33,6 +33,8 @@ export default function CampaignAssistantTest() {
   const [selectedStorySummaries, setSelectedStorySummaries] = useState<number[]>([]);
   const [selectedModel, setSelectedModel] = useState<string>("gpt-5");
   const [selectedCampaignPlan, setSelectedCampaignPlan] = useState<number | undefined>();
+  const [pendingPlanEmailId, setPendingPlanEmailId] = useState<string | null>(null);
+  const [conversationContext, setConversationContext] = useState<any>(null);
 
   // Fetch grounding guides for the chat context
   const { data: groundingGuides = [] } = useQuery({
@@ -247,6 +249,8 @@ export default function CampaignAssistantTest() {
           
           // Restore Campaign Builder context
           if (conversation.context) {
+            setConversationContext(conversation.context); // Store full context
+            
             if (conversation.context.objective) {
               setSelectedObjective(conversation.context.objective);
             }
@@ -290,6 +294,7 @@ export default function CampaignAssistantTest() {
       const enrichedContext = {
         segments: selectedSegments.length > 0 ? selectedSegments : undefined,
         notes: campaignNotes.trim() || undefined,
+        generatedPlanEmails: conversationContext?.generatedPlanEmails || [],
         noteFiles: [...(noteFiles.length > 0 ? noteFiles : []), ...(files || [])],
         referenceCampaigns: selectedRecentCampaigns.length > 0 
           ? (recentCampaigns as any[])
@@ -396,6 +401,13 @@ export default function CampaignAssistantTest() {
       if (data.shouldGenerate && data.campaignParams) {
         console.log('Triggering campaign generation with params:', data.campaignParams);
         console.log('Available grounding guides:', groundingGuides);
+        
+        // Store the matched plan email ID (if any) for tracking
+        if (data.planEmailId) {
+          console.log('Matched plan email:', data.planEmailId);
+          setPendingPlanEmailId(data.planEmailId);
+        }
+        
         setCampaignParams(data.campaignParams);
         setTimeout(() => {
           generateCampaignMutation.mutate(data.campaignParams);
@@ -508,6 +520,36 @@ export default function CampaignAssistantTest() {
       // Automatically save the campaign to the database
       if (campaignMessage.campaign) {
         saveCampaignMutation.mutate(campaignMessage.campaign);
+      }
+      
+      // Update conversation context to track this generated email
+      if (conversationId && pendingPlanEmailId) {
+        const existingEmails = conversationContext?.generatedPlanEmails || [];
+        const updatedEmails = [...existingEmails, pendingPlanEmailId];
+        
+        const updatedContext = {
+          objective: selectedObjective,
+          guideId: selectedGuideId,
+          segments: selectedSegments,
+          generatedPlanEmails: updatedEmails,
+        };
+        
+        fetch(`/api/conversations/${conversationId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            context: updatedContext
+          }),
+        }).then(() => {
+          console.log('Updated conversation context with plan email:', pendingPlanEmailId);
+          setConversationContext(updatedContext); // Update local state
+          setPendingPlanEmailId(null);
+        }).catch(error => {
+          console.error('Failed to update conversation context:', error);
+        });
       }
     },
     onError: (error) => {
