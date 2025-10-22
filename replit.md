@@ -1,7 +1,7 @@
 # CampaignCraft - AI Marketing Assistant
 
 ## Overview
-CampaignCraft is a full-stack web application designed to empower newsrooms in generating AI-powered marketing campaigns. It aims to streamline content creation, ensure brand consistency, and offer advanced features like multi-draft generation, campaign evaluation, and audience segmentation. The project's ambition is to provide a comprehensive, intuitive platform for news organizations to create effective and targeted marketing communications. It supports a business vision of leveraging AI for enhanced market potential in news media.
+CampaignCraft is a full-stack web application designed to empower newsrooms in generating AI-powered marketing campaigns. It aims to streamline content creation, ensure brand consistency, and offer advanced features like multi-draft generation, campaign evaluation, and audience segmentation. The project's ambition is to provide a comprehensive, intuitive platform for news organizations to create effective and targeted marketing communications, leveraging AI for enhanced market potential in news media.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -9,157 +9,37 @@ Preferred communication style: Simple, everyday language.
 ## System Architecture
 
 ### UI/UX Decisions
-- **Framework**: React 18 with TypeScript.
-- **Components**: Shadcn/UI with Radix UI primitives.
-- **Styling**: Tailwind CSS for utility-first styling and theme management.
-- **Branding**: BlueLena logo displayed in sidebar navigation across all authenticated pages.
-- **Design Philosophy**: Clean, intuitive interface featuring interactive forms, a multi-draft carousel, and clear visual indicators.
-- **Key UI Features**: Dashboard, Campaign Generator (with Campaign Builder for goals/audience setup), Template Library, Grounding Library, Campaign History, Guided Marketing Assistant, Segment Management, and a unified history view.
-- **Campaign Builder**: Right-side panel in Campaign Assistant with subtitle "Set your goals and audience" - allows users to configure objectives, segments, grounding guides, notes, and reference materials.
-- **Navigation Structure**: Streamlined sidebar menu in priority order:
-  1. Dashboard (top)
-  2. Campaign Builder (conversational AI campaign creation)
-  3. Campaign History
-  4. Campaign Planner (comprehensive fundraising campaign planning)
-  5. Grounding Library
-  6. Audience Segments
-  7. Story Summaries
-  8. Settings
-  9. Help & Guides (comprehensive documentation)
-  10. Admin Control (admin only)
-  11. Marketing Assistant (gradient box at bottom for quick-start templates)
-- **Featured Campaign Builder**: Prominently displayed with gradient background, "Recommended" badge, and enhanced visual styling in Marketing Assistant page.
+- **Framework & Styling**: React 18 with TypeScript, Shadcn/UI (Radix UI primitives), and Tailwind CSS for a clean, intuitive interface.
+- **Branding**: BlueLena logo prominently displayed.
+- **Key UI Features**: Dashboard, Campaign Generator (with Campaign Builder), Template Library, Grounding Library, Campaign History, Guided Marketing Assistant, Segment Management, and unified history view.
+- **Navigation**: Streamlined sidebar with priority order: Dashboard, Campaign Builder, Campaign History, Campaign Planner, Grounding Library, Audience Segments, Story Summaries, Settings, Help & Guides, Admin Control, and Marketing Assistant.
+- **Featured Campaign Builder**: Prominently displayed with gradient background and "Recommended" badge.
 
 ### Technical Implementations
-- **Frontend**: React with Wouter for routing, TanStack React Query for server state management, and Vite for building.
-- **Backend**: Node.js with Express.js, TypeScript, RESTful API, and Express middleware.
-- **Data Storage**: PostgreSQL database using Drizzle ORM, with Neon Database for serverless PostgreSQL.
-- **AI Integration**: Integrates with OpenAI (GPT-5, default) and Anthropic (Claude Sonnet 4) for content generation and evaluation.
-  - **GPT-5 Configuration**: Uses default temperature (1.0) as GPT-5 does not support custom temperature values
-  - **CSP Headers**: Content Security Policy configured for both development (Vite HMR) and production with 'unsafe-eval' support for required tooling
-- **Content Generation**: Generates campaign content, CTAs, and performance insights, applying grounding guides for brand consistency.
-- **Campaign Workflow**: Supports "Create Campaign" with multi-draft generation and "Get Feedback" for evaluation using frameworks like BlueLena. Features seamless campaign-to-evaluation flow with auto-population:
-  - "Evaluate this campaign" button encodes generated campaign data (subject, body, CTA) in URL parameter
-  - Campaign evaluation page automatically reads and pre-fills content from URL on page load
-  - Users can immediately evaluate without manual copy-paste
-  - Toast notification confirms campaign data has been loaded
-- **Multi-tenancy**: Supports multiple newsrooms with isolated data and role-based admin capabilities.
-- **User Management System**: Role-based access control with comprehensive user administration:
-  - Super Admin role (role = "admin", newsroomId = null) with full system access
-  - Regular Admin role (role = "admin", newsroomId = specific ID) with newsroom-scoped access
-  - User role (role = "user") with standard newsroom access
-  - Admin-only User Management page for creating, editing, and deleting users
-  - Newsroom assignment and role modification for flexible access control
-  - Multiple users per newsroom supported for team collaboration
-  - Password management and account administration
-- **Document Upload & Extraction**: Integrates with Replit App Storage (Google Cloud Storage) for uploading reference materials to inform AI generation. Features automated text extraction from uploaded files:
-  - PDF text extraction using pdf-parse library
-  - DOCX text extraction using mammoth library
-  - Plain text file support
-  - FileExtractorService fetches files from object storage and extracts content
-  - Extracted file content is automatically combined with manual text and included in AI prompts
-  - File references stored as JSON objects `{"filename": "...", "url": "..."}` to handle special characters in URLs
-  - Available in three locations:
-    1. **Grounding Library**: Upload brand materials for library creation
-    2. **Campaign Notes (Campaign Builder)**: Upload reference documents to inform specific campaign generation
-    3. **Chat Assistant**: Attach files directly to chat messages for contextual AI responses
-  - All uploaded files are extracted and their content is merged with user notes before AI generation
-  - Ensures AI references both typed materials and uploaded documents for comprehensive brand consistency
-- **Quick Start Templates**: Pre-built AI tools for specific marketing needs (e.g., Rapid-Response Campaign Creator, AI Subject Line Generator).
-- **BlueLena Copywriting Integration**: AI generation adheres to BlueLena professional copywriting guidelines for email structure, subject lines, and CTAs.
-- **AI-Powered Merge**: Utilizes AI to intelligently combine best elements from multiple drafts into a cohesive, unified campaign.
-- **Conversational Campaign Assistant**: An AI-guided chat interface for structured campaign creation, material gathering, and automated generation.
-- **AI Prompt Management System**: Admin-facing system for cataloging, updating, and managing all AI prompts without code changes. Features include:
-  - Database-backed prompt storage with versioning support
-  - 14 prompts organized across 8 categories (Campaign Generation, Draft Merging, Evaluation, Rewriting, Story Summarization, Chat Assistant, Email Optimization, Grounding Library)
-  - Variable interpolation for dynamic prompt customization
-  - 5-minute caching layer for performance optimization
-  - Robust fallback to hardcoded prompts for reliability
-  - Admin-only UI for searching, filtering, and editing prompts
-  - Full CRUD operations with authentication and authorization
-- **Production Logging & Quality Assurance**: Comprehensive logging and user tracking system for debugging and quality assurance:
-  - Client-side logger capturing errors, user actions, API calls, and performance metrics
-  - Database storage with 90-day retention policy and automated cleanup
-  - User flagging system to mark users as "testing", "bug reporter", "issue", or "watch" with notes
-  - Admin logs page with filtering, search, and user flag management
-  - Logger auto-initializes with user context on login for complete activity tracking
-  - Scheduled daily log cleanup to maintain database performance
-- **Prompt Auditing System**: Temporary admin-only visual indicators for prompt monitoring:
-  - Colored badge indicators showing which AI prompt powers each generation
-  - Only visible to super administrators for quality assurance and auditing
-  - Displays prompt names (e.g., "Campaign Generate", "Draft Merge", "BlueLena Evaluation") on:
-    - Campaign Form (generated campaigns)
-    - Chat Assistant (conversational campaign generation)
-    - Campaign Evaluation (evaluation results)
-  - Backend returns promptKey in all AI service responses for tracking
-  - Helps validate prompt management system and monitor AI usage patterns
-- **Help Center & Documentation**: Comprehensive in-app documentation system for user guidance:
-  - Dedicated Help & Guides page accessible from sidebar navigation
-  - 10 collapsible sections covering all major features:
-    - Getting Started (quick introduction and workflow)
-    - Campaign Builder (conversational AI creation)
-    - Grounding Library (brand materials with 11 material types)
-    - Audience Segments (targeting and personalization)
-    - Campaign Evaluation (BlueLena 5-pillar framework)
-    - File Uploads & Text Extraction (PDF/DOCX support)
-    - AI Model Selection (GPT-5, Claude, Gemini)
-    - Campaign History (tracking and management)
-    - Story Summaries (AI article condensing)
-    - Admin Features (user management, prompts, logs)
-    - Settings & Preferences
-  - Step-by-step instructions and best practices for each feature
-  - Pro tips and visual organization with icons and badges
-  - Designed for non-technical users with clear, accessible language
-- **Contextual Help System**: In-context tooltips providing instant guidance throughout the application:
-  - Campaign Builder panel tooltips for all 7 key configuration fields:
-    - Campaign Objective (explains donation, membership, engagement goals)
-    - AI Model selection (GPT-5, Claude, Gemini use cases)
-    - Grounding Library (brand guidelines integration)
-    - Target Segments (audience tailoring)
-    - Campaign Notes (file upload capabilities)
-    - Reference Recent Campaigns (consistency and inspiration)
-    - Summarize a News Story (article summarization)
-  - HelpCircle icons positioned next to labels for discoverability
-  - Tooltips use clear, non-technical language for newsroom staff
-  - Fully keyboard-accessible with focusable button triggers
-  - Screen reader support via descriptive aria-labels
-  - Consistent right-side positioning for optimal UX
-  - Built with Shadcn/UI Tooltip components for reliability
-- **Campaign Planner**: Comprehensive fundraising campaign planning tool powered by "Lou" AI system for nonprofit newsrooms:
-  - Multi-step form interface collecting organization profile, fundraising goals, timeframe, audience segments, and campaign details
-  - AI-generated strategic campaign plans with structured Markdown output including:
-    - Campaign themes and messaging frameworks tailored to organization mission
-    - Detailed dated calendar with day-by-day activities and milestones
-    - Segment-specific messaging strategies for different donor audiences
-    - Comprehensive assets checklist (graphics, content, technical requirements)
-    - 3 starter email drafts with subject lines, body copy, and CTAs
-  - Supports all 3 AI models (GPT-5 default, Claude Sonnet 4, Gemini 2.5 Flash)
-  - Campaign plans stored in database (campaignPlans table) with inputs as JSONB and generated plan as TEXT
-  - Backend API endpoints for creating and retrieving campaign plans (/api/newsrooms/:newsroomId/campaign-plans)
-  - Accessible from sidebar navigation and Marketing Assistant quick-start templates
-  - Designed for complete fundraising campaign strategy development (10-15 minute workflow)
-- **Plan-Guided Campaign Generation**: Strategic framework directing AI campaign generation when Campaign Plan is selected:
-  - Detects when Campaign Plan is selected and routes to dedicated plan-guided prompt pathway
-  - Establishes context hierarchy: Campaign Plan as PRIMARY DIRECTIVE, grounding library/notes as supporting materials
-  - AI explicitly instructed to align all campaign elements with plan's themes, timeline, and segment strategies
-  - Parses plan inputs (goal, target, timeframe) and full strategic plan Markdown
-  - Requires AI to cite specific plan sections and verify compliance against plan objectives
-  - Plan becomes governing strategy rather than optional context
-  - Auto-fills Campaign Builder sidebar fields when "Generate Campaign from This Plan" is clicked
-  - URL parameter support for seamless plan-to-generation workflow
-  - Evaluation metrics include plan alignment quality in followUpSuggestion field
+- **Frontend**: React, Wouter for routing, TanStack React Query for server state, and Vite for building.
+- **Backend**: Node.js with Express.js, TypeScript, RESTful API.
+- **Data Storage**: PostgreSQL database using Drizzle ORM and Neon Database.
+- **AI Integration**: OpenAI (GPT-5) and Anthropic (Claude Sonnet 4) for content generation and evaluation.
+- **Content Generation**: AI-powered generation of campaign content, CTAs, and performance insights, utilizing grounding guides for brand consistency.
+- **Campaign Workflow**: Supports multi-draft generation and seamless "Get Feedback" for evaluation, auto-populating content for evaluation from generated campaigns.
+- **Multi-tenancy & User Management**: Supports multiple newsrooms with isolated data, role-based access control (Super Admin, Regular Admin, User), and comprehensive user administration.
+- **Document Upload & Extraction**: Integration with Replit App Storage (Google Cloud Storage) for uploading reference materials (PDF, DOCX, TXT) with automated text extraction to inform AI generation.
+- **Quick Start Templates**: Pre-built AI tools for specific marketing needs.
+- **BlueLena Copywriting Integration**: AI generation adheres to BlueLena professional copywriting guidelines.
+- **AI-Powered Merge**: Intelligently combines elements from multiple drafts into a unified campaign.
+- **Conversational Campaign Assistant**: AI-guided chat interface for structured campaign creation with persistent conversations saved to the database.
+- **AI Prompt Management System**: Admin-facing system for cataloging, updating, and managing AI prompts without code changes, featuring database storage, versioning, variable interpolation, caching, and a robust fallback mechanism.
+- **Production Logging & Quality Assurance**: Comprehensive client-side logging, user tracking, and an admin logs page for debugging and QA.
+- **Prompt Auditing System**: Admin-only visual indicators to monitor which AI prompt powers each generation.
+- **Help Center & Documentation**: In-app documentation (Help & Guides page) covering all major features with step-by-step instructions.
+- **Contextual Help System**: In-context tooltips provide instant guidance throughout the application, especially in the Campaign Builder.
+- **Campaign Planner**: AI-powered tool for comprehensive fundraising campaign planning, generating strategic plans, calendars, messaging, and email drafts.
+- **Plan-Guided Campaign Generation**: AI campaign generation is strategically directed by selected Campaign Plans, making the plan the primary directive for AI content creation.
 
 ### System Design Choices
-- **Development**: Vite development server with Express API integration and hot module replacement.
-- **Production**: Optimized React bundle and bundled Express server.
+- **Development & Production**: Vite development server with Express API integration and optimized React bundle for production.
 - **Environment Configuration**: Utilizes environment variables for sensitive information.
-- **Grounding Library Workflow**: Streamlined materials-first approach for library creation, collecting 11 material types across 4 categories (Brand Foundation, Campaign Examples, Audience Intelligence, Performance Data).
-- **Grounding Library Edit Interface**: Enhanced tabbed edit dialog allowing users to view and edit all collected materials:
-  - 5-tab interface: Basic Info, Brand Foundation, Campaign Examples, Audience Intel, Performance Data
-  - Each material type has dedicated text area for editing text content
-  - Materials structure preserved in database and properly passed to AI generation
-  - Supports both text input and file upload for each material type
-  - Form validation with Zod ensures data integrity during save/load operations
+- **Grounding Library Workflow**: Streamlined materials-first approach for library creation, collecting 11 material types across 4 categories (Brand Foundation, Campaign Examples, Audience Intelligence, Performance Data) with a tabbed edit interface.
 
 ## External Dependencies
 
@@ -178,5 +58,5 @@ Preferred communication style: Simple, everyday language.
     - `react-hook-form` with `@hookform/resolvers`
 - **Cloud Storage & File Processing**:
     - Replit App Storage (Google Cloud Storage)
-    - `pdf-parse` - PDF text extraction
-    - `mammoth` - DOCX text extraction
+    - `pdf-parse` (PDF text extraction)
+    - `mammoth` (DOCX text extraction)
