@@ -173,6 +173,26 @@ export const campaignPlans = pgTable("campaign_plans", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const conversations = pgTable("conversations", {
+  id: serial("id").primaryKey(),
+  newsroomId: integer("newsroom_id").notNull(),
+  userId: integer("user_id").notNull(),
+  campaignPlanId: integer("campaign_plan_id"), // Optional: linked to campaign plan
+  title: text("title"), // Auto-generated from first message or user-set
+  context: jsonb("context"), // Campaign builder state (objective, segments, etc.)
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const conversationMessages = pgTable("conversation_messages", {
+  id: serial("id").primaryKey(),
+  conversationId: integer("conversation_id").notNull(),
+  role: text("role").notNull(), // 'user' or 'assistant'
+  content: text("content").notNull(),
+  metadata: jsonb("metadata"), // Campaign data for assistant messages, etc.
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertNewsroomSchema = createInsertSchema(newsrooms).omit({
   id: true,
   createdAt: true,
@@ -249,6 +269,17 @@ export const insertCampaignPlanSchema = createInsertSchema(campaignPlans).omit({
   updatedAt: true,
 });
 
+export const insertConversationSchema = createInsertSchema(conversations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertConversationMessageSchema = createInsertSchema(conversationMessages).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertNewsroom = z.infer<typeof insertNewsroomSchema>;
 export type InsertBrandStylesheet = z.infer<typeof insertBrandStylesheetSchema>;
@@ -263,6 +294,8 @@ export type InsertPromptVersion = z.infer<typeof insertPromptVersionSchema>;
 export type InsertClientLog = z.infer<typeof insertClientLogSchema>;
 export type InsertUserFlag = z.infer<typeof insertUserFlagSchema>;
 export type InsertCampaignPlan = z.infer<typeof insertCampaignPlanSchema>;
+export type InsertConversation = z.infer<typeof insertConversationSchema>;
+export type InsertConversationMessage = z.infer<typeof insertConversationMessageSchema>;
 
 export type User = typeof users.$inferSelect;
 export type Newsroom = typeof newsrooms.$inferSelect;
@@ -278,3 +311,5 @@ export type PromptVersion = typeof promptVersions.$inferSelect;
 export type ClientLog = typeof clientLogs.$inferSelect;
 export type UserFlag = typeof userFlags.$inferSelect;
 export type CampaignPlan = typeof campaignPlans.$inferSelect;
+export type Conversation = typeof conversations.$inferSelect;
+export type ConversationMessage = typeof conversationMessages.$inferSelect;
