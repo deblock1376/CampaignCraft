@@ -8,6 +8,8 @@ import {
   campaignEvaluations,
   storySummaries,
   campaignPlans,
+  conversations,
+  conversationMessages,
   promptCategories,
   prompts,
   promptVersions,
@@ -22,6 +24,8 @@ import {
   type CampaignEvaluation,
   type StorySummary,
   type CampaignPlan,
+  type Conversation,
+  type ConversationMessage,
   type PromptCategory,
   type Prompt,
   type PromptVersion,
@@ -36,6 +40,8 @@ import {
   type InsertCampaignEvaluation,
   type InsertStorySummary,
   type InsertCampaignPlan,
+  type InsertConversation,
+  type InsertConversationMessage,
   type InsertPromptCategory,
   type InsertPrompt,
   type InsertPromptVersion,
@@ -137,6 +143,16 @@ export interface IStorage {
   getAllUserFlags(): Promise<(UserFlag & { userName: string; newsroomName?: string })[]>;
   updateUserFlag(id: number, updates: Partial<InsertUserFlag>): Promise<UserFlag>;
   deleteUserFlag(id: number): Promise<void>;
+  
+  // Conversations
+  createConversation(conversation: InsertConversation): Promise<Conversation>;
+  getConversation(id: number): Promise<Conversation | undefined>;
+  getConversationsByNewsroom(newsroomId: number): Promise<Conversation[]>;
+  updateConversation(id: number, updates: Partial<InsertConversation>): Promise<Conversation>;
+  
+  // Conversation Messages
+  createConversationMessage(message: InsertConversationMessage): Promise<ConversationMessage>;
+  getConversationMessages(conversationId: number): Promise<ConversationMessage[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -604,6 +620,26 @@ export class MemStorage implements IStorage {
   async deleteUserFlag(id: number): Promise<void> {
     throw new Error('MemStorage not implemented');
   }
+  
+  // Conversations (stub for MemStorage - not used in production)
+  async createConversation(conversation: InsertConversation): Promise<Conversation> {
+    throw new Error('MemStorage not implemented');
+  }
+  async getConversation(id: number): Promise<Conversation | undefined> {
+    return undefined;
+  }
+  async getConversationsByNewsroom(newsroomId: number): Promise<Conversation[]> {
+    return [];
+  }
+  async updateConversation(id: number, updates: Partial<InsertConversation>): Promise<Conversation> {
+    throw new Error('MemStorage not implemented');
+  }
+  async createConversationMessage(message: InsertConversationMessage): Promise<ConversationMessage> {
+    throw new Error('MemStorage not implemented');
+  }
+  async getConversationMessages(conversationId: number): Promise<ConversationMessage[]> {
+    return [];
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1047,6 +1083,37 @@ export class DatabaseStorage implements IStorage {
   
   async deleteUserFlag(id: number): Promise<void> {
     await db.delete(userFlags).where(eq(userFlags.id, id));
+  }
+  
+  async createConversation(conversation: InsertConversation): Promise<Conversation> {
+    const [newConversation] = await db.insert(conversations).values(conversation).returning();
+    return newConversation;
+  }
+  
+  async getConversation(id: number): Promise<Conversation | undefined> {
+    const [conversation] = await db.select().from(conversations).where(eq(conversations.id, id));
+    return conversation;
+  }
+  
+  async getConversationsByNewsroom(newsroomId: number): Promise<Conversation[]> {
+    return db.select().from(conversations).where(eq(conversations.newsroomId, newsroomId)).orderBy(desc(conversations.updatedAt));
+  }
+  
+  async updateConversation(id: number, updates: Partial<InsertConversation>): Promise<Conversation> {
+    const [updated] = await db.update(conversations)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(conversations.id, id))
+      .returning();
+    return updated;
+  }
+  
+  async createConversationMessage(message: InsertConversationMessage): Promise<ConversationMessage> {
+    const [newMessage] = await db.insert(conversationMessages).values(message).returning();
+    return newMessage;
+  }
+  
+  async getConversationMessages(conversationId: number): Promise<ConversationMessage[]> {
+    return db.select().from(conversationMessages).where(eq(conversationMessages.conversationId, conversationId)).orderBy(conversationMessages.createdAt);
   }
 }
 
