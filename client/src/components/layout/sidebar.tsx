@@ -13,7 +13,8 @@ export default function Sidebar() {
   // Main navigation items in priority order
   const navItems = [
     { href: "/", icon: "fas fa-home", label: "Dashboard" },
-    { href: "/campaigns/assistant-test", icon: "fas fa-comments", label: "Campaign Builder" },
+    { href: "/campaign-builder", icon: "fas fa-comments", label: "Campaign Builder" },
+    { href: "/campaigns/saved", icon: "fas fa-bookmark", label: "Saved Campaigns" },
     { href: "/campaigns/history", icon: "fas fa-history", label: "Campaign History" },
     { href: "/campaign-planner", icon: "fas fa-calendar-alt", label: "Campaign Planner" },
     { href: "/stylesheets", icon: "fas fa-palette", label: "Grounding Library" },
