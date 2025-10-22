@@ -21,7 +21,7 @@ Preferred communication style: Simple, everyday language.
 - **Data Storage**: PostgreSQL database using Drizzle ORM and Neon Database.
 - **AI Integration**: OpenAI (GPT-5) and Anthropic (Claude Sonnet 4) for content generation and evaluation.
 - **Content Generation**: AI-powered generation of campaign content, CTAs, and performance insights, utilizing grounding guides for brand consistency.
-- **Campaign Workflow**: Supports multi-draft generation and seamless "Get Feedback" for evaluation, auto-populating content for evaluation from generated campaigns.
+- **Campaign Workflow**: Supports multi-draft generation and seamless "Get Feedback" for evaluation, auto-populating content for evaluation from generated campaigns. All generated campaigns are automatically saved to Campaign History.
 - **Multi-tenancy & User Management**: Supports multiple newsrooms with isolated data, role-based access control (Super Admin, Regular Admin, User), and comprehensive user administration.
 - **Document Upload & Extraction**: Integration with Replit App Storage (Google Cloud Storage) for uploading reference materials (PDF, DOCX, TXT) with automated text extraction to inform AI generation.
 - **Quick Start Templates**: Pre-built AI tools for specific marketing needs.
