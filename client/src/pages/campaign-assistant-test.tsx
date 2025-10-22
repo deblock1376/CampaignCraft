@@ -12,6 +12,8 @@ export default function CampaignAssistantTest() {
   const newsroomId = user?.newsroomId || 1; // Default to newsroom 1 for admin/testing
   const { toast } = useToast();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [conversationId, setConversationId] = useState<number | null>(null);
+  const [conversationLoaded, setConversationLoaded] = useState(false);
   const [campaignParams, setCampaignParams] = useState<{
     objective: string;
     context: string;
@@ -187,6 +189,51 @@ export default function CampaignAssistantTest() {
     }
   }, [toast, campaignPlans]);
 
+  // Load conversation from URL parameter
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const convId = params.get('conversationId');
+    
+    if (convId && !conversationLoaded) {
+      const loadConversation = async () => {
+        try {
+          // Fetch conversation messages
+          const response = await fetch(`/api/conversations/${convId}/messages`, {
+            headers: {
+              "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            },
+          });
+          
+          if (response.ok) {
+            const dbMessages = await response.json();
+            
+            // Convert database messages to ChatMessage format
+            const loadedMessages: ChatMessage[] = dbMessages.map((msg: any) => ({
+              id: msg.id.toString(),
+              role: msg.role,
+              content: msg.content,
+              timestamp: new Date(msg.createdAt),
+              campaign: msg.metadata?.campaign,
+            }));
+            
+            setMessages(loadedMessages);
+            setConversationId(parseInt(convId));
+            setConversationLoaded(true);
+            
+            toast({
+              title: "Conversation Loaded",
+              description: "Your previous conversation has been restored.",
+            });
+          }
+        } catch (error) {
+          console.error('Failed to load conversation:', error);
+        }
+      };
+      
+      loadConversation();
+    }
+  }, [conversationLoaded, toast]);
+
   // Chat mutation
   const chatMutation = useMutation({
     mutationFn: async ({ message, files }: { message: string; files?: string[] }) => {
@@ -250,7 +297,7 @@ export default function CampaignAssistantTest() {
 
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       const assistantMessage: ChatMessage = {
         id: Date.now().toString(),
         role: "assistant",
@@ -258,6 +305,43 @@ export default function CampaignAssistantTest() {
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, assistantMessage]);
+      
+      // Save messages to database if conversation exists
+      if (conversationId) {
+        try {
+          // Save user message
+          const userMsg = messages[messages.length - 1];
+          if (userMsg && userMsg.role === 'user') {
+            await fetch(`/api/conversations/${conversationId}/messages`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
+              },
+              body: JSON.stringify({
+                role: 'user',
+                content: userMsg.content,
+              }),
+            });
+          }
+          
+          // Save assistant message
+          await fetch(`/api/conversations/${conversationId}/messages`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({
+              role: 'assistant',
+              content: data.message,
+              metadata: data.campaign ? { campaign: data.campaign } : undefined,
+            }),
+          });
+        } catch (error) {
+          console.error('Failed to save messages:', error);
+        }
+      }
       
       // If AI wants to generate campaign, trigger generation
       if (data.shouldGenerate && data.campaignParams) {
@@ -368,7 +452,6 @@ export default function CampaignAssistantTest() {
           groundingGuideIds: selectedGuideId ? [selectedGuideId] : undefined,
           storySummaryIds: selectedStorySummaries.length > 0 ? selectedStorySummaries : undefined,
           hasReferenceMaterials: selectedRecentCampaigns.length > 0,
-          campaignPlanId: selectedCampaignPlan,
         },
       };
       setMessages(prev => [...prev, campaignMessage]);
@@ -489,7 +572,7 @@ export default function CampaignAssistantTest() {
     handleSendMessage(message);
   };
 
-  const handleSendMessage = (message: string, files?: string[]) => {
+  const handleSendMessage = async (message: string, files?: string[]) => {
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       role: "user",
@@ -497,6 +580,43 @@ export default function CampaignAssistantTest() {
       timestamp: new Date(),
     };
     setMessages(prev => [...prev, userMessage]);
+    
+    // Create conversation if it doesn't exist
+    if (!conversationId) {
+      try {
+        const response = await fetch("/api/conversations", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            newsroomId,
+            userId: user.id,
+            campaignPlanId: selectedCampaignPlan,
+            title: message.substring(0, 100), // Use first 100 chars as title
+            context: {
+              objective: selectedObjective,
+              guideId: selectedGuideId,
+              segments: selectedSegments,
+            },
+          }),
+        });
+        
+        if (response.ok) {
+          const conversation = await response.json();
+          setConversationId(conversation.id);
+          
+          // Update URL with conversationId
+          const url = new URL(window.location.href);
+          url.searchParams.set('conversationId', conversation.id.toString());
+          window.history.pushState({}, '', url.toString());
+        }
+      } catch (error) {
+        console.error('Failed to create conversation:', error);
+      }
+    }
+    
     chatMutation.mutate({ message, files });
   };
 
