@@ -14,14 +14,27 @@ export class FileExtractorService {
   }
 
   /**
-   * Wraps a promise with a timeout.
+   * Wraps a promise with a timeout, properly cleaning up the timer.
    */
   private withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+    let timeoutHandle: NodeJS.Timeout;
+    
+    const timeoutPromise = new Promise<T>((_, reject) => {
+      timeoutHandle = setTimeout(
+        () => reject(new Error(`Operation timed out after ${timeoutMs}ms`)),
+        timeoutMs
+      );
+    });
+    
     return Promise.race([
-      promise,
-      new Promise<T>((_, reject) =>
-        setTimeout(() => reject(new Error(`Operation timed out after ${timeoutMs}ms`)), timeoutMs)
-      )
+      promise.then((result) => {
+        clearTimeout(timeoutHandle);
+        return result;
+      }).catch((error) => {
+        clearTimeout(timeoutHandle);
+        throw error;
+      }),
+      timeoutPromise
     ]);
   }
 
