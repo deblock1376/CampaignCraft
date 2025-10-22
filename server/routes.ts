@@ -915,6 +915,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Conversations
+  app.post("/api/conversations", authenticateToken, async (req: any, res) => {
+    try {
+      const schema = z.object({
+        newsroomId: z.number(),
+        userId: z.number(),
+        campaignPlanId: z.number().optional(),
+        title: z.string().optional(),
+        context: z.any().optional(),
+      });
+
+      const data = schema.parse(req.body);
+      const conversation = await storage.createConversation(data);
+      res.json(conversation);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error('Create conversation error:', error);
+      res.status(500).json({ message: "Failed to create conversation" });
+    }
+  });
+
+  app.get("/api/conversations/:id", authenticateToken, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const conversation = await storage.getConversation(id);
+      if (!conversation) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+      res.json(conversation);
+    } catch (error) {
+      console.error('Get conversation error:', error);
+      res.status(500).json({ message: "Failed to fetch conversation" });
+    }
+  });
+
+  app.get("/api/newsrooms/:newsroomId/conversations", authenticateToken, async (req: any, res) => {
+    try {
+      const newsroomId = parseInt(req.params.newsroomId);
+      const conversations = await storage.getConversationsByNewsroom(newsroomId);
+      res.json(conversations);
+    } catch (error) {
+      console.error('Get conversations error:', error);
+      res.status(500).json({ message: "Failed to fetch conversations" });
+    }
+  });
+
+  app.post("/api/conversations/:id/messages", authenticateToken, async (req: any, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const schema = z.object({
+        role: z.enum(['user', 'assistant']),
+        content: z.string(),
+        metadata: z.any().optional(),
+      });
+
+      const data = schema.parse(req.body);
+      const message = await storage.createConversationMessage({
+        conversationId,
+        ...data,
+      });
+      
+      // Update conversation's updatedAt timestamp
+      await storage.updateConversation(conversationId, {});
+      
+      res.json(message);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error('Create conversation message error:', error);
+      res.status(500).json({ message: "Failed to create message" });
+    }
+  });
+
+  app.get("/api/conversations/:id/messages", authenticateToken, async (req: any, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const messages = await storage.getConversationMessages(conversationId);
+      res.json(messages);
+    } catch (error) {
+      console.error('Get conversation messages error:', error);
+      res.status(500).json({ message: "Failed to fetch messages" });
+    }
+  });
+
   // Story Summaries
   app.post("/api/story-summaries", authenticateToken, async (req: any, res) => {
     try {
