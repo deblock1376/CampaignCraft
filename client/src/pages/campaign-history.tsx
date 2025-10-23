@@ -10,9 +10,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Eye, Calendar, Search, Filter, X, Copy, Download, FileCheck } from "lucide-react";
+import { Eye, Calendar, Search, Filter, X, Copy, Download, FileCheck, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 
 export default function CampaignHistory() {
   const [selectedCampaign, setSelectedCampaign] = useState(null);
@@ -298,6 +298,12 @@ export default function CampaignHistory() {
                           >
                             {campaign.status}
                           </Badge>
+                          <Link href={`/campaign-builder?referenceCampaign=${campaign.id}`}>
+                            <Button variant="outline" size="sm">
+                              <MessageSquare className="w-4 h-4 mr-1" />
+                              Open in Builder
+                            </Button>
+                          </Link>
                           <Dialog>
                             <DialogTrigger asChild>
                               <Button variant="outline" size="sm">

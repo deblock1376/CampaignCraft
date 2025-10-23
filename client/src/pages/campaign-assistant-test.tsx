@@ -191,6 +191,23 @@ export default function CampaignAssistantTest() {
     }
   }, [toast, campaignPlans]);
 
+  // Check URL for referenceCampaign parameter and select it
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const refCampaignId = params.get('referenceCampaign');
+    if (refCampaignId && recentCampaigns.length > 0) {
+      const campaignId = parseInt(refCampaignId);
+      const campaign = (recentCampaigns as any[]).find((c: any) => c.id === campaignId);
+      if (campaign && !selectedRecentCampaigns.includes(campaignId)) {
+        setSelectedRecentCampaigns([campaignId]);
+        toast({
+          title: "Campaign Referenced",
+          description: `"${campaign.title}" has been added as a reference.`,
+        });
+      }
+    }
+  }, [recentCampaigns, toast]);
+
   // Load conversation from URL parameter
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
