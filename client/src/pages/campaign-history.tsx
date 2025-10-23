@@ -346,10 +346,10 @@ export default function CampaignHistory() {
                                 
                                 <TabsContent value="content" className="space-y-4">
                                   <div className="space-y-4">
-                                    {campaign.content?.subject && (
+                                    {(campaign.content?.subject || campaign.content?.subjectLine) && (
                                       <div>
                                         <h4 className="font-medium text-sm text-gray-700 mb-2">Subject Line</h4>
-                                        <p className="p-3 bg-gray-50 rounded-lg">{campaign.content.subject}</p>
+                                        <p className="p-3 bg-gray-50 rounded-lg">{campaign.content.subject || campaign.content.subjectLine}</p>
                                       </div>
                                     )}
                                     <div>
@@ -360,12 +360,14 @@ export default function CampaignHistory() {
                                         </div>
                                       </div>
                                     </div>
-                                    <div>
-                                      <h4 className="font-medium text-sm text-gray-700 mb-2">Call to Action</h4>
-                                      <p className="p-3 bg-emerald-50 rounded-lg font-medium text-emerald-800">
-                                        {campaign.content?.cta}
-                                      </p>
-                                    </div>
+                                    {(campaign.content?.cta || campaign.content?.cta?.text) && (
+                                      <div>
+                                        <h4 className="font-medium text-sm text-gray-700 mb-2">Call to Action</h4>
+                                        <p className="p-3 bg-emerald-50 rounded-lg font-medium text-emerald-800">
+                                          {typeof campaign.content.cta === 'string' ? campaign.content.cta : campaign.content.cta?.text}
+                                        </p>
+                                      </div>
+                                    )}
                                   </div>
                                 </TabsContent>
                                 

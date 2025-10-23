@@ -29,14 +29,6 @@ export default function SavedCampaigns() {
     queryKey: [`/api/newsrooms/${newsroomId}/conversations`],
     enabled: !!newsroomId,
     retry: false,
-    onError: (error: any) => {
-      // If unauthorized, clear localStorage and reload to show login
-      if (error?.message?.includes('401') || error?.message?.includes('403')) {
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-        window.location.reload();
-      }
-    },
   });
 
   const { data: campaignPlans } = useQuery({
@@ -50,11 +42,9 @@ export default function SavedCampaigns() {
     return plan?.title;
   };
 
-  const sortedConversations = conversations 
-    ? [...conversations].sort((a, b) => 
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-      )
-    : [];
+  const sortedConversations = (conversations || []).slice().sort((a, b) => 
+    new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+  );
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
