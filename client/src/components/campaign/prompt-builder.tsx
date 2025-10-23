@@ -423,7 +423,9 @@ export function PromptBuilder({
                         >
                           {segment.name}
                           <p className="text-xs text-muted-foreground font-normal mt-0.5">
-                            {segment.description}
+                            {segment.description?.length > 50 
+                              ? `${segment.description.substring(0, 50)}...` 
+                              : segment.description}
                           </p>
                         </label>
                         {segments.includes(segment.id.toString()) && (
