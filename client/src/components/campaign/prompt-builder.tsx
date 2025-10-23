@@ -422,11 +422,6 @@ export function PromptBuilder({
                           className="flex-1 text-sm font-medium leading-none cursor-pointer"
                         >
                           {segment.name}
-                          <p className="text-xs text-muted-foreground font-normal mt-0.5">
-                            {segment.description?.length > 50 
-                              ? `${segment.description.substring(0, 50)}...` 
-                              : segment.description}
-                          </p>
                         </label>
                         {segments.includes(segment.id.toString()) && (
                           <Check className="h-4 w-4 text-primary" />
